@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prometeu.org/contratos/eventos/pessoa-registrada.v1.json",
+  "title": "PessoaRegistrada (v1): dados",
+  "description": "Agentes Públicos: uma pessoa passou a existir na plataforma. idDoAgregado é o PessoaId.",
+  "type": "object",
+  "required": ["nome", "siglaPartido", "urlDaFoto", "identificadores", "capturaId"],
+  "additionalProperties": false,
+  "properties": {
+    "nome": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "siglaPartido": {
+      "type": ["string", "null"],
+      "description": "null: sem partido."
+    },
+    "urlDaFoto": {
+      "type": ["string", "null"],
+      "format": "uri"
+    },
+    "identificadores": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["fonte", "codigo"],
+        "additionalProperties": false,
+        "properties": {
+          "fonte": {
+            "enum": ["camara", "senado", "tse", "portal_transparencia"]
+          },
+          "codigo": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "capturaId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Captura do Acervo que prova o dado (ADR-0009)."
+    }
+  }
+}

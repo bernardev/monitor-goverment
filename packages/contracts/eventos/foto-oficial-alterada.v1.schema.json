@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prometeu.org/contratos/eventos/foto-oficial-alterada.v1.json",
+  "title": "FotoOficialAlterada (v1): dados",
+  "description": "Agentes Públicos: a foto oficial mudou ou deixou de existir.",
+  "type": "object",
+  "required": ["urlDaFoto", "capturaId"],
+  "additionalProperties": false,
+  "properties": {
+    "urlDaFoto": {
+      "type": ["string", "null"],
+      "format": "uri"
+    },
+    "capturaId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Captura do Acervo que prova o dado (ADR-0009)."
+    }
+  }
+}

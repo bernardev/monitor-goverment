@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prometeu.org/contratos/eventos/mandato-registrado.v1.json",
+  "title": "MandatoRegistrado (v1): dados",
+  "description": "Agentes Públicos: um mandato foi registrado. idDoAgregado é o PessoaId do titular.",
+  "type": "object",
+  "required": ["mandatoId", "cargo", "circunscricao", "inicio", "fim", "capturaId"],
+  "additionalProperties": false,
+  "properties": {
+    "mandatoId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "cargo": {
+      "enum": [
+        "presidente",
+        "vice_presidente",
+        "senador",
+        "deputado_federal",
+        "governador",
+        "vice_governador",
+        "deputado_estadual",
+        "deputado_distrital",
+        "prefeito",
+        "vice_prefeito",
+        "vereador"
+      ]
+    },
+    "circunscricao": {
+      "type": "string",
+      "pattern": "^(0|\\d{2}|\\d{7})$",
+      "description": "Código IBGE do ente que elege o cargo."
+    },
+    "inicio": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "fim": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "capturaId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Captura do Acervo que prova o dado (ADR-0009)."
+    }
+  }
+}

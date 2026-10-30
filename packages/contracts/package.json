@@ -11,12 +11,21 @@
       "@prometeu/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./esquemas": {
+      "@prometeu/source": "./src/esquemas.ts",
+      "types": "./dist/esquemas.d.ts",
+      "default": "./dist/esquemas.js"
     }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1"
   }
 }

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prometeu.org/contratos/eventos/captura-registrada.v1.json",
+  "title": "CapturaRegistrada (v1): dados",
+  "description": "Acervo: uma captura foi registrada. idDoAgregado é o CapturaId.",
+  "type": "object",
+  "required": ["sha256", "fonte", "url", "coletadaEm", "tipoDeConteudo"],
+  "additionalProperties": false,
+  "properties": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "fonte": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "coletadaEm": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "tipoDeConteudo": {
+      "type": "string"
+    }
+  }
+}

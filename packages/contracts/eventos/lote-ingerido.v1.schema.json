@@ -13,7 +13,7 @@
       "description": "Tabela prata no schema ingestao.",
       "examples": ["camara_presenca"]
     },
-    "versaoDoContrato": { "type": "string", "pattern": "^\d+\.\d+\.\d+$" },
+    "versaoDoContrato": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
     "coletadoDe": { "type": "string", "format": "date-time" },
     "coletadoAte": { "type": "string", "format": "date-time" },
     "registros": { "type": "integer", "minimum": 0 }

@@ -26,6 +26,7 @@
     "drizzle-orm": "^0.45.4"
   },
   "devDependencies": {
+    "@prometeu/contracts": "workspace:*",
     "@testcontainers/postgresql": "^12.2.1",
     "drizzle-kit": "^0.31.11"
   }
