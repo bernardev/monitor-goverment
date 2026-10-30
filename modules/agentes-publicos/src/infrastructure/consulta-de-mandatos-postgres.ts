@@ -1,5 +1,5 @@
 import type { BancoDoContexto } from '@prometeu/infraestrutura';
-import { and, desc, eq, gte, isNull, lte, or } from 'drizzle-orm';
+import { and, desc, eq, gte, isNull, lt, lte, or } from 'drizzle-orm';
 
 import type { Cargo } from '../domain/cargo.js';
 import type { FonteExterna } from '../domain/identificador-externo.js';
@@ -35,6 +35,12 @@ export interface ConsultaDeMandatos {
     cargo: Cargo,
     de: Date,
     ate?: Date,
+  ): Promise<MandatoPublicado | undefined>;
+  /** O último mandato do cargo que terminou antes do instante (a pessoa saiu, por licença, por exemplo). */
+  ultimoEncerradoAntes(
+    pessoa: PessoaNaFonte,
+    cargo: Cargo,
+    em: Date,
   ): Promise<MandatoPublicado | undefined>;
 }
 
@@ -72,6 +78,28 @@ export class ConsultaDeMandatosPostgres implements ConsultaDeMandatos {
         ),
       )
       .orderBy(desc(mandato.inicio))
+      .limit(1);
+    return linha && paraPublicado(linha.mandato);
+  }
+
+  async ultimoEncerradoAntes(
+    pessoa: PessoaNaFonte,
+    cargo: Cargo,
+    em: Date,
+  ): Promise<MandatoPublicado | undefined> {
+    const [linha] = await this.banco.drizzle
+      .select({ mandato })
+      .from(identificadorExterno)
+      .innerJoin(mandato, eq(mandato.pessoaId, identificadorExterno.pessoaId))
+      .where(
+        and(
+          eq(identificadorExterno.fonte, pessoa.fonte),
+          eq(identificadorExterno.codigo, pessoa.codigo),
+          eq(mandato.cargo, cargo),
+          lt(mandato.fim, em),
+        ),
+      )
+      .orderBy(desc(mandato.fim))
       .limit(1);
     return linha && paraPublicado(linha.mandato);
   }

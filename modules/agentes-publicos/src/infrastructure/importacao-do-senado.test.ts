@@ -17,7 +17,7 @@ import {
   SCHEMA_DE_AGENTES_PUBLICOS,
 } from '../index.js';
 import { AGORA } from '../testes/construtores.js';
-import { identificadorExterno, mandato } from './esquema.js';
+import { identificadorExterno, mandato, pessoa } from './esquema.js';
 
 const LOTE = '0192d5e0-3333-7000-8000-0000000000a1';
 
@@ -67,6 +67,7 @@ const SENADORES: readonly [number, string, string | null, unknown[]][] = [
     [exercicio('PE', '2022-12-07', '2023-09-04', 5), exercicio('PE', '2023-09-04', null, 6)],
   ],
   [900104, 'Dora Uf Errada', 'PEX', [exercicio('XX', '2023-02-01', null, 7)]],
+  [900105, 'Edu Sem Partido', 'S/Partido', [exercicio('RS', '2023-02-01', null, 8)]],
 ];
 
 const loteIngerido = (tabela = 'senado_senador'): EnvelopeDeEvento => ({
@@ -133,7 +134,7 @@ describe('importação de senadores do Senado (prata → Agentes Públicos)', ()
   });
 
   it('cria as pessoas pelo código do Senado e devolve o que recusou', async () => {
-    expect(resumos.at(-1)).toMatchObject({ loteId: LOTE, lidos: 4, pessoasNovas: 3 });
+    expect(resumos.at(-1)).toMatchObject({ loteId: LOTE, lidos: 5, pessoasNovas: 4 });
     expect(resumos.at(-1)?.falhas).toEqual([
       expect.objectContaining({ codigoNaFonte: '900104', erro: 'codigo_ibge.uf_invalida' }),
     ]);
@@ -145,7 +146,14 @@ describe('importação de senadores do Senado (prata → Agentes Públicos)', ()
       'senado:900101',
       'senado:900102',
       'senado:900103',
+      'senado:900105',
     ]);
+    // "S/Partido" é como o Senado escreve "sem partido", não uma sigla.
+    const [edu] = await banco.drizzle
+      .select({ siglaPartido: pessoa.siglaPartido })
+      .from(pessoa)
+      .where(sql`nome = 'Edu Sem Partido'`);
+    expect(edu).toEqual({ siglaPartido: null });
   });
 
   it('um mandato por exercício; o que se toca no mesmo dia vira um só', async () => {
@@ -157,6 +165,7 @@ describe('importação de senadores do Senado (prata → Agentes Públicos)', ()
       ['senador', '33', '2015-02-01T03:00:00.000Z', '2019-02-01T02:59:59.999Z'],
       ['senador', '26', '2022-12-07T03:00:00.000Z', '2031-02-01T02:59:59.999Z'],
       ['senador', '35', '2023-02-01T03:00:00.000Z', '2031-02-01T02:59:59.999Z'],
+      ['senador', '43', '2023-02-01T03:00:00.000Z', '2031-02-01T02:59:59.999Z'],
       ['senador', '31', '2024-03-01T03:00:00.000Z', '2024-07-02T02:59:59.999Z'],
       ['senador', '31', '2025-01-10T03:00:00.000Z', '2031-02-01T02:59:59.999Z'],
     ]);
@@ -173,6 +182,21 @@ describe('importação de senadores do Senado (prata → Agentes Públicos)', ()
     ).toBeUndefined();
     expect(
       await modulo.mandatos.vigente(bruno, 'deputado_federal', new Date('2024-05-01T15:00:00Z')),
+    ).toBeUndefined();
+    // Fora do exercício (de licença, por exemplo), vale o último mandato encerrado antes.
+    expect(
+      await modulo.mandatos.ultimoEncerradoAntes(
+        bruno,
+        'senador',
+        new Date('2024-10-01T15:00:00Z'),
+      ),
+    ).toMatchObject({ circunscricao: '31', fim: new Date('2024-07-02T02:59:59.999Z') });
+    expect(
+      await modulo.mandatos.ultimoEncerradoAntes(
+        bruno,
+        'senador',
+        new Date('2015-01-01T15:00:00Z'),
+      ),
     ).toBeUndefined();
   });
 });

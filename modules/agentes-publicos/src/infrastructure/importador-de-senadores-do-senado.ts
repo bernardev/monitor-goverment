@@ -11,6 +11,9 @@ import type { FalhaDeImportacao, ResumoDaImportacao } from './resumo-da-importac
 
 type Periodo = SincronizarAgentePublicoInput['mandatos'][number];
 
+/** Como o Senado escreve "sem partido" (senador desfiliado). */
+const SEM_PARTIDO = 'S/Partido';
+
 /**
  * Camada anticorrupção do Senado (ADR-0005): traduz senadores e exercícios da prata para a linguagem
  * deste contexto. O lote é o de `senado_senador`; os exercícios estão em `senado_exercicios`, gravados
@@ -61,7 +64,7 @@ function paraEntrada(
   return {
     identificador: { fonte: 'senado', codigo: String(senador.codigo) },
     nome: senador.nome,
-    siglaPartido: senador.siglaPartido,
+    siglaPartido: senador.siglaPartido === SEM_PARTIDO ? null : senador.siglaPartido,
     urlDaFoto: senador.urlFoto,
     mandatos,
     origem: {

@@ -10,12 +10,12 @@ Senadores que exerceram mandato na legislatura em curso, inclusive suplentes que
 - **Evento:** `LoteIngerido` com `fonte = senado`, `tabela = senado_senador`
 - **Consumidor:** Agentes Públicos, que lê os exercícios em `senado_exercicios`
 
-| Coluna          | Tipo      | Nulo | Regra de normalização                                                 |
-| --------------- | --------- | ---- | --------------------------------------------------------------------- |
-| `codigo`        | `integer` | não  | `CodigoParlamentar`.                                                  |
-| `nome`          | `text`    | não  | `NomeParlamentar`, com espaços repetidos colapsados.                  |
-| `sigla_partido` | `text`    | sim  | `SiglaPartidoParlamentar`, grafia da fonte; nulo se a fonte não traz. |
-| `url_foto`      | `text`    | sim  | `UrlFotoParlamentar`; texto vazio vira nulo.                          |
+| Coluna          | Tipo      | Nulo | Regra de normalização                                                                            |
+| --------------- | --------- | ---- | ------------------------------------------------------------------------------------------------ |
+| `codigo`        | `integer` | não  | `CodigoParlamentar`.                                                                             |
+| `nome`          | `text`    | não  | `NomeParlamentar`, com espaços repetidos colapsados.                                             |
+| `sigla_partido` | `text`    | sim  | `SiglaPartidoParlamentar`, grafia da fonte (`S/Partido`: sem partido); nulo se a fonte não traz. |
+| `url_foto`      | `text`    | sim  | `UrlFotoParlamentar`; texto vazio vira nulo.                                                     |
 
 Mais as [colunas de origem](../colunas-de-origem.md).
 
