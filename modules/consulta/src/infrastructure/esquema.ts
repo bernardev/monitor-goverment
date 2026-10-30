@@ -1,5 +1,5 @@
 import { definirInbox } from '@prometeu/infraestrutura';
-import { char, index, pgSchema, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { char, date, index, jsonb, pgSchema, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
 // Projeções de leitura (ADR-0008): descartáveis e reconstruíveis a partir dos eventos. Nenhuma regra
 // de negócio mora aqui; só a forma que o site e a API pública precisam.
@@ -36,6 +36,28 @@ export const parlamentar = schemaDaConsulta.table(
     index('parlamentar_por_nome').on(t.nome),
     index('parlamentar_por_circunscricao').on(t.circunscricao),
   ],
+);
+
+/**
+ * Frequência de cada parlamentar por dia de sessão. Os eventos de Atividade Legislativa trazem o
+ * estado completo do dia; vale o mais novo (`ocorrido_em`).
+ */
+export const frequencia = schemaDaConsulta.table(
+  'frequencia',
+  {
+    registroId: uuid('registro_id').primaryKey(),
+    pessoaId: uuid('pessoa_id').notNull(),
+    casa: text('casa').notNull(),
+    dia: date('dia', { mode: 'string' }).notNull(),
+    situacao: text('situacao').notNull(),
+    motivoCategoria: text('motivo_categoria'),
+    motivoDescricao: text('motivo_descricao'),
+    registroNaFonte: text('registro_na_fonte').notNull(),
+    sessoes: jsonb('sessoes').$type<{ descricao: string; presente: boolean }[]>().notNull(),
+    capturaId: uuid('captura_id').notNull(),
+    ocorridoEm: instante('ocorrido_em').notNull(),
+  },
+  (t) => [index('frequencia_por_pessoa').on(t.pessoaId, t.dia)],
 );
 
 export const captura = schemaDaConsulta.table('captura', {

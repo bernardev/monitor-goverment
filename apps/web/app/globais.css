@@ -37,3 +37,18 @@ main {
   border-radius: 0.5rem;
   object-fit: cover;
 }
+
+.resumo {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 1rem;
+}
+
+.resumo dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.lista span {
+  display: block;
+}

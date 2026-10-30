@@ -1,5 +1,8 @@
 export type {
+  CategoriaDoMotivo,
+  DiaDeFrequencia,
   FonteDoDado,
+  FrequenciaDoParlamentar,
   MandatoAtual,
   Pagina,
   ParlamentarResumo,

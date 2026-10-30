@@ -37,6 +37,52 @@ export interface PerfilDeParlamentar extends ParlamentarResumo {
   readonly atualizadoEm: string;
 }
 
+/** Por que a casa aceitou a ausência (categorias comparáveis entre casas). */
+export type CategoriaDoMotivo =
+  | 'licenca_saude'
+  | 'licenca_gestante'
+  | 'licenca_paternidade'
+  | 'licenca_particular'
+  | 'missao_autorizada'
+  | 'atividade_parlamentar'
+  | 'decisao_da_mesa'
+  | 'outro';
+
+export interface DiaDeFrequencia {
+  /** Dia do calendário de Brasília, `aaaa-mm-dd`. */
+  readonly dia: string;
+  readonly casa: 'camara_dos_deputados' | 'senado_federal';
+  readonly situacao: 'presente' | 'ausente' | 'ausencia_justificada';
+  /** Só na ausência justificada. */
+  readonly motivo: {
+    readonly categoria: CategoriaDoMotivo;
+    readonly descricaoNaFonte: string;
+  } | null;
+  /** Como a casa escreveu a situação do dia. */
+  readonly registroNaFonte: string;
+  readonly sessoes: readonly { readonly descricao: string; readonly presente: boolean }[];
+  readonly fonte: FonteDoDado;
+}
+
+/**
+ * Frequência no plenário num período. Conta dias com sessão, não sessões: é como as casas apuram.
+ * Dia sem registro na fonte não entra em nenhuma conta (falta de dado não é falta do parlamentar).
+ */
+export interface FrequenciaDoParlamentar {
+  readonly pessoaId: string;
+  readonly de: string;
+  readonly ate: string;
+  readonly resumo: {
+    readonly diasComSessao: number;
+    readonly presencas: number;
+    readonly ausenciasJustificadas: number;
+    readonly ausenciasSemJustificativa: number;
+    readonly porMotivo: readonly { readonly categoria: CategoriaDoMotivo; readonly dias: number }[];
+  };
+  /** Do mais recente para o mais antigo. */
+  readonly dias: readonly DiaDeFrequencia[];
+}
+
 export interface Pagina<T> {
   readonly itens: readonly T[];
   readonly pagina: number;

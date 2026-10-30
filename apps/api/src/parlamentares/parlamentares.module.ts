@@ -2,7 +2,11 @@ import { Inject, Module, type OnApplicationShutdown } from '@nestjs/common';
 import { montarConsulta, SCHEMA_DA_CONSULTA } from '@prometeu/consulta';
 import { BancoDoContexto, urlDoBanco } from '@prometeu/infraestrutura';
 
-import { CONSULTA_DE_PARLAMENTARES, ParlamentaresController } from './parlamentares.controller.js';
+import {
+  CONSULTA_DE_FREQUENCIA,
+  CONSULTA_DE_PARLAMENTARES,
+  ParlamentaresController,
+} from './parlamentares.controller.js';
 
 const BANCO_DA_CONSULTA = Symbol('BancoDaConsulta');
 
@@ -19,6 +23,11 @@ const BANCO_DA_CONSULTA = Symbol('BancoDaConsulta');
       provide: CONSULTA_DE_PARLAMENTARES,
       inject: [BANCO_DA_CONSULTA],
       useFactory: (banco: BancoDoContexto) => montarConsulta(banco).parlamentares,
+    },
+    {
+      provide: CONSULTA_DE_FREQUENCIA,
+      inject: [BANCO_DA_CONSULTA],
+      useFactory: (banco: BancoDoContexto) => montarConsulta(banco).frequencia,
     },
   ],
 })

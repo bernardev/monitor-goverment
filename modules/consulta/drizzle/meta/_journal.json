@@ -8,6 +8,13 @@
       "when": 1793360787357,
       "tag": "0000_parlamentar_captura_inbox",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793374759010,
+      "tag": "0001_frequencia",
+      "breakpoints": true
     }
   ]
 }

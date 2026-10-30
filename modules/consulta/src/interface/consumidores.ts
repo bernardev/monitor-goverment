@@ -6,21 +6,40 @@ import {
 
 import { inbox } from '../infrastructure/esquema.js';
 import {
+  EVENTOS_DE_FREQUENCIA,
+  type ProjetorDeFrequencia,
+} from '../infrastructure/projetor-de-frequencia.js';
+import {
   EVENTOS_PROJETADOS,
   type ProjetorDeParlamentares,
 } from '../infrastructure/projetor-de-parlamentares.js';
 
 export const CONSUMIDOR_DE_PARLAMENTARES = 'consulta.projetar_parlamentares';
+export const CONSUMIDOR_DE_FREQUENCIA = 'consulta.projetar_frequencia';
+
+export interface Projetores {
+  readonly parlamentares: ProjetorDeParlamentares;
+  readonly frequencia: ProjetorDeFrequencia;
+}
 
 export async function assinarConsumidores(
   barramento: BarramentoDeEventos,
   banco: BancoDoContexto,
-  projetor: ProjetorDeParlamentares,
+  projetores: Projetores,
 ): Promise<void> {
-  const manipulador = consumidorIdempotente(banco, inbox, CONSUMIDOR_DE_PARLAMENTARES, (envelope) =>
-    projetor.aplicar(envelope),
+  const parlamentares = consumidorIdempotente(
+    banco,
+    inbox,
+    CONSUMIDOR_DE_PARLAMENTARES,
+    (envelope) => projetores.parlamentares.aplicar(envelope),
   );
   for (const tipo of EVENTOS_PROJETADOS) {
-    await barramento.assinar(tipo, CONSUMIDOR_DE_PARLAMENTARES, manipulador);
+    await barramento.assinar(tipo, CONSUMIDOR_DE_PARLAMENTARES, parlamentares);
+  }
+  const frequencia = consumidorIdempotente(banco, inbox, CONSUMIDOR_DE_FREQUENCIA, (envelope) =>
+    projetores.frequencia.aplicar(envelope),
+  );
+  for (const tipo of EVENTOS_DE_FREQUENCIA) {
+    await barramento.assinar(tipo, CONSUMIDOR_DE_FREQUENCIA, frequencia);
   }
 }

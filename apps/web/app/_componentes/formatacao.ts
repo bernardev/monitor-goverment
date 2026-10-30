@@ -16,6 +16,21 @@ export function nomeDoCargo(cargo: string | null): string {
   return cargo === null ? 'Cargo não informado' : (CARGOS[cargo] ?? cargo);
 }
 
+const MOTIVOS: Readonly<Record<string, string>> = {
+  licenca_saude: 'Licença para tratamento de saúde',
+  licenca_gestante: 'Licença-gestante',
+  licenca_paternidade: 'Licença-paternidade',
+  licenca_particular: 'Licença particular',
+  missao_autorizada: 'Missão autorizada',
+  atividade_parlamentar: 'Atividade parlamentar',
+  decisao_da_mesa: 'Decisão da Mesa',
+  outro: 'Outro motivo',
+};
+
+export function nomeDoMotivo(categoria: string): string {
+  return MOTIVOS[categoria] ?? categoria;
+}
+
 const DATA = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'long', timeZone: 'America/Sao_Paulo' });
 const DATA_E_HORA = new Intl.DateTimeFormat('pt-BR', {
   dateStyle: 'short',
@@ -26,6 +41,11 @@ const DATA_E_HORA = new Intl.DateTimeFormat('pt-BR', {
 /** Datas chegam em UTC da API e são exibidas no horário de Brasília (ADR-0006). */
 export function data(iso: string): string {
   return DATA.format(new Date(iso));
+}
+
+/** Dia do calendário (`aaaa-mm-dd`), sem passar por fuso: meio-dia em Brasília cai sempre no dia. */
+export function dia(aaaaMmDd: string): string {
+  return DATA.format(new Date(`${aaaaMmDd}T12:00:00-03:00`));
 }
 
 export function dataEHora(iso: string): string {

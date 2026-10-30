@@ -1,6 +1,11 @@
 import 'server-only';
 
-import type { Pagina, ParlamentarResumo, PerfilDeParlamentar } from '@prometeu/contracts';
+import type {
+  FrequenciaDoParlamentar,
+  Pagina,
+  ParlamentarResumo,
+  PerfilDeParlamentar,
+} from '@prometeu/contracts';
 
 // O site só conversa com a API pública (ADR-0004); nunca lê o banco nem importa módulos.
 const API = process.env['API_URL'] ?? 'http://localhost:3000';
@@ -33,4 +38,13 @@ export async function listarParlamentares(
 
 export function buscarParlamentar(pessoaId: string): Promise<PerfilDeParlamentar | undefined> {
   return obter<PerfilDeParlamentar>(`/v1/parlamentares/${encodeURIComponent(pessoaId)}`);
+}
+
+/** Frequência no plenário nos últimos 90 dias (período padrão da API). */
+export function frequenciaDoParlamentar(
+  pessoaId: string,
+): Promise<FrequenciaDoParlamentar | undefined> {
+  return obter<FrequenciaDoParlamentar>(
+    `/v1/parlamentares/${encodeURIComponent(pessoaId)}/frequencia`,
+  );
 }

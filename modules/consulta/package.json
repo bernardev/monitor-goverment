@@ -23,6 +23,7 @@
   "dependencies": {
     "@prometeu/acervo": "workspace:*",
     "@prometeu/agentes-publicos": "workspace:*",
+    "@prometeu/atividade-legislativa": "workspace:*",
     "@prometeu/contracts": "workspace:*",
     "@prometeu/infraestrutura": "workspace:*",
     "@prometeu/shared-kernel": "workspace:*",

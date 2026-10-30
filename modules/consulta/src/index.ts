@@ -4,25 +4,37 @@ import { fileURLToPath } from 'node:url';
 
 import type { BancoDoContexto, BarramentoDeEventos } from '@prometeu/infraestrutura';
 
-import type { ConsultaDeParlamentares } from './application/portas.js';
+import type { ConsultaDeFrequencia, ConsultaDeParlamentares } from './application/portas.js';
+import { ConsultaDeFrequenciaPostgres } from './infrastructure/consulta-de-frequencia-postgres.js';
 import { ConsultaDeParlamentaresPostgres } from './infrastructure/consulta-de-parlamentares-postgres.js';
+import { ProjetorDeFrequencia } from './infrastructure/projetor-de-frequencia.js';
 import { ProjetorDeParlamentares } from './infrastructure/projetor-de-parlamentares.js';
 import { assinarConsumidores } from './interface/consumidores.js';
 
-export type { ConsultaDeParlamentares, FiltroDeParlamentares } from './application/portas.js';
+export type {
+  ConsultaDeFrequencia,
+  ConsultaDeParlamentares,
+  FiltroDeParlamentares,
+  PeriodoDeFrequencia,
+} from './application/portas.js';
 
 export const SCHEMA_DA_CONSULTA = 'consulta';
 export const MIGRACOES_DA_CONSULTA = fileURLToPath(new URL('../drizzle', import.meta.url));
 
 export interface ModuloConsulta {
   readonly parlamentares: ConsultaDeParlamentares;
+  readonly frequencia: ConsultaDeFrequencia;
   assinarConsumidores(barramento: BarramentoDeEventos): Promise<void>;
 }
 
 export function montarConsulta(banco: BancoDoContexto): ModuloConsulta {
   return {
     parlamentares: new ConsultaDeParlamentaresPostgres(banco),
+    frequencia: new ConsultaDeFrequenciaPostgres(banco),
     assinarConsumidores: (barramento) =>
-      assinarConsumidores(barramento, banco, new ProjetorDeParlamentares(banco)),
+      assinarConsumidores(barramento, banco, {
+        parlamentares: new ProjetorDeParlamentares(banco),
+        frequencia: new ProjetorDeFrequencia(banco),
+      }),
   };
 }

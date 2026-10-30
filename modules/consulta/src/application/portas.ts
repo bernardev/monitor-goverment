@@ -1,4 +1,19 @@
-import type { Pagina, ParlamentarResumo, PerfilDeParlamentar } from '@prometeu/contracts';
+import type {
+  FrequenciaDoParlamentar,
+  Pagina,
+  ParlamentarResumo,
+  PerfilDeParlamentar,
+} from '@prometeu/contracts';
+
+/** Período em dias do calendário de Brasília, `aaaa-mm-dd`, inclusive nas duas pontas. */
+export interface PeriodoDeFrequencia {
+  readonly de: string;
+  readonly ate: string;
+}
+
+export interface ConsultaDeFrequencia {
+  doParlamentar(pessoaId: string, periodo: PeriodoDeFrequencia): Promise<FrequenciaDoParlamentar>;
+}
 
 export interface FiltroDeParlamentares {
   /** Sigla da UF (`SP`). */
