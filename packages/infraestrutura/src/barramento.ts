@@ -1,5 +1,5 @@
 import type { EnvelopeDeEvento } from '@prometeu/contracts';
-import { PgBoss } from 'pg-boss';
+import { type JobResult, PgBoss } from 'pg-boss';
 
 export type ManipuladorDeEvento = (envelope: EnvelopeDeEvento) => Promise<void>;
 
@@ -36,9 +36,24 @@ export class BarramentoPgBoss implements BarramentoDeEventos {
     await this.boss.createQueue(falhas);
     await this.boss.createQueue(fila, { retryLimit: 5, retryBackoff: true, deadLetter: falhas });
     await this.boss.subscribe(tipo, fila);
-    await this.boss.work<EnvelopeDeEvento>(fila, async (jobs) => {
-      for (const job of jobs) await manipulador(job.data);
-    });
+    // Lotes cobrem a vazão de uma importação inteira; o resultado é decidido evento a evento, na
+    // ordem de chegada, para que uma falha só faça repetir o evento que falhou.
+    await this.boss.work<EnvelopeDeEvento>(
+      fila,
+      { batchSize: 50, pollingIntervalSeconds: 1, perJobResults: true },
+      async (jobs) => {
+        const resultados: JobResult[] = [];
+        for (const job of jobs) {
+          try {
+            await manipulador(job.data);
+            resultados.push({ id: job.id, status: 'completed' });
+          } catch (erro) {
+            resultados.push({ id: job.id, status: 'failed', output: { erro: String(erro) } });
+          }
+        }
+        return resultados;
+      },
+    );
   }
 
   async fechar(): Promise<void> {

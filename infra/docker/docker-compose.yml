@@ -9,7 +9,8 @@ services:
       POSTGRES_USER: prometeu_admin
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-desenvolvimento}
     ports:
-      - '5432:5432'
+      # Troque com POSTGRES_PORTA se a máquina já tiver um PostgreSQL na 5432.
+      - '${POSTGRES_PORTA:-5432}:5432'
     volumes:
       - postgres:/var/lib/postgresql
       - ./postgres:/docker-entrypoint-initdb.d:ro

@@ -3,6 +3,7 @@ import {
   index,
   integer,
   jsonb,
+  pgSchema,
   primaryKey,
   text,
   timestamp,
@@ -57,3 +58,6 @@ export function definirInbox(schema: PgSchema) {
 
 export type TabelaOutbox = ReturnType<typeof definirOutbox>;
 export type TabelaInbox = ReturnType<typeof definirInbox>;
+
+/** Outbox do schema `ingestao`, gravada pela plataforma de dados e esvaziada pelo worker (ADR-0015). */
+export const outboxDaIngestao = definirOutbox(pgSchema('ingestao'));

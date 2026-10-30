@@ -161,9 +161,30 @@ describe('infraestrutura de eventos contra PostgreSQL real', () => {
       await barramento.fechar();
     }
 
-    expect(recebidos.sort()).toEqual([
+    expect(recebidos.toSorted()).toEqual([
       'consulta:0192d5e0-0000-7000-8000-000000000004',
       'engajamento:0192d5e0-0000-7000-8000-000000000004',
     ]);
+  });
+
+  it('um evento que falha não impede os outros do mesmo lote', async () => {
+    const barramento = await BarramentoPgBoss.iniciar(postgres.urlDoContexto('barramento'));
+    const QUEBRADO = '0192d5e0-0000-7000-8000-000000000005';
+    const BOM = '0192d5e0-0000-7000-8000-000000000006';
+    let concluir!: () => void;
+    const bomRecebido = new Promise<void>((resolver) => (concluir = resolver));
+
+    try {
+      await barramento.assinar('OutraCoisaAconteceu', 'teste.isolar', (envelope) => {
+        if (envelope.id === QUEBRADO) return Promise.reject(new Error('evento quebrado'));
+        concluir();
+        return Promise.resolve();
+      });
+      await barramento.publicar({ ...umEnvelope(QUEBRADO), tipo: 'OutraCoisaAconteceu' });
+      await barramento.publicar({ ...umEnvelope(BOM), tipo: 'OutraCoisaAconteceu' });
+      await bomRecebido;
+    } finally {
+      await barramento.fechar();
+    }
   });
 });

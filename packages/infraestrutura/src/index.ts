@@ -5,8 +5,15 @@ export {
   type BarramentoDeEventos,
   type ManipuladorDeEvento,
 } from './barramento.js';
+export { urlDoBanco } from './configuracao.js';
 export { consumidorIdempotente } from './consumidor.js';
 export { comCorrelacao, idDeCorrelacaoAtual } from './correlacao.js';
 export { migrar } from './migracoes.js';
 export { gravarNaOutbox, RelayDaOutbox } from './outbox.js';
-export { definirInbox, definirOutbox, type TabelaInbox, type TabelaOutbox } from './tabelas.js';
+export {
+  definirInbox,
+  definirOutbox,
+  outboxDaIngestao,
+  type TabelaInbox,
+  type TabelaOutbox,
+} from './tabelas.js';
