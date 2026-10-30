@@ -6,16 +6,19 @@
 
 ## Agentes públicos
 
-| Termo                     | Definição                                                                                                                     | Não confundir com    |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | -------------------- |
-| **Pessoa**                | Ser humano identificado de forma única na plataforma, independentemente de cargo.                                             | Candidatura, Mandato |
-| **Candidatura**           | Registro de uma pessoa concorrendo a um cargo em uma eleição (fonte: TSE). Promessas de campanha pertencem a uma candidatura. | Mandato              |
-| **Mandato**               | Período em que uma pessoa exerce um cargo eletivo em um ente. Nasce de uma candidatura eleita (ou de suplência/posse).        | Cargo                |
-| **Cargo**                 | Função eletiva: presidente, governador, prefeito, senador, deputado federal, deputado estadual/distrital, vereador (e vices). | Mandato              |
-| **Ente federativo**       | União, estado, Distrito Federal ou município. Identificado pelo código IBGE (União = `0`).                                    | Órgão                |
-| **Esfera**                | `federal`, `estadual`, `distrital` ou `municipal`.                                                                            | —                    |
-| **Casa legislativa**      | Câmara dos Deputados, Senado Federal, Assembleia Legislativa de UF, Câmara Legislativa do DF ou Câmara Municipal.             | Comissão             |
-| **Identificador externo** | Código de uma pessoa ou registro numa fonte (ex.: `camara:204554`, `tse:250001234567`).                                       | Id interno           |
+| Termo                     | Definição                                                                                                                                  | Não confundir com        |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------ |
+| **Pessoa**                | Ser humano identificado de forma única na plataforma, independentemente de cargo.                                                          | Candidatura, Mandato     |
+| **Candidatura**           | Registro de uma pessoa concorrendo a um cargo em uma eleição (fonte: TSE). Promessas de campanha pertencem a uma candidatura.              | Mandato                  |
+| **Mandato**               | Período em que uma pessoa exerce um cargo eletivo em um ente. Nasce de uma candidatura eleita (ou de suplência/posse).                     | Cargo                    |
+| **Cargo**                 | Função eletiva: presidente, governador, prefeito, senador, deputado federal, deputado estadual/distrital, vereador (e vices).              | Mandato                  |
+| **Ente federativo**       | União, estado, Distrito Federal ou município. Identificado pelo código IBGE (União = `0`).                                                 | Órgão                    |
+| **Esfera**                | `federal`, `estadual`, `distrital` ou `municipal`.                                                                                         | —                        |
+| **Casa legislativa**      | Câmara dos Deputados, Senado Federal, Assembleia Legislativa de UF, Câmara Legislativa do DF ou Câmara Municipal.                          | Comissão                 |
+| **Identificador externo** | Código de uma pessoa ou registro numa fonte (ex.: `camara:204554`, `tse:250001234567`).                                                    | Id interno               |
+| **Nome público**          | Nome pelo qual a pessoa é conhecida no exercício da função (nome parlamentar, nome de urna).                                               | Pessoa                   |
+| **Filiação partidária**   | Partido ao qual a pessoa está filiada, como a fonte oficial escreve a sigla. Sem partido é um estado legítimo.                             | Pessoa                   |
+| **Circunscrição**         | Ente que elege o cargo: a União (presidente), uma UF ou o DF (senador, deputado federal, governador) ou um município (prefeito, vereador). | Mandato, Ente federativo |
 
 ## Compromissos (núcleo)
 
@@ -65,15 +68,19 @@
 
 ## Obras e acervo
 
-| Termo                | Definição                                                                       |
-| -------------------- | ------------------------------------------------------------------------------- |
-| **Obra**             | Empreendimento físico financiado com recurso público, com localização.          |
-| **Situação da obra** | `planejada`, `em_execucao`, `paralisada`, `concluida`, `cancelada`.             |
-| **Medição**          | Percentual executado informado numa data.                                       |
-| **Registro cidadão** | Foto ou relato enviado por cidadão sobre uma obra, publicado só após moderação. |
-| **Documento fonte**  | Recurso externo identificado por URL (PDF, página, vídeo, API).                 |
-| **Captura**          | Cópia imutável de um documento fonte num instante, com hash SHA-256. É a prova. |
-| **Transcrição**      | Texto de um vídeo ou áudio, dividido em segmentos com tempo inicial e final.    |
+| Termo                | Definição                                                                                                           |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **Obra**             | Empreendimento físico financiado com recurso público, com localização.                                              |
+| **Situação da obra** | `planejada`, `em_execucao`, `paralisada`, `concluida`, `cancelada`.                                                 |
+| **Medição**          | Percentual executado informado numa data.                                                                           |
+| **Registro cidadão** | Foto ou relato enviado por cidadão sobre uma obra, publicado só após moderação.                                     |
+| **Documento fonte**  | Recurso externo identificado por URL (PDF, página, vídeo, API).                                                     |
+| **Captura**          | Cópia imutável de um documento fonte num instante, com hash SHA-256. É a prova.                                     |
+| **Bronze**           | Resposta bruta de uma fonte, guardada sem alteração no armazenamento de objetos e endereçada pelo hash.             |
+| **Prata**            | Dados de uma fonte limpos e tipados no schema `ingestao`, cada tabela com contrato versionado.                      |
+| **Lote**             | Resultado de uma coleta gravado de uma vez na prata e anunciado pelo evento `LoteIngerido`.                         |
+| **Projeção**         | Tabela de leitura montada a partir de eventos para o site e a API (contexto Consulta). Descartável e reconstruível. |
+| **Transcrição**      | Texto de um vídeo ou áudio, dividido em segmentos com tempo inicial e final.                                        |
 
 ## Editorial e engajamento
 

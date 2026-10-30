@@ -35,8 +35,46 @@ docker compose -f infra/docker/docker-compose.yml up -d
 pnpm verify
 ```
 
-`verify` roda formatação, lint, tipos, regras de arquitetura e testes. A plataforma de dados tem os
+`verify` roda formatação, lint, tipos, regras de arquitetura e testes. Os testes de integração sobem um
+PostgreSQL em contêiner (Testcontainers), então o Docker precisa estar rodando. A plataforma de dados tem os
 próprios comandos em [data-platform/README.md](data-platform/README.md).
+
+Se a sua máquina já tiver um PostgreSQL na porta 5432, defina `POSTGRES_PORTA` (ex.: `5433`) antes de
+subir o Docker e ao rodar API e worker.
+
+### Ver a fatia de ponta a ponta (deputados da Câmara)
+
+1. Crie as tabelas da prata (na pasta `data-platform`):
+
+   ```bash
+   INGESTAO_DATABASE_URL=postgresql://ctx_ingestao:desenvolvimento@localhost:5432/prometeu uv run alembic upgrade head
+   ```
+
+2. Compile e suba o worker (aplica as migrações dos módulos, liga relays e consumidores):
+
+   ```bash
+   pnpm build
+   ```
+
+   ```bash
+   node apps/worker/dist/main.js
+   ```
+
+3. Colete da Câmara (na pasta `data-platform`, com as variáveis do `.env.example`):
+
+   ```bash
+   uv run dagster asset materialize -m prometeu_dados.definicoes --select camara_deputados
+   ```
+
+4. Suba a API e o site; a lista fica em `http://localhost:3001/parlamentares`:
+
+   ```bash
+   node apps/api/dist/main.js
+   ```
+
+   ```bash
+   API_URL=http://localhost:3000 pnpm --filter @prometeu/web exec next start -p 3001
+   ```
 
 | Comando      | O que faz                                                  |
 | ------------ | ---------------------------------------------------------- |

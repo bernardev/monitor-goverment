@@ -22,15 +22,15 @@ O que a v1 entrega e quais módulos cada entrega envolve está em
 
 ## Etapas
 
-| #   | Etapa                                       | Entrega                                                                                                                                                                           | Situação     |
-| --- | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| 0   | Domínio central: Compromissos               | Agregado `Promessa` (estágio, veredito, errata) e casos de uso, só com testes, sem infraestrutura.                                                                                | Concluída    |
-| 1   | Fatia de ponta a ponta: deputados da Câmara | Conector da Câmara com captura; Agentes Públicos (`Pessoa`, `Mandato`); Acervo mínimo; outbox, barramento e inbox; projeção em Consulta; `GET /v1/parlamentares`; página no site. | Em andamento |
-| 2   | Compromissos no banco e acesso editorial    | Repositório da `Promessa` com outbox; login e papéis (aceitar ADR-0014); painel mínimo de curadoria para cadastrar promessa e propor veredito.                                    | A fazer      |
-| 3   | Atividade Legislativa                       | Proposições, votações e presença com o motivo da ausência (Câmara e Senado).                                                                                                      | A fazer      |
-| 4   | Finanças Públicas e Obras                   | Emenda até a obra: empenho, pagamento, situação e medição da obra.                                                                                                                | A fazer      |
-| 5   | Compromissos ligado aos fatos               | Sugestão de vínculos a partir dos eventos de Legislativo, Finanças e Obras; reavaliação do estágio.                                                                               | A fazer      |
-| 6   | Engajamento                                 | "Meu governo" por município, acompanhar político ou promessa, alertas.                                                                                                            | A fazer      |
+| #   | Etapa                                       | Entrega                                                                                                                                                                           | Situação  |
+| --- | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| 0   | Domínio central: Compromissos               | Agregado `Promessa` (estágio, veredito, errata) e casos de uso, só com testes, sem infraestrutura.                                                                                | Concluída |
+| 1   | Fatia de ponta a ponta: deputados da Câmara | Conector da Câmara com captura; Agentes Públicos (`Pessoa`, `Mandato`); Acervo mínimo; outbox, barramento e inbox; projeção em Consulta; `GET /v1/parlamentares`; página no site. | Concluída |
+| 2   | Compromissos no banco e acesso editorial    | Repositório da `Promessa` com outbox; login e papéis (aceitar ADR-0014); painel mínimo de curadoria para cadastrar promessa e propor veredito.                                    | A fazer   |
+| 3   | Atividade Legislativa                       | Proposições, votações e presença com o motivo da ausência (Câmara e Senado).                                                                                                      | A fazer   |
+| 4   | Finanças Públicas e Obras                   | Emenda até a obra: empenho, pagamento, situação e medição da obra.                                                                                                                | A fazer   |
+| 5   | Compromissos ligado aos fatos               | Sugestão de vínculos a partir dos eventos de Legislativo, Finanças e Obras; reavaliação do estágio.                                                                               | A fazer   |
+| 6   | Engajamento                                 | "Meu governo" por município, acompanhar político ou promessa, alertas.                                                                                                            | A fazer   |
 
 Cada etapa só termina com CI verde, testes de integração contra Postgres real e documentação de domínio
 e de contratos atualizada.
@@ -62,5 +62,10 @@ flowchart LR
 6. API pública `/v1/parlamentares` e páginas de lista e perfil no site, com a fonte de cada dado.
 7. Testes de integração com Postgres real no CI.
 
+Resultado: com a API da Câmara real, 513 deputados chegaram da fonte ao site, com a captura de cada dado.
+A coleta, a importação e a projeção levam menos de um minuto.
+
 Fica para depois, de propósito: Senado e assembleias (mesmo contrato, novos conectores), CPF e resolução de
-identidade entre fontes, revalidação sob demanda do site, observabilidade completa.
+identidade entre fontes, revalidação sob demanda do site, observabilidade completa, comando para reconstruir
+projeções, limite de requisições na API pública e gravação de respostas reais da Câmara como fixtures dos
+testes de contrato.
