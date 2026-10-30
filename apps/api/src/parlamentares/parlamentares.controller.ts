@@ -2,9 +2,11 @@ import { Controller, Get, Header, Inject, NotFoundException, Param, Query } from
 import type {
   ConsultaDeFrequencia,
   ConsultaDeParlamentares,
+  ConsultaDeProposicoes,
   ConsultaDeVotacoes,
 } from '@prometeu/consulta';
 import type {
+  AutoriaDoParlamentar,
   FrequenciaDoParlamentar,
   Pagina,
   ParlamentarResumo,
@@ -14,6 +16,7 @@ import type {
 import { z } from 'zod';
 
 import { CACHE_PUBLICO, ler, paginacao, periodo, UUID } from '../dados-abertos.js';
+import { CONSULTA_DE_PROPOSICOES } from '../proposicoes/proposicoes.controller.js';
 
 export const CONSULTA_DE_PARLAMENTARES = Symbol('ConsultaDeParlamentares');
 export const CONSULTA_DE_FREQUENCIA = Symbol('ConsultaDeFrequencia');
@@ -34,6 +37,7 @@ export class ParlamentaresController {
     @Inject(CONSULTA_DE_PARLAMENTARES) private readonly consulta: ConsultaDeParlamentares,
     @Inject(CONSULTA_DE_FREQUENCIA) private readonly frequencia: ConsultaDeFrequencia,
     @Inject(CONSULTA_DE_VOTACOES) private readonly votacoes: ConsultaDeVotacoes,
+    @Inject(CONSULTA_DE_PROPOSICOES) private readonly proposicoes: ConsultaDeProposicoes,
   ) {}
 
   /** Quem está no cargo hoje. */
@@ -72,6 +76,18 @@ export class ParlamentaresController {
     const intervalo = ler(periodo, query);
     const perfil = await this.perfil(pessoaId);
     return this.votacoes.doParlamentar(perfil.pessoaId, intervalo);
+  }
+
+  /** As proposições de que o parlamentar é autor ou coautor, a movimentada por último primeiro. */
+  @Get(':pessoaId/proposicoes')
+  @Header('Cache-Control', CACHE_PUBLICO)
+  async proposicoesDe(
+    @Param('pessoaId') pessoaId: string,
+    @Query() query: Record<string, unknown>,
+  ): Promise<Pagina<AutoriaDoParlamentar>> {
+    const { pagina, itens } = ler(paginacao, query);
+    const perfil = await this.perfil(pessoaId);
+    return this.proposicoes.doParlamentar(perfil.pessoaId, { pagina, itensPorPagina: itens });
   }
 
   private async perfil(pessoaId: string): Promise<PerfilDeParlamentar> {

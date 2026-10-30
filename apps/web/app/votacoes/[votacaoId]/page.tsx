@@ -13,6 +13,7 @@ import { buscarVotacao } from '../../_api/cliente';
 import { Fonte } from '../../_componentes/fonte';
 import {
   dia,
+  identificacao,
   nomeDaCasa,
   nomeDaOpcao,
   nomeDaSituacaoSemVoto,
@@ -54,9 +55,16 @@ export default async function PaginaDaVotacao({ params }: Props): Promise<ReactN
         {votacao.proposicoes.length > 0 && (
           <p>
             Proposições afetadas:{' '}
-            {votacao.proposicoes
-              .map((p) => `${p.sigla} ${String(p.numero)}/${String(p.ano)}`)
-              .join(', ')}
+            {votacao.proposicoes.map((p, i) => (
+              <span key={p.codigoNaFonte}>
+                {i > 0 ? ', ' : ''}
+                {p.proposicaoId ? (
+                  <Link href={`/proposicoes/${p.proposicaoId}`}>{identificacao(p)}</Link>
+                ) : (
+                  identificacao(p)
+                )}
+              </span>
+            ))}
             .
           </p>
         )}

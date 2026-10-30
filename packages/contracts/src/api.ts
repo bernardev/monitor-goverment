@@ -105,6 +105,8 @@ export interface ProposicaoAfetada {
   readonly numero: number;
   readonly ano: number;
   readonly ementa: string | null;
+  /** A proposição no Prometeu; `null` se ela ainda não foi coletada. */
+  readonly proposicaoId: string | null;
 }
 
 export interface VotacaoNominalResumo {
@@ -199,6 +201,64 @@ export interface VotosDoParlamentar {
   };
   /** Da mais recente para a mais antiga. */
   readonly participacoes: readonly ParticipacaoEmVotacao[];
+}
+
+/** Tipos de proposição que podem virar norma. */
+export type TipoDeProposicao = 'PEC' | 'PLP' | 'PL' | 'MPV' | 'PDL';
+
+export interface ProposicaoResumo {
+  readonly proposicaoId: string;
+  readonly casa: 'camara_dos_deputados' | 'senado_federal';
+  /** Id da proposição na Câmara; id do processo no Senado. */
+  readonly codigoNaFonte: string;
+  readonly sigla: TipoDeProposicao;
+  readonly numero: number;
+  readonly ano: number;
+  readonly ementa: string | null;
+  readonly apresentadaEm: string | null;
+  readonly situacao: {
+    readonly descricao: string;
+    readonly desde: string;
+    readonly orgao: string | null;
+  } | null;
+  /** O ato de tramitação mais recente que foi coletado. */
+  readonly ultimaTramitacaoEm: string | null;
+  /** A norma que a proposição gerou, quando a casa informa (`Lei nº 15.018 de 12/11/2024`). */
+  readonly normaGerada: string | null;
+  readonly fonte: FonteDoDado;
+}
+
+export interface AutorDaProposicao {
+  /** `null`: autor que não é parlamentar conhecido (Poder Executivo, comissão, ex-parlamentar). */
+  readonly pessoaId: string | null;
+  /** Como a casa nomeia o autor. */
+  readonly nome: string;
+  readonly tipoNaFonte: string;
+  /** Autor de fato, e não só quem assina junto. */
+  readonly proponente: boolean;
+}
+
+export interface TramitacaoDaProposicao {
+  readonly em: string;
+  readonly orgao: string | null;
+  readonly descricao: string;
+  readonly situacao: string | null;
+  readonly despacho: string | null;
+}
+
+export interface ProposicaoDetalhada extends ProposicaoResumo {
+  readonly autores: readonly AutorDaProposicao[];
+  /** Do ato mais recente para o mais antigo. */
+  readonly tramitacoes: readonly TramitacaoDaProposicao[];
+  readonly urlDoTexto: string | null;
+  /** Votações nominais coletadas que afetaram a proposição, da mais recente para a mais antiga. */
+  readonly votacoes: readonly VotacaoNominalResumo[];
+}
+
+/** Proposição de que o parlamentar é autor (ou só assina junto, se `proponente` é falso). */
+export interface AutoriaDoParlamentar {
+  readonly proposicao: ProposicaoResumo;
+  readonly proponente: boolean;
 }
 
 export interface Pagina<T> {

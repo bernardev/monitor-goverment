@@ -4,10 +4,8 @@ import type { Pagina, VotacaoNominalDetalhada, VotacaoNominalResumo } from '@pro
 
 import { z } from 'zod';
 
-import { CACHE_PUBLICO, ler, paginacao, periodo } from '../dados-abertos.js';
+import { CACHE_PUBLICO, CASAS, ler, paginacao, periodo } from '../dados-abertos.js';
 import { CONSULTA_DE_VOTACOES } from '../parlamentares/parlamentares.controller.js';
-
-const CASAS = { camara: 'camara_dos_deputados', senado: 'senado_federal' } as const;
 
 const filtro = periodo
   .and(paginacao)

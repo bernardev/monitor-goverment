@@ -47,6 +47,10 @@ export class VotacoesFalsas implements ConsultaDeVotacoes {
     return Promise.resolve(votacaoId === VOTACAO ? votacao : undefined);
   }
 
+  daProposicao(): Promise<VotacaoNominalResumo[]> {
+    return Promise.resolve([votacao]);
+  }
+
   doParlamentar(pessoaId: string, periodo: PeriodoEmDias): Promise<VotosDoParlamentar> {
     this.ultimoPeriodo = periodo;
     return Promise.resolve({

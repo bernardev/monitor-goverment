@@ -16,7 +16,7 @@ import { and, asc, count, desc, eq, gte, isNotNull, lte, or, sql } from 'drizzle
 import { alias } from 'drizzle-orm/pg-core';
 
 import type { ConsultaDeVotacoes, FiltroDeVotacoes, PeriodoEmDias } from '../application/portas.js';
-import { captura, frequencia, parlamentar, votacao, voto } from './esquema.js';
+import { captura, frequencia, parlamentar, proposicao, votacao, voto } from './esquema.js';
 
 const OPCOES: readonly OpcaoDeVoto[] = [
   'sim',
@@ -70,7 +70,7 @@ export class ConsultaDeVotacoesPostgres implements ConsultaDeVotacoes {
       this.banco.drizzle.select({ total: count() }).from(votacao).where(onde),
     ]);
     return {
-      itens: linhas.map((l) => paraResumo(l.votacao, l.captura)),
+      itens: await this.resumos(linhas),
       pagina: filtro.pagina,
       itensPorPagina: filtro.itensPorPagina,
       total: total?.total ?? 0,
@@ -105,8 +105,10 @@ export class ConsultaDeVotacoesPostgres implements ConsultaDeVotacoes {
         if (registro) semVoto.push({ ...quem, ...registro });
       }
     }
+    const [resumo] = await this.resumos([linha]);
+    if (!resumo) return undefined;
     return {
-      ...paraResumo(linha.votacao, linha.captura),
+      ...resumo,
       votos,
       semVoto,
       fonteDosVotos: fonte(linha.votacao.capturaDosVotosId, linha.capturaDosVotos),
@@ -140,8 +142,9 @@ export class ConsultaDeVotacoesPostgres implements ConsultaDeVotacoes {
       )
       .orderBy(...MAIS_RECENTE_PRIMEIRO);
 
-    const participacoes = linhas.map((l): ParticipacaoEmVotacao => ({
-      votacao: paraResumo(l.votacao, l.captura),
+    const resumos = await this.resumos(linhas);
+    const participacoes = linhas.map((l, i): ParticipacaoEmVotacao => ({
+      votacao: resumos[i] as VotacaoNominalResumo,
       voto:
         l.voto?.opcao != null
           ? { opcao: l.voto.opcao as OpcaoDeVoto, registroNaFonte: l.voto.registroNaFonte }
@@ -157,9 +160,58 @@ export class ConsultaDeVotacoesPostgres implements ConsultaDeVotacoes {
     }));
     return { ...vazio, resumo: resumir(participacoes), participacoes };
   }
+
+  async daProposicao(
+    casa: VotacaoNominalResumo['casa'],
+    codigoNaFonte: string,
+  ): Promise<VotacaoNominalResumo[]> {
+    const linhas = await this.banco.drizzle
+      .select({ votacao, captura })
+      .from(votacao)
+      .leftJoin(captura, eq(captura.capturaId, votacao.capturaId))
+      .where(
+        and(
+          eq(votacao.casa, casa),
+          sql`${votacao.proposicoes} @> ${JSON.stringify([{ codigoNaFonte }])}::jsonb`,
+        ),
+      )
+      .orderBy(...MAIS_RECENTE_PRIMEIRO);
+    return this.resumos(linhas);
+  }
+
+  /** Os resumos, com cada proposição afetada ligada à proposição no Prometeu quando já coletada. */
+  private async resumos(
+    linhas: readonly { votacao: LinhaDeVotacao; captura: LinhaDeCaptura | null }[],
+  ): Promise<VotacaoNominalResumo[]> {
+    const citadas = linhas.flatMap(({ votacao: v }) =>
+      v.proposicoes.map((p) =>
+        and(eq(proposicao.casa, v.casa), eq(proposicao.codigoNaFonte, p.codigoNaFonte)),
+      ),
+    );
+    const ligacoes = new Map<string, string>();
+    if (citadas.length > 0) {
+      const encontradas = await this.banco.drizzle
+        .select({
+          proposicaoId: proposicao.proposicaoId,
+          casa: proposicao.casa,
+          codigoNaFonte: proposicao.codigoNaFonte,
+        })
+        .from(proposicao)
+        .where(or(...citadas));
+      for (const e of encontradas) ligacoes.set(chave(e.casa, e.codigoNaFonte), e.proposicaoId);
+    }
+    return linhas.map((l) => paraResumo(l.votacao, l.captura, ligacoes));
+  }
 }
 
-function paraResumo(v: LinhaDeVotacao, c: LinhaDeCaptura | null): VotacaoNominalResumo {
+/** Chave de uma proposição da casa nas ligações com a projeção de proposições. */
+const chave = (casa: string, codigoNaFonte: string) => `${casa}|${codigoNaFonte}`;
+
+function paraResumo(
+  v: LinhaDeVotacao,
+  c: LinhaDeCaptura | null,
+  ligacoes: ReadonlyMap<string, string>,
+): VotacaoNominalResumo {
   return {
     votacaoId: v.votacaoId,
     casa: v.casa as VotacaoNominalResumo['casa'],
@@ -169,7 +221,10 @@ function paraResumo(v: LinhaDeVotacao, c: LinhaDeCaptura | null): VotacaoNominal
     descricao: v.descricao,
     resultado: v.resultado as VotacaoNominalResumo['resultado'],
     secreta: v.secreta,
-    proposicoes: v.proposicoes,
+    proposicoes: v.proposicoes.map((p) => ({
+      ...p,
+      proposicaoId: ligacoes.get(chave(v.casa, p.codigoNaFonte)) ?? null,
+    })),
     placar: contagem(OPCOES, v.placar),
     relacaoCompleta: v.relacaoCompleta,
     contagemSemVoto: contagem(SITUACOES_SEM_VOTO, v.contagemSemVoto),

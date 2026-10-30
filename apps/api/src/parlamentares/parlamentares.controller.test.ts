@@ -15,6 +15,8 @@ import type {
 import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
+import { CONSULTA_DE_PROPOSICOES } from '../proposicoes/proposicoes.controller.js';
+import { ProposicoesFalsas } from '../proposicoes/proposicoes-falsas.js';
 import { VotacoesFalsas } from '../votacoes/votacoes-falsas.js';
 import {
   CONSULTA_DE_FREQUENCIA,
@@ -80,6 +82,7 @@ describe('GET /v1/parlamentares', () => {
   const consulta = new ConsultaFalsa();
   const frequencia = new FrequenciaFalsa();
   const votacoes = new VotacoesFalsas();
+  const proposicoes = new ProposicoesFalsas();
   let servidor: Parameters<typeof request>[0];
 
   beforeAll(async () => {
@@ -89,6 +92,7 @@ describe('GET /v1/parlamentares', () => {
         { provide: CONSULTA_DE_PARLAMENTARES, useValue: consulta },
         { provide: CONSULTA_DE_FREQUENCIA, useValue: frequencia },
         { provide: CONSULTA_DE_VOTACOES, useValue: votacoes },
+        { provide: CONSULTA_DE_PROPOSICOES, useValue: proposicoes },
       ],
     }).compile();
     app = modulo.createNestApplication();
@@ -191,6 +195,16 @@ describe('GET /v1/parlamentares', () => {
 
     expect(votacoes.ultimoPeriodo).toEqual({ de: '2026-10-01', ate: '2026-10-31' });
     expect(resposta.body).toMatchObject({ pessoaId: ANA, resumo: { votacoes: 0 } });
+  });
+
+  it('devolve as proposições de autoria, paginadas', async () => {
+    const resposta = await request(servidor)
+      .get(`/v1/parlamentares/${ANA}/proposicoes?pagina=2&itens=5`)
+      .expect(200);
+
+    expect(proposicoes.ultimaPaginacao).toEqual({ pagina: 2, itensPorPagina: 5 });
+    expect(resposta.body).toMatchObject({ total: 1, itens: [{ proponente: true }] });
+    await request(servidor).get('/v1/parlamentares/nao-e-uuid/proposicoes').expect(404);
   });
 
   it('votos: período inválido é 400 e parlamentar desconhecido é 404', async () => {

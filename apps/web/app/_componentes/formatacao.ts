@@ -64,6 +64,23 @@ export function nomeDaCasa(casa: string): string {
   return CASAS[casa] ?? casa;
 }
 
+const TIPOS: Readonly<Record<string, string>> = {
+  PEC: 'Proposta de emenda à Constituição',
+  PLP: 'Projeto de lei complementar',
+  PL: 'Projeto de lei',
+  MPV: 'Medida provisória',
+  PDL: 'Projeto de decreto legislativo',
+};
+
+export function nomeDoTipo(sigla: string): string {
+  return TIPOS[sigla] ?? sigla;
+}
+
+/** `PL 901/2026`, como as casas escrevem. */
+export function identificacao(p: { sigla: string; numero: number; ano: number }): string {
+  return `${p.sigla} ${String(p.numero)}/${String(p.ano)}`;
+}
+
 const RESULTADOS: Readonly<Record<string, string>> = {
   aprovada: 'Aprovada',
   rejeitada: 'Rejeitada',

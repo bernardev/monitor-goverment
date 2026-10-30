@@ -27,6 +27,9 @@ export const periodo = z
     message: `o período pode ter no máximo ${String(DIAS_NO_MAXIMO)} dias`,
   });
 
+/** Como a query nomeia as casas, e o nome delas na API. */
+export const CASAS = { camara: 'camara_dos_deputados', senado: 'senado_federal' } as const;
+
 export const paginacao = z.object({
   pagina: z.coerce.number().int().min(1).max(10_000).default(1),
   itens: z.coerce.number().int().min(1).max(100).default(50),

@@ -1,10 +1,14 @@
 import 'server-only';
 
 import type {
+  AutoriaDoParlamentar,
   FrequenciaDoParlamentar,
   Pagina,
   ParlamentarResumo,
   PerfilDeParlamentar,
+  ProposicaoDetalhada,
+  ProposicaoResumo,
+  TipoDeProposicao,
   VotacaoNominalDetalhada,
   VotacaoNominalResumo,
   VotosDoParlamentar,
@@ -70,4 +74,34 @@ export async function listarVotacoes(
 
 export function buscarVotacao(votacaoId: string): Promise<VotacaoNominalDetalhada | undefined> {
   return obter<VotacaoNominalDetalhada>(`/v1/votacoes/${encodeURIComponent(votacaoId)}`);
+}
+
+export interface FiltroDeProposicoes {
+  readonly casa?: 'camara' | 'senado' | undefined;
+  readonly tipo?: TipoDeProposicao | undefined;
+  readonly pagina: number;
+}
+
+/** Proposições normativas, a movimentada por último primeiro. */
+export async function listarProposicoes(
+  filtro: FiltroDeProposicoes,
+): Promise<Pagina<ProposicaoResumo>> {
+  const busca = new URLSearchParams({ pagina: String(filtro.pagina), itens: '50' });
+  if (filtro.casa) busca.set('casa', filtro.casa);
+  if (filtro.tipo) busca.set('tipo', filtro.tipo);
+  const lista = await obter<Pagina<ProposicaoResumo>>(`/v1/proposicoes?${busca.toString()}`);
+  return lista ?? { itens: [], pagina: filtro.pagina, itensPorPagina: 50, total: 0 };
+}
+
+export function buscarProposicao(proposicaoId: string): Promise<ProposicaoDetalhada | undefined> {
+  return obter<ProposicaoDetalhada>(`/v1/proposicoes/${encodeURIComponent(proposicaoId)}`);
+}
+
+/** As dez proposições de autoria movimentadas por último, com o total. */
+export function proposicoesDoParlamentar(
+  pessoaId: string,
+): Promise<Pagina<AutoriaDoParlamentar> | undefined> {
+  return obter<Pagina<AutoriaDoParlamentar>>(
+    `/v1/parlamentares/${encodeURIComponent(pessoaId)}/proposicoes?itens=10`,
+  );
 }

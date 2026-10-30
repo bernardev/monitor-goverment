@@ -1,3 +1,4 @@
+import type { EnvelopeDeEvento } from '@prometeu/contracts';
 import {
   type BancoDoContexto,
   type BarramentoDeEventos,
@@ -14,6 +15,10 @@ import {
   type ProjetorDeParlamentares,
 } from '../infrastructure/projetor-de-parlamentares.js';
 import {
+  EVENTOS_DE_PROPOSICAO,
+  type ProjetorDeProposicoes,
+} from '../infrastructure/projetor-de-proposicoes.js';
+import {
   EVENTOS_DE_VOTACAO,
   type ProjetorDeVotacoes,
 } from '../infrastructure/projetor-de-votacoes.js';
@@ -21,37 +26,35 @@ import {
 export const CONSUMIDOR_DE_PARLAMENTARES = 'consulta.projetar_parlamentares';
 export const CONSUMIDOR_DE_FREQUENCIA = 'consulta.projetar_frequencia';
 export const CONSUMIDOR_DE_VOTACOES = 'consulta.projetar_votacoes';
+export const CONSUMIDOR_DE_PROPOSICOES = 'consulta.projetar_proposicoes';
 
 export interface Projetores {
   readonly parlamentares: ProjetorDeParlamentares;
   readonly frequencia: ProjetorDeFrequencia;
   readonly votacoes: ProjetorDeVotacoes;
+  readonly proposicoes: ProjetorDeProposicoes;
 }
 
+interface Projetor {
+  aplicar(envelope: EnvelopeDeEvento): Promise<void>;
+}
+
+/** Cada projeção é um consumidor idempotente dos eventos que acompanha (ADR-0008). */
 export async function assinarConsumidores(
   barramento: BarramentoDeEventos,
   banco: BancoDoContexto,
   projetores: Projetores,
 ): Promise<void> {
-  const parlamentares = consumidorIdempotente(
-    banco,
-    inbox,
-    CONSUMIDOR_DE_PARLAMENTARES,
-    (envelope) => projetores.parlamentares.aplicar(envelope),
-  );
-  for (const tipo of EVENTOS_PROJETADOS) {
-    await barramento.assinar(tipo, CONSUMIDOR_DE_PARLAMENTARES, parlamentares);
-  }
-  const frequencia = consumidorIdempotente(banco, inbox, CONSUMIDOR_DE_FREQUENCIA, (envelope) =>
-    projetores.frequencia.aplicar(envelope),
-  );
-  for (const tipo of EVENTOS_DE_FREQUENCIA) {
-    await barramento.assinar(tipo, CONSUMIDOR_DE_FREQUENCIA, frequencia);
-  }
-  const votacoes = consumidorIdempotente(banco, inbox, CONSUMIDOR_DE_VOTACOES, (envelope) =>
-    projetores.votacoes.aplicar(envelope),
-  );
-  for (const tipo of EVENTOS_DE_VOTACAO) {
-    await barramento.assinar(tipo, CONSUMIDOR_DE_VOTACOES, votacoes);
+  const assinaturas: readonly [string, readonly string[], Projetor][] = [
+    [CONSUMIDOR_DE_PARLAMENTARES, EVENTOS_PROJETADOS, projetores.parlamentares],
+    [CONSUMIDOR_DE_FREQUENCIA, EVENTOS_DE_FREQUENCIA, projetores.frequencia],
+    [CONSUMIDOR_DE_VOTACOES, EVENTOS_DE_VOTACAO, projetores.votacoes],
+    [CONSUMIDOR_DE_PROPOSICOES, EVENTOS_DE_PROPOSICAO, projetores.proposicoes],
+  ];
+  for (const [consumidor, eventos, projetor] of assinaturas) {
+    const consumir = consumidorIdempotente(banco, inbox, consumidor, (envelope) =>
+      projetor.aplicar(envelope),
+    );
+    for (const tipo of eventos) await barramento.assinar(tipo, consumidor, consumir);
   }
 }

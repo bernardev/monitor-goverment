@@ -13,6 +13,9 @@ export default function PaginaInicial(): ReactNode {
         <li>
           <Link href="/votacoes">Votações nominais</Link>
         </li>
+        <li>
+          <Link href="/proposicoes">Proposições</Link>
+        </li>
       </ul>
     </main>
   );

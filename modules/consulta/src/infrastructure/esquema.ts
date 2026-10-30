@@ -7,8 +7,10 @@ import {
   jsonb,
   pgSchema,
   primaryKey,
+  integer,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
 
@@ -132,6 +134,65 @@ export const voto = schemaDaConsulta.table(
   (t) => [
     primaryKey({ columns: [t.votacaoId, t.pessoaId] }),
     index('voto_por_pessoa').on(t.pessoaId),
+  ],
+);
+
+/**
+ * Proposições, com autoria e tramitação. Os eventos trazem o estado completo; vale o mais novo
+ * (`ocorrido_em`), e a autoria é trocada junto.
+ */
+export const proposicao = schemaDaConsulta.table(
+  'proposicao',
+  {
+    proposicaoId: uuid('proposicao_id').primaryKey(),
+    casa: text('casa').notNull(),
+    codigoNaFonte: text('codigo_na_fonte').notNull(),
+    sigla: text('sigla').notNull(),
+    numero: integer('numero').notNull(),
+    ano: integer('ano').notNull(),
+    ementa: text('ementa'),
+    apresentadaEm: instante('apresentada_em'),
+    situacao: jsonb('situacao').$type<{ descricao: string; desde: string; orgao: string | null }>(),
+    ultimaTramitacaoEm: instante('ultima_tramitacao_em'),
+    normaGerada: text('norma_gerada'),
+    urlDoTexto: text('url_do_texto'),
+    autores: jsonb('autores')
+      .$type<
+        { pessoaId: string | null; nomeNaFonte: string; tipoNaFonte: string; proponente: boolean }[]
+      >()
+      .notNull(),
+    /** Em ordem cronológica. */
+    tramitacoes: jsonb('tramitacoes')
+      .$type<
+        {
+          em: string;
+          orgao: string | null;
+          descricao: string;
+          situacao: string | null;
+          despacho: string | null;
+        }[]
+      >()
+      .notNull(),
+    capturaId: uuid('captura_id').notNull(),
+    ocorridoEm: instante('ocorrido_em').notNull(),
+  },
+  (t) => [
+    uniqueIndex('proposicao_por_codigo').on(t.casa, t.codigoNaFonte),
+    index('proposicao_por_ultima_tramitacao').on(t.ultimaTramitacaoEm),
+  ],
+);
+
+/** Quem é autor de quê, para achar as proposições de um parlamentar. */
+export const autoria = schemaDaConsulta.table(
+  'autoria',
+  {
+    proposicaoId: uuid('proposicao_id').notNull(),
+    pessoaId: uuid('pessoa_id').notNull(),
+    proponente: boolean('proponente').notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.proposicaoId, t.pessoaId] }),
+    index('autoria_por_pessoa').on(t.pessoaId),
   ],
 );
 

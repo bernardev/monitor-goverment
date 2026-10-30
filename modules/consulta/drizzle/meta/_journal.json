@@ -29,6 +29,13 @@
       "when": 1793392024559,
       "tag": "0003_votacao_sem_voto",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793397101205,
+      "tag": "0004_proposicao",
+      "breakpoints": true
     }
   ]
 }
