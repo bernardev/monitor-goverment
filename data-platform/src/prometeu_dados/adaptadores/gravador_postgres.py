@@ -67,7 +67,7 @@ def _gravar_registros(
             comando,
             [
                 (
-                    *(registro.dados[c] for c in colunas_de_dados),
+                    *(_valor(registro.dados[c]) for c in colunas_de_dados),
                     lote_id,
                     registro.origem.fonte,
                     registro.origem.url,
@@ -79,6 +79,11 @@ def _gravar_registros(
                 for registro in registros
             ],
         )
+
+
+def _valor(valor: object) -> object:
+    """Listas e objetos vão para colunas `jsonb`; o resto o psycopg adapta sozinho."""
+    return Jsonb(valor) if isinstance(valor, list | dict) else valor
 
 
 def _publicar(conexao: psycopg.Connection, evento: EventoDeIntegracao) -> None:

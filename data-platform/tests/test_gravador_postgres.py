@@ -118,3 +118,32 @@ def test_importadores_dos_contextos_leem_a_prata(bancos: tuple[str, str]) -> Non
         )
         with pytest.raises(psycopg.errors.InsufficientPrivilege):
             conexao.execute("DELETE FROM ingestao.camara_deputado")
+
+
+def test_listas_vao_para_colunas_jsonb(bancos: tuple[str, str]) -> None:
+    from prometeu_dados.adaptadores.gravador_postgres import GravadorPrataPostgres
+
+    ingestao, admin = bancos
+    resposta = RespostaBruta("camara", "https://camara/presencas", AGORA, b"p", "text/xml")
+    sessoes = [{"descricao": "EXTRAORDINÁRIA Nº 206", "frequencia": "Ausência"}]
+    dia = RegistroPrata(
+        tabela="camara_frequencia_dia",
+        chave_natural=("matricula", "dia"),
+        dados={
+            "matricula": 701,
+            "dia": date(2026, 10, 6),
+            "frequencia": "Ausência justificada",
+            "justificativa": "Missão Autorizada",
+            "sessoes": sessoes,
+        },
+        origem=Origem.da_resposta(resposta),
+    )
+
+    GravadorPrataPostgres(ingestao, relogio=lambda: AGORA).gravar(lote(dia), "correlacao-3")
+
+    leitor = admin.replace("prometeu_admin:teste", "ctx_atividade_legislativa:desenvolvimento")
+    with psycopg.connect(leitor) as conexao:
+        linha = conexao.execute(
+            "SELECT justificativa, sessoes FROM ingestao.camara_frequencia_dia"
+        ).fetchone()
+    assert linha == ("Missão Autorizada", sessoes)

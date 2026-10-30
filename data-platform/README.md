@@ -29,4 +29,5 @@ uv run mypy src tests
 uv run lint-imports
 uv run dagster dev -m prometeu_dados.definicoes
 uv run dagster asset materialize -m prometeu_dados.definicoes --select camara_deputados
+uv run dagster asset materialize -m prometeu_dados.definicoes --select camara_frequencia
 ```

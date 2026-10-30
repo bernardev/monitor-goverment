@@ -6,8 +6,9 @@ montados e entregues aos conectores.
 
 # Sem `from __future__ import annotations`: o Dagster lê a anotação de `context` ao executar.
 import os
+from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Self
 
 from dagster import (
@@ -23,8 +24,8 @@ from dagster import (
 from prometeu_dados.adaptadores.armazem_s3 import ArmazemS3
 from prometeu_dados.adaptadores.cliente_httpx import ClienteHttpx
 from prometeu_dados.adaptadores.gravador_postgres import GravadorPrataPostgres
-from prometeu_dados.conectores import JanelaDeColeta
-from prometeu_dados.conectores.camara import ConectorDeputadosDaCamara
+from prometeu_dados.conectores import Conector, JanelaDeColeta
+from prometeu_dados.conectores.camara import ConectorDeputadosDaCamara, ConectorFrequenciaDaCamara
 from prometeu_dados.ingestao import ingerir
 
 
@@ -47,11 +48,15 @@ class Configuracao:
         )
 
 
-@asset(
-    group_name="camara",
-    description="Deputados federais em exercício e suas legislaturas (prata: camara_deputado).",
-)
-def camara_deputados(context: AssetExecutionContext) -> MaterializeResult[None]:
+JANELA_DA_FREQUENCIA = timedelta(days=30)
+"""A justificativa da ausência costuma chegar dias depois da sessão; a execução revisita o mês."""
+
+
+def _executar(
+    context: AssetExecutionContext,
+    conector: Callable[[ClienteHttpx], Conector],
+    janela: JanelaDeColeta,
+) -> MaterializeResult[None]:
     configuracao = Configuracao.do_ambiente()
     armazem = ArmazemS3(
         configuracao.balde,
@@ -61,13 +66,9 @@ def camara_deputados(context: AssetExecutionContext) -> MaterializeResult[None]:
     )
     armazem.preparar()
     cliente = ClienteHttpx()
-    agora = datetime.now(UTC)
     try:
         eventos = ingerir(
-            ConectorDeputadosDaCamara(cliente),
-            JanelaDeColeta(inicio=agora, fim=agora),
-            armazem,
-            GravadorPrataPostgres(configuracao.url_do_banco),
+            conector(cliente), janela, armazem, GravadorPrataPostgres(configuracao.url_do_banco)
         )
     finally:
         cliente.fechar()
@@ -77,10 +78,33 @@ def camara_deputados(context: AssetExecutionContext) -> MaterializeResult[None]:
     )
 
 
+@asset(
+    group_name="camara",
+    description="Deputados federais em exercício e suas legislaturas (prata: camara_deputado).",
+)
+def camara_deputados(context: AssetExecutionContext) -> MaterializeResult[None]:
+    agora = datetime.now(UTC)
+    return _executar(context, ConectorDeputadosDaCamara, JanelaDeColeta(inicio=agora, fim=agora))
+
+
+@asset(
+    group_name="camara",
+    deps=[camara_deputados],
+    description=(
+        "Frequência dos deputados no plenário nos últimos 30 dias, com a justificativa das "
+        "ausências (prata: camara_frequencia_dia)."
+    ),
+)
+def camara_frequencia(context: AssetExecutionContext) -> MaterializeResult[None]:
+    agora = datetime.now(UTC)
+    janela = JanelaDeColeta(inicio=agora - JANELA_DA_FREQUENCIA, fim=agora)
+    return _executar(context, ConectorFrequenciaDaCamara, janela)
+
+
 camara_diaria = ScheduleDefinition(
     job=define_asset_job("camara_job", selection=AssetSelection.groups("camara")),
     cron_schedule="0 6 * * *",
     execution_timezone="America/Sao_Paulo",
 )
 
-defs = Definitions(assets=[camara_deputados], schedules=[camara_diaria])
+defs = Definitions(assets=[camara_deputados, camara_frequencia], schedules=[camara_diaria])

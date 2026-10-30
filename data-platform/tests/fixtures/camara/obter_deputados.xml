@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<deputados>
+  <deputado>
+    <ideCadastro>900001</ideCadastro>
+    <codOrcamento>9001</codOrcamento>
+    <condicao>Titular</condicao>
+    <matricula>701</matricula>
+    <idParlamentar>9900001</idParlamentar>
+    <nome>ANA EXEMPLO DA SILVA</nome>
+    <nomeParlamentar>Ana Exemplo</nomeParlamentar>
+    <urlFoto>http://www.camara.gov.br/internet/deputado/bandep/900001.jpg</urlFoto>
+    <sexo>feminino</sexo>
+    <uf>SP</uf>
+    <partido>PEX</partido>
+    <gabinete>101</gabinete>
+    <anexo>4</anexo>
+    <fone>3215-5101</fone>
+    <email>dep.anaexemplo@camara.leg.br</email>
+    <comissoes>
+      <titular />
+      <suplente />
+    </comissoes>
+  </deputado>
+  <deputado>
+    <ideCadastro>900002</ideCadastro>
+    <codOrcamento>9002</codOrcamento>
+    <condicao>Titular</condicao>
+    <matricula>702</matricula>
+    <idParlamentar>9900002</idParlamentar>
+    <nome>BRUNO MODELO SOUZA</nome>
+    <nomeParlamentar>Bruno Modelo</nomeParlamentar>
+    <urlFoto>http://www.camara.gov.br/internet/deputado/bandep/900002.jpg</urlFoto>
+    <sexo>masculino</sexo>
+    <uf>RJ</uf>
+    <partido>PMO</partido>
+    <gabinete>102</gabinete>
+    <anexo>4</anexo>
+    <fone>3215-5102</fone>
+    <email>dep.brunomodelo@camara.leg.br</email>
+    <comissoes>
+      <titular />
+      <suplente />
+    </comissoes>
+  </deputado>
+</deputados>

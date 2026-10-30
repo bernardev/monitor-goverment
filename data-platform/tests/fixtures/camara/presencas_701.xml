@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<parlamentar>
+  <legislatura>57</legislatura>
+  <carteiraParlamentar>701</carteiraParlamentar>
+  <nomeParlamentar>Ana Exemplo-PEX/SP</nomeParlamentar>
+  <siglaPartido>PEX       </siglaPartido>
+  <siglaUF>SP</siglaUF>
+  <diasDeSessoes2>
+    <dia>
+      <data>01/10/2026 11:40:00</data>
+      <frequencianoDia>Presença</frequencianoDia>
+      <justificativa>
+      </justificativa>
+      <qtdeSessoes>1</qtdeSessoes>
+      <sessoes>
+        <sessao>
+          <descricao>EXTRAORDINÁRIA Nº 206 - 01/10/2026</descricao>
+          <frequencia>Presença</frequencia>
+        </sessao>
+      </sessoes>
+    </dia>
+    <dia>
+      <data>06/10/2026 11:40:02</data>
+      <frequencianoDia>Ausência justificada</frequencianoDia>
+      <justificativa>Missão Autorizada</justificativa>
+      <qtdeSessoes>2</qtdeSessoes>
+      <sessoes>
+        <sessao>
+          <descricao>DELIBERATIVA Nº 210 - 06/10/2026</descricao>
+          <frequencia>Ausência</frequencia>
+        </sessao>
+        <sessao>
+          <descricao>EXTRAORDINÁRIA Nº 211 - 06/10/2026</descricao>
+          <frequencia>Ausência</frequencia>
+        </sessao>
+      </sessoes>
+    </dia>
+    <dia>
+      <data>07/10/2026 07:45:01</data>
+      <frequencianoDia>Ausência</frequencianoDia>
+      <justificativa>
+      </justificativa>
+      <qtdeSessoes>1</qtdeSessoes>
+      <sessoes>
+        <sessao>
+          <descricao>EXTRAORDINÁRIA Nº 212 - 07/10/2026</descricao>
+          <frequencia>Ausência</frequencia>
+        </sessao>
+      </sessoes>
+    </dia>
+  </diasDeSessoes2>
+</parlamentar>
