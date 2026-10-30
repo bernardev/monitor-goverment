@@ -60,6 +60,7 @@ docs/            arquitetura, domínio, ADRs, engenharia, pesquisa
 
 | Assunto                        | Documento                                                                          |
 | ------------------------------ | ---------------------------------------------------------------------------------- |
+| Roteiro da v1                  | [docs/roadmap.md](docs/roadmap.md)                                                 |
 | Visão geral da arquitetura     | [docs/arquitetura/visao-geral.md](docs/arquitetura/visao-geral.md)                 |
 | Contextos delimitados (DDD)    | [docs/dominio/mapa-de-contextos.md](docs/dominio/mapa-de-contextos.md)             |
 | Linguagem ubíqua (glossário)   | [docs/dominio/linguagem-ubiqua.md](docs/dominio/linguagem-ubiqua.md)               |
