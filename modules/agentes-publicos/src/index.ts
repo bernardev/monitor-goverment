@@ -39,7 +39,11 @@ export type {
   MandatoPublicado,
   PessoaNaFonte,
 } from './infrastructure/consulta-de-mandatos-postgres.js';
-export type { ConsultaDePessoas } from './infrastructure/consulta-de-pessoas-postgres.js';
+export type {
+  ConsultaDePessoas,
+  ParlamentarEmExercicio,
+} from './infrastructure/consulta-de-pessoas-postgres.js';
+export { pessoaPeloNome } from './domain/nome-na-fonte.js';
 export type {
   FalhaDeImportacao,
   ResumoDaImportacao,

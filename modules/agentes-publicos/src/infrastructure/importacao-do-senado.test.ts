@@ -183,6 +183,20 @@ describe('importação de senadores do Senado (prata → Agentes Públicos)', ()
     expect(await modulo.pessoas.porCodigo({ fonte: 'camara', codigo: '900102' })).toBeUndefined();
   });
 
+  it('os parlamentares em exercício num período, com o nome', async () => {
+    // Entre agosto e dezembro de 2024, Bruno estava fora do cargo (voltou só em 2025).
+    const naqueleAno = await modulo.pessoas.parlamentaresEmExercicio(
+      new Date('2024-08-01T03:00:00Z'),
+      new Date('2024-12-31T03:00:00Z'),
+    );
+
+    expect(naqueleAno.map((p) => p.nome).sort()).toEqual([
+      'Ana Senadora',
+      'Carla Continua',
+      'Edu Sem Partido',
+    ]);
+  });
+
   it('outros contextos acham o senador em exercício pelo código do Senado', async () => {
     const bruno = { fonte: 'senado', codigo: '900102' } as const;
 
