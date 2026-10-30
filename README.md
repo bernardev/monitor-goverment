@@ -66,6 +66,13 @@ subir o Docker e ao rodar API e worker.
    uv run dagster asset materialize -m prometeu_dados.definicoes --select camara_deputados
    ```
 
+   A frequência no plenário (últimos 30 dias, com o motivo das ausências) leva cerca de meia hora,
+   porque o serviço da Câmara responde devagar:
+
+   ```bash
+   uv run dagster asset materialize -m prometeu_dados.definicoes --select camara_frequencia
+   ```
+
 4. Suba a API e o site; a lista fica em `http://localhost:3001/parlamentares`:
 
    ```bash

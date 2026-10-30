@@ -128,7 +128,7 @@ Eventos são fatos no passado, em português, versionados em `packages/contracts
 | `MandatoIniciado`, `MandatoEncerrado`                                 | Agentes Públicos      | Compromissos, Consulta, Engajamento |
 | `ProposicaoApresentada`, `TramitacaoAvancou`                          | Atividade Legislativa | Compromissos, Consulta, Engajamento |
 | `VotacaoConcluida`                                                    | Atividade Legislativa | Compromissos, Consulta, Engajamento |
-| `AusenciaRegistrada`                                                  | Atividade Legislativa | Consulta, Engajamento               |
+| `PresencaRegistrada`, `AusenciaRegistrada`, `FrequenciaRetificada`    | Atividade Legislativa | Consulta, Engajamento               |
 | `EmendaIndicada`, `EmendaEmpenhada`, `EmendaPaga`                     | Finanças Públicas     | Compromissos, Consulta, Engajamento |
 | `ObraParalisada`, `ObraConcluida`                                     | Obras                 | Compromissos, Consulta, Engajamento |
 | `PromessaRegistrada`, `EstagioDaPromessaAvancou`, `VereditoPublicado` | Compromissos          | Consulta, Engajamento               |

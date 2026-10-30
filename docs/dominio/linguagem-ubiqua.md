@@ -44,15 +44,21 @@
 
 ## Atividade legislativa
 
-| Termo          | Definição                                                                                                                                                          |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Proposição** | Projeto de lei, PEC, MP, requerimento etc., identificado por sigla + número + ano + casa.                                                                          |
-| **Tramitação** | Cada movimento de uma proposição (apresentação, comissão, plenário, sanção, veto, arquivamento).                                                                   |
-| **Sessão**     | Reunião deliberativa ou não deliberativa de uma casa ou comissão.                                                                                                  |
-| **Votação**    | Deliberação sobre uma proposição numa sessão.                                                                                                                      |
-| **Voto**       | Posição de um mandato numa votação nominal: `sim`, `nao`, `abstencao`, `obstrucao`, `artigo_17`, `ausente`.                                                        |
-| **Presença**   | Registro de comparecimento de um mandato a uma sessão.                                                                                                             |
-| **Ausência**   | Não comparecimento, com **motivo da ausência** quando registrado oficialmente (ex.: missão autorizada, licença médica, licença particular) ou `sem_justificativa`. |
+| Termo                      | Definição                                                                                                                                                                                                                             |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Proposição**             | Projeto de lei, PEC, MP, requerimento etc., identificado por sigla + número + ano + casa.                                                                                                                                             |
+| **Tramitação**             | Cada movimento de uma proposição (apresentação, comissão, plenário, sanção, veto, arquivamento).                                                                                                                                      |
+| **Sessão**                 | Reunião deliberativa ou não deliberativa de uma casa ou comissão.                                                                                                                                                                     |
+| **Votação**                | Deliberação sobre uma proposição numa sessão.                                                                                                                                                                                         |
+| **Voto**                   | Posição de um mandato numa votação nominal: `sim`, `nao`, `abstencao`, `obstrucao`, `artigo_17`, `ausente`.                                                                                                                           |
+| **Presença**               | Registro de comparecimento de um mandato a uma sessão.                                                                                                                                                                                |
+| **Ausência**               | Não comparecimento, com **motivo da ausência** quando registrado oficialmente (ex.: missão autorizada, licença médica, licença particular) ou `sem_justificativa`.                                                                    |
+| **Dia de sessão**          | Dia do calendário de Brasília em que houve sessão do plenário. É a unidade em que as casas apuram a frequência (`aaaa-mm-dd`, nunca um instante em UTC).                                                                              |
+| **Registro de frequência** | Situação de um mandato num dia de sessão: `presente`, `ausente` ou `ausencia_justificada`, com as sessões do dia e a captura que prova. Um por pessoa, casa e dia.                                                                    |
+| **Ausência justificada**   | Ausência que a casa aceitou, sempre com **motivo da ausência**. Só ela tem motivo; uma falta comum (`ausente`) não tem.                                                                                                               |
+| **Motivo da ausência**     | Categoria comparável entre casas (`licenca_saude`, `licenca_gestante`, `licenca_paternidade`, `licenca_particular`, `missao_autorizada`, `atividade_parlamentar`, `decisao_da_mesa`, `outro`) mais a descrição nas palavras da fonte. |
+| **Retificação**            | Correção de um registro de frequência pela própria casa (ex.: a justificativa aceita dias depois). Gera `FrequenciaRetificada`; o registro anterior fica nos eventos.                                                                 |
+| **Registro na fonte**      | Como a casa escreveu a situação (`Presença (~)`), guardado para conferência. Não é interpretado além da tradução documentada no importador.                                                                                           |
 
 ## Finanças públicas
 

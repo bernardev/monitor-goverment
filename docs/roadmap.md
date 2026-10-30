@@ -27,7 +27,7 @@ O que a v1 entrega e quais módulos cada entrega envolve está em
 | 0   | Domínio central: Compromissos               | Agregado `Promessa` (estágio, veredito, errata) e casos de uso, só com testes, sem infraestrutura.                                                                                | Concluída |
 | 1   | Fatia de ponta a ponta: deputados da Câmara | Conector da Câmara com captura; Agentes Públicos (`Pessoa`, `Mandato`); Acervo mínimo; outbox, barramento e inbox; projeção em Consulta; `GET /v1/parlamentares`; página no site. | Concluída |
 | 2   | Compromissos no banco e acesso editorial    | Repositório da `Promessa` com outbox; login e papéis (aceitar ADR-0014); painel mínimo de curadoria para cadastrar promessa e propor veredito.                                    | Concluída |
-| 3   | Atividade Legislativa                       | Proposições, votações e presença com o motivo da ausência (Câmara e Senado).                                                                                                      | A fazer   |
+| 3   | Atividade Legislativa                       | Proposições, votações e presença com o motivo da ausência (Câmara e Senado).                                                                                                      | Em curso  |
 | 4   | Finanças Públicas e Obras                   | Emenda até a obra: empenho, pagamento, situação e medição da obra.                                                                                                                | A fazer   |
 | 5   | Compromissos ligado aos fatos               | Sugestão de vínculos a partir dos eventos de Legislativo, Finanças e Obras; reavaliação do estágio.                                                                               | A fazer   |
 | 6   | Engajamento                                 | "Meu governo" por município, acompanhar político ou promessa, alertas.                                                                                                            | A fazer   |
@@ -89,3 +89,39 @@ cumprida" com mandato em curso, publicação por outra pessoa) roda contra os se
 Fica para depois, de propósito: vínculos pelo painel (etapa 5), OTP obrigatório no realm de produção,
 fila de revisão com filtros, renovação de sessão gravada também nas páginas (hoje só em ações e rotas) e o
 sistema visual do painel.
+
+## Etapa 3 em detalhe
+
+A etapa é grande; vai em fatias, cada uma de ponta a ponta. A ordem começa pelo diferencial do produto (a
+ausência com motivo) e deixa o Senado para quando os senadores estiverem em Agentes Públicos.
+
+| Fatia | Entrega                                                                                                                                        | Situação  |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| 3.1   | Frequência no plenário da Câmara, com o motivo de cada ausência justificada: conector, `RegistroDeFrequencia`, projeção, API e perfil no site. | Concluída |
+| 3.2   | Votações nominais do plenário da Câmara e o voto de cada deputado.                                                                             | A fazer   |
+| 3.3   | Senado: senadores em Agentes Públicos, votações nominais e as ausências com motivo que o Senado publica em cada votação.                       | A fazer   |
+| 3.4   | Proposições, autoria e tramitação (Câmara e Senado).                                                                                           | A fazer   |
+
+### Fatia 3.1: frequência na Câmara
+
+- **Fonte:** a API de Dados Abertos v2 não publica a justificativa da ausência. Ela só existe no serviço
+  legado SitCamaraWS (`ListarPresencasParlamentar`), consultado por matrícula. O conector também grava a
+  correspondência entre matrícula e id da API v2. Cada consulta leva vários segundos; quatro correm ao
+  mesmo tempo.
+- **Janela:** a justificativa costuma chegar dias depois da sessão, então cada execução revisita os
+  últimos 30 dias. Regravar o dia atualiza a prata, e o domínio transforma a mudança em retificação.
+- **Domínio:** `RegistroDeFrequencia` por pessoa, casa e dia de sessão. Só a ausência justificada tem
+  motivo; o dia precisa cair dentro do mandato, que Agentes Públicos informa pelo código da fonte.
+- **Falta de dado não é falta:** a Câmara responde 404 para algumas matrículas, e o conector não grava
+  nada. A API conta dias com sessão registrados; dia sem registro não entra em nenhuma conta.
+- **Leitura:** `GET /v1/parlamentares/{pessoaId}/frequencia?de=&ate=` (padrão: últimos 90 dias) e a
+  seção "Presença no plenário" no perfil, com o motivo e a fonte de cada ausência.
+
+Resultado: com o serviço real da Câmara, a coleta dos últimos 30 dias levou 28 minutos e trouxe 2.560 dias
+de 513 deputados (o plenário quase não teve sessão durante a campanha eleitoral, então os dias começam em
+13/10). A importação e a projeção levaram cerca de um minuto, sem nenhuma linha recusada: 49 ausências
+justificadas (missão autorizada e licença para tratamento de saúde) e 56 sem justificativa.
+
+Fica para depois, de propósito: o significado de "Presença (~)" (sem legenda pública; a grafia é
+guardada e tratada como presença), frequência em comissões e o histórico anterior à janela de 30 dias
+(uma carga inicial por legislatura).
