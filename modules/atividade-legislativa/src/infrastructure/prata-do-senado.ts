@@ -28,6 +28,8 @@ export const senadoVotacao = ingestao.table('senado_votacao', {
   descricao: text('descricao').notNull(),
   identificacao: text('identificacao'),
   codigoMateria: integer('codigo_materia'),
+  /** Novo no contrato v1.1.0: o id de `senado_processo`. */
+  idProcesso: integer('id_processo'),
   siglaMateria: text('sigla_materia'),
   numeroMateria: text('numero_materia'),
   anoMateria: integer('ano_materia'),
@@ -35,6 +37,48 @@ export const senadoVotacao = ingestao.table('senado_votacao', {
   aprovada: boolean('aprovada'),
   secreta: boolean('secreta').notNull(),
   votos: jsonb('votos').$type<SenadorNaVotacao[]>().notNull(),
+  loteId: uuid('lote_id').notNull(),
+  origemFonte: text('origem_fonte').notNull(),
+  origemUrl: text('origem_url').notNull(),
+  origemColetadaEm: timestamp('origem_coletada_em', { withTimezone: true, mode: 'date' }).notNull(),
+  origemSha256: text('origem_sha256').notNull(),
+  origemCaminho: text('origem_caminho').notNull(),
+  origemTipoDeConteudo: text('origem_tipo_de_conteudo').notNull(),
+});
+
+export const senadoProcesso = ingestao.table('senado_processo', {
+  idProcesso: integer('id_processo').notNull(),
+  sigla: text('sigla').notNull(),
+  numero: integer('numero').notNull(),
+  ano: integer('ano').notNull(),
+  ementa: text('ementa'),
+  apresentadaEm: date('apresentada_em', { mode: 'string' }),
+  situacao: jsonb('situacao').$type<{ sigla: string; descricao: string; desde: string }>(),
+  autores: jsonb('autores')
+    .$type<
+      {
+        nome: string;
+        tipo: string;
+        codigo_parlamentar: number | null;
+        sigla_partido: string | null;
+        uf: string | null;
+        ordem: number;
+      }[]
+    >()
+    .notNull(),
+  situacoes: jsonb('situacoes')
+    .$type<
+      {
+        sigla: string;
+        descricao: string;
+        inicio: string;
+        fim: string | null;
+        colegiado: string | null;
+      }[]
+    >()
+    .notNull(),
+  normaGerada: text('norma_gerada'),
+  urlDocumento: text('url_documento'),
   loteId: uuid('lote_id').notNull(),
   origemFonte: text('origem_fonte').notNull(),
   origemUrl: text('origem_url').notNull(),

@@ -177,6 +177,7 @@ describe('importação das votações nominais da Câmara (prata → Atividade L
       banco,
       registrarCaptura,
       mandatos: agentesPublicos.mandatos,
+      pessoas: agentesPublicos.pessoas,
       relogio,
     });
     await modulo.assinarConsumidores(barramento, (resumo) => resumos.push(resumo));

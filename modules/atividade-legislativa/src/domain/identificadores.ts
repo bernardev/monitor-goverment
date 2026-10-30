@@ -56,3 +56,16 @@ export class VotacaoNominalId extends Identificador {
     return validado.ok ? Result.ok(new VotacaoNominalId(validado.value)) : validado;
   }
 }
+
+export class ProposicaoId extends Identificador {
+  declare private readonly marca: 'ProposicaoId';
+
+  static gerar(): ProposicaoId {
+    return new ProposicaoId(gerarUuidV7());
+  }
+
+  static de(valor: string): Result<ProposicaoId, DomainError> {
+    const validado = ProposicaoId.validar(valor);
+    return validado.ok ? Result.ok(new ProposicaoId(validado.value)) : validado;
+  }
+}

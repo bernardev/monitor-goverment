@@ -12,6 +12,9 @@ export const CONSUMIDOR_DA_FREQUENCIA = 'atividade_legislativa.importar_frequenc
 export const CONSUMIDOR_DAS_VOTACOES = 'atividade_legislativa.importar_votacoes_da_camara';
 export const CONSUMIDOR_DAS_VOTACOES_DO_SENADO =
   'atividade_legislativa.importar_votacoes_do_senado';
+export const CONSUMIDOR_DAS_PROPOSICOES = 'atividade_legislativa.importar_proposicoes_da_camara';
+export const CONSUMIDOR_DAS_PROPOSICOES_DO_SENADO =
+  'atividade_legislativa.importar_proposicoes_do_senado';
 
 interface Importador {
   importar(loteId: string): Promise<ResumoDaImportacao>;
@@ -21,17 +24,31 @@ export interface Importadores {
   readonly frequencia: Importador;
   readonly votacoes: Importador;
   readonly votacoesDoSenado: Importador;
+  readonly proposicoes: Importador;
+  readonly proposicoesDoSenado: Importador;
 }
 
-/** Importa cada lote de frequência e de votações que a plataforma de dados grava na prata (ADR-0005). */
+/** Importa cada lote que a plataforma de dados grava nas tabelas prata deste contexto (ADR-0005). */
 export async function assinarConsumidores(
   barramento: BarramentoDeEventos,
   banco: BancoDoContexto,
   importadores: Importadores,
   aoImportar: (resumo: ResumoDaImportacao) => void,
 ): Promise<void> {
-  const assinatura = (consumidor: string, fonte: string, tabela: string, importador: Importador) =>
-    barramento.assinar(
+  const assinaturas: readonly [string, string, string, Importador][] = [
+    [CONSUMIDOR_DA_FREQUENCIA, 'camara', 'camara_frequencia_dia', importadores.frequencia],
+    [CONSUMIDOR_DAS_VOTACOES, 'camara', 'camara_votacao', importadores.votacoes],
+    [CONSUMIDOR_DAS_VOTACOES_DO_SENADO, 'senado', 'senado_votacao', importadores.votacoesDoSenado],
+    [CONSUMIDOR_DAS_PROPOSICOES, 'camara', 'camara_proposicao', importadores.proposicoes],
+    [
+      CONSUMIDOR_DAS_PROPOSICOES_DO_SENADO,
+      'senado',
+      'senado_processo',
+      importadores.proposicoesDoSenado,
+    ],
+  ];
+  for (const [consumidor, fonte, tabela, importador] of assinaturas) {
+    await barramento.assinar(
       'LoteIngerido',
       consumidor,
       consumidorIdempotente(banco, inbox, consumidor, async (envelope) => {
@@ -40,17 +57,5 @@ export async function assinarConsumidores(
         aoImportar(await importador.importar(envelope.id));
       }),
     );
-  await assinatura(
-    CONSUMIDOR_DA_FREQUENCIA,
-    'camara',
-    'camara_frequencia_dia',
-    importadores.frequencia,
-  );
-  await assinatura(CONSUMIDOR_DAS_VOTACOES, 'camara', 'camara_votacao', importadores.votacoes);
-  await assinatura(
-    CONSUMIDOR_DAS_VOTACOES_DO_SENADO,
-    'senado',
-    'senado_votacao',
-    importadores.votacoesDoSenado,
-  );
+  }
 }

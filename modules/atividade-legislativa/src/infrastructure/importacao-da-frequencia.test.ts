@@ -145,6 +145,7 @@ describe('importação da frequência da Câmara (prata → Atividade Legislativ
       banco,
       registrarCaptura,
       mandatos: agentesPublicos.mandatos,
+      pessoas: agentesPublicos.pessoas,
       relogio,
     });
     await modulo.assinarConsumidores(barramento, (resumo) => resumos.push(resumo));

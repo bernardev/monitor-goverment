@@ -88,5 +88,43 @@ export const votacaoNominal = schemaDeAtividadeLegislativa.table(
   (t) => [unique('votacao_por_codigo').on(t.casa, t.codigoNaFonte)],
 );
 
+export interface AutorGravado {
+  pessoaId: string | null;
+  nomeNaFonte: string;
+  tipoNaFonte: string;
+  proponente: boolean;
+}
+
+export interface TramitacaoGravada {
+  em: string;
+  orgao: string | null;
+  descricao: string;
+  situacao: string | null;
+  despacho: string | null;
+}
+
+export const proposicao = schemaDeAtividadeLegislativa.table(
+  'proposicao',
+  {
+    id: uuid('id').primaryKey(),
+    casa: text('casa').notNull(),
+    codigoNaFonte: text('codigo_na_fonte').notNull(),
+    sigla: text('sigla').notNull(),
+    numero: integer('numero').notNull(),
+    ano: integer('ano').notNull(),
+    ementa: text('ementa'),
+    apresentadaEm: timestamp('apresentada_em', { withTimezone: true, mode: 'date' }),
+    autores: jsonb('autores').$type<AutorGravado[]>().notNull(),
+    situacao: jsonb('situacao').$type<{ descricao: string; desde: string; orgao: string | null }>(),
+    tramitacoes: jsonb('tramitacoes').$type<TramitacaoGravada[]>().notNull(),
+    normaGerada: text('norma_gerada'),
+    urlDoTexto: text('url_do_texto'),
+    capturaId: uuid('captura_id').notNull(),
+    /** Controle de concorrência otimista: duas gravações sobre a mesma versão não passam as duas. */
+    versao: integer('versao').notNull(),
+  },
+  (t) => [unique('proposicao_por_codigo').on(t.casa, t.codigoNaFonte)],
+);
+
 export const outbox = definirOutbox(schemaDeAtividadeLegislativa);
 export const inbox = definirInbox(schemaDeAtividadeLegislativa);

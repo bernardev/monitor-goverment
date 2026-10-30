@@ -70,3 +70,46 @@ export const camaraVotos = ingestao.table('camara_votos', {
     .notNull(),
   ...origem(),
 });
+
+/** Uma tramitação como a prata a guarda (contrato `camara_proposicao_tramitacoes`). */
+export interface TramitacaoNaCamara {
+  sequencia: number;
+  data_hora: string;
+  sigla_orgao: string | null;
+  descricao_tramitacao: string | null;
+  descricao_situacao: string | null;
+  despacho: string | null;
+  url: string | null;
+}
+
+export const camaraProposicao = ingestao.table('camara_proposicao', {
+  idProposicao: integer('id_proposicao').notNull(),
+  siglaTipo: text('sigla_tipo').notNull(),
+  numero: integer('numero').notNull(),
+  ano: integer('ano').notNull(),
+  ementa: text('ementa'),
+  apresentadaEm: instante('apresentada_em').notNull(),
+  urlInteiroTeor: text('url_inteiro_teor'),
+  situacao: jsonb('situacao').$type<TramitacaoNaCamara>(),
+  ...origem(),
+});
+
+export const camaraProposicaoAutores = ingestao.table('camara_proposicao_autores', {
+  idProposicao: integer('id_proposicao').notNull(),
+  autores: jsonb('autores')
+    .$type<
+      {
+        nome: string;
+        tipo: string;
+        id_deputado: number | null;
+        ordem_assinatura: number;
+        proponente: boolean;
+      }[]
+    >()
+    .notNull(),
+});
+
+export const camaraProposicaoTramitacoes = ingestao.table('camara_proposicao_tramitacoes', {
+  idProposicao: integer('id_proposicao').notNull(),
+  tramitacoes: jsonb('tramitacoes').$type<TramitacaoNaCamara[]>().notNull(),
+});

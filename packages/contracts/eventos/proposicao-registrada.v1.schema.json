@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prometeu.org/contratos/eventos/proposicao-registrada.v1.json",
+  "title": "ProposicaoRegistrada (v1): dados",
+  "description": "Atividade Legislativa: uma proposição normativa foi registrada, com autoria e toda a tramitação conhecida. idDoAgregado é o id da proposição.",
+  "type": "object",
+  "required": [
+    "casa",
+    "codigoNaFonte",
+    "sigla",
+    "numero",
+    "ano",
+    "ementa",
+    "apresentadaEm",
+    "autores",
+    "situacao",
+    "tramitacoes",
+    "normaGerada",
+    "urlDoTexto",
+    "capturaId"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "casa": {
+      "enum": ["camara_dos_deputados", "senado_federal"]
+    },
+    "codigoNaFonte": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Id da proposição na Câmara; id do processo no Senado."
+    },
+    "sigla": {
+      "enum": ["PEC", "PLP", "PL", "MPV", "PDL"]
+    },
+    "numero": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "ano": {
+      "type": "integer"
+    },
+    "ementa": {
+      "type": ["string", "null"]
+    },
+    "apresentadaEm": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "autores": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["pessoaId", "nomeNaFonte", "tipoNaFonte", "proponente"],
+        "additionalProperties": false,
+        "properties": {
+          "pessoaId": {
+            "type": ["string", "null"],
+            "format": "uuid",
+            "description": "null: autor que não é parlamentar conhecido de Agentes Públicos."
+          },
+          "nomeNaFonte": {
+            "type": "string",
+            "minLength": 1
+          },
+          "tipoNaFonte": {
+            "type": "string"
+          },
+          "proponente": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "situacao": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "required": ["descricao", "desde", "orgao"],
+          "additionalProperties": false,
+          "properties": {
+            "descricao": {
+              "type": "string",
+              "minLength": 1
+            },
+            "desde": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "orgao": {
+              "type": ["string", "null"]
+            }
+          }
+        }
+      ]
+    },
+    "tramitacoes": {
+      "type": "array",
+      "description": "Em ordem cronológica.",
+      "items": {
+        "type": "object",
+        "required": ["em", "orgao", "descricao", "situacao", "despacho"],
+        "additionalProperties": false,
+        "properties": {
+          "em": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "orgao": {
+            "type": ["string", "null"]
+          },
+          "descricao": {
+            "type": "string",
+            "minLength": 1
+          },
+          "situacao": {
+            "type": ["string", "null"]
+          },
+          "despacho": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "normaGerada": {
+      "type": ["string", "null"]
+    },
+    "urlDoTexto": {
+      "type": ["string", "null"]
+    },
+    "capturaId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Captura do Acervo que prova o dado (ADR-0009)."
+    }
+  }
+}

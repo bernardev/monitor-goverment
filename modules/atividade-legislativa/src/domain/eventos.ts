@@ -2,6 +2,7 @@ import type { DomainEvent } from '@prometeu/shared-kernel';
 
 import type { CasaLegislativa } from './casa-legislativa.js';
 import type { CategoriaDoMotivo } from './motivo-da-ausencia.js';
+import type { TipoDeProposicao } from './proposicao.js';
 import type { Situacao } from './situacao.js';
 import type { OpcaoDeVoto, ResultadoDaVotacao, SituacaoSemVoto } from './voto.js';
 
@@ -92,9 +93,52 @@ export type VotacaoNominalRetificada = DomainEvent<
   VotacaoNominalPublicada
 >;
 
+/** Estado completo da proposição, com toda a tramitação conhecida. */
+export interface ProposicaoPublicada {
+  casa: CasaLegislativa;
+  /** Como a casa identifica a proposição (id da Câmara, id do processo no Senado). */
+  codigoNaFonte: string;
+  sigla: TipoDeProposicao;
+  numero: number;
+  ano: number;
+  ementa: string | null;
+  apresentadaEm: string | null;
+  autores: {
+    /** `null`: autor que não é parlamentar conhecido (Poder Executivo, comissão, ex-parlamentar). */
+    pessoaId: string | null;
+    nomeNaFonte: string;
+    tipoNaFonte: string;
+    proponente: boolean;
+  }[];
+  situacao: { descricao: string; desde: string; orgao: string | null } | null;
+  /** Em ordem cronológica. */
+  tramitacoes: {
+    em: string;
+    orgao: string | null;
+    descricao: string;
+    situacao: string | null;
+    despacho: string | null;
+  }[];
+  normaGerada: string | null;
+  urlDoTexto: string | null;
+  capturaId: string;
+}
+
+export type ProposicaoRegistrada = DomainEvent<'ProposicaoRegistrada', ProposicaoPublicada>;
+
+export type TramitacaoAvancou = DomainEvent<
+  'TramitacaoAvancou',
+  ProposicaoPublicada & { novasTramitacoes: number }
+>;
+
+export type ProposicaoRetificada = DomainEvent<'ProposicaoRetificada', ProposicaoPublicada>;
+
 export type EventoDeAtividadeLegislativa =
   | PresencaRegistrada
   | AusenciaRegistrada
   | FrequenciaRetificada
   | VotacaoNominalRegistrada
-  | VotacaoNominalRetificada;
+  | VotacaoNominalRetificada
+  | ProposicaoRegistrada
+  | TramitacaoAvancou
+  | ProposicaoRetificada;

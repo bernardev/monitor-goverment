@@ -136,12 +136,16 @@ function descricao(senador: SenadorNaVotacao): string {
   return senador.descricao_voto ?? senador.sigla_voto;
 }
 
+/**
+ * A matéria votada, identificada pelo id do processo: o mesmo código das proposições do Senado. Sem
+ * ele (prata anterior ao contrato v1.1.0), a votação fica sem proposição ligada.
+ */
 function proposicoes(
   votacao: typeof senadoVotacao.$inferSelect,
 ): RegistrarVotacaoNominalInput['proposicoes'] {
   const numero = Number.parseInt(votacao.numeroMateria ?? '', 10);
   if (
-    votacao.codigoMateria === null ||
+    votacao.idProcesso === null ||
     votacao.siglaMateria === null ||
     votacao.anoMateria === null ||
     Number.isNaN(numero)
@@ -150,7 +154,7 @@ function proposicoes(
   }
   return [
     {
-      codigoNaFonte: String(votacao.codigoMateria),
+      codigoNaFonte: String(votacao.idProcesso),
       sigla: votacao.siglaMateria,
       numero,
       ano: votacao.anoMateria,

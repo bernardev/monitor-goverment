@@ -25,7 +25,7 @@ import { votacaoNominal } from './esquema.js';
 
 const LOTE = '0192d5e0-6666-7000-8000-0000000000a1';
 
-// Tabela prata como a plataforma de dados a cria (data-platform/migracoes, contrato v1.0.0).
+// Tabela prata como a plataforma de dados a cria (data-platform/migracoes, contrato v1.1.0).
 const PRATA = sql.raw(`
   CREATE TABLE ingestao.senado_votacao (
     codigo_sessao_votacao integer PRIMARY KEY, codigo_sessao integer NOT NULL, data date NOT NULL,
@@ -34,7 +34,7 @@ const PRATA = sql.raw(`
     secreta boolean NOT NULL, votos jsonb NOT NULL,
     lote_id uuid NOT NULL, origem_fonte text NOT NULL, origem_url text NOT NULL,
     origem_coletada_em timestamptz NOT NULL, origem_sha256 char(64) NOT NULL,
-    origem_caminho text NOT NULL, origem_tipo_de_conteudo text NOT NULL
+    origem_caminho text NOT NULL, origem_tipo_de_conteudo text NOT NULL, id_processo integer
   );
 `);
 
@@ -108,7 +108,7 @@ describe('importação das votações do Senado (prata → Atividade Legislativa
           ${codigo}, 900001, '2026-10-14', ${`Votação nominal ${String(codigo)}.`}, 'PLP 901/2026',
           9000001, 'PLP', '901', 2026, 'Tema fictício.', true, false, ${JSON.stringify(votos)},
           ${LOTE}, 'senado', 'https://senado/votacao', '2026-10-30T09:00:00Z', ${'e'.repeat(64)},
-          'bronze/senado/v', 'application/json'
+          'bronze/senado/v', 'application/json', 8000001
         )`);
     }
 
@@ -150,6 +150,7 @@ describe('importação das votações do Senado (prata → Atividade Legislativa
       banco,
       registrarCaptura,
       mandatos: agentesPublicos.mandatos,
+      pessoas: agentesPublicos.pessoas,
       relogio,
     });
     await modulo.assinarConsumidores(barramento, (resumo) => resumos.push(resumo));
@@ -180,6 +181,10 @@ describe('importação das votações do Senado (prata → Atividade Legislativa
       registradaEm: null,
       relacaoCompleta: true,
     });
+    // A matéria votada pelo id do processo, o mesmo das proposições do Senado.
+    expect(votacao?.proposicoes.map((p) => [p.codigoNaFonte, p.sigla, p.numero])).toEqual([
+      ['8000001', 'PLP', 901],
+    ]);
     expect(votacao?.votos.map((v) => [v.opcao, v.registroNaFonte, v.registradoEm]).sort()).toEqual([
       ['presidente_da_sessao', 'Presidente (art. 51 RISF)', null],
       ['sim', 'Sim', null],

@@ -14,7 +14,7 @@ import {
 import {
   MIGRACOES_DE_ATIVIDADE_LEGISLATIVA,
   montarAtividadeLegislativa,
-  type ResumoDaImportacao as ResumoDeFrequencia,
+  type ResumoDaImportacao as ResumoDeAtividadeLegislativa,
   SCHEMA_DE_ATIVIDADE_LEGISLATIVA,
 } from '@prometeu/atividade-legislativa';
 import {
@@ -36,6 +36,15 @@ import {
  * Raiz de composição do processo de fundo (ADR-0007, ADR-0015): cada contexto com o próprio usuário de
  * banco, um relay por outbox e os consumidores de eventos de cada módulo.
  */
+/** O que cada importação de Atividade Legislativa conta como novo, para o log. */
+const UNIDADES: Readonly<Record<ResumoDeAtividadeLegislativa['importacao'], string>> = {
+  frequencia_da_camara: 'dias novos',
+  votacoes_da_camara: 'votações novas',
+  votacoes_do_senado: 'votações novas',
+  proposicoes_da_camara: 'proposições novas',
+  proposicoes_do_senado: 'proposições novas',
+};
+
 @Injectable()
 export class Orquestrador implements OnApplicationBootstrap, OnApplicationShutdown {
   private readonly logger = new Logger(Orquestrador.name);
@@ -79,6 +88,7 @@ export class Orquestrador implements OnApplicationBootstrap, OnApplicationShutdo
       banco: this.bancos.atividadeLegislativa,
       registrarCaptura: acervo.registrarCaptura,
       mandatos: agentesPublicos.mandatos,
+      pessoas: agentesPublicos.pessoas,
     });
     const consulta = montarConsulta(this.bancos.consulta);
     const compromissos = montarCompromissos({
@@ -90,8 +100,7 @@ export class Orquestrador implements OnApplicationBootstrap, OnApplicationShutdo
       this.relatar(resumo, `${String(resumo.pessoasNovas)} pessoas novas`);
     });
     await atividadeLegislativa.assinarConsumidores(barramento, (resumo) => {
-      const unidade =
-        resumo.importacao === 'frequencia_da_camara' ? 'dias novos' : 'votações novas';
+      const unidade = UNIDADES[resumo.importacao];
       this.relatar(resumo, `${String(resumo.novos)} ${unidade}`);
     });
     await consulta.assinarConsumidores(barramento);
@@ -117,7 +126,10 @@ export class Orquestrador implements OnApplicationBootstrap, OnApplicationShutdo
     await Promise.all(Object.values(this.bancos).map((banco) => banco.fechar()));
   }
 
-  private relatar(resumo: ResumoDeDeputados | ResumoDeFrequencia, novidades: string): void {
+  private relatar(
+    resumo: ResumoDeDeputados | ResumoDeAtividadeLegislativa,
+    novidades: string,
+  ): void {
     this.logger.log(
       `Lote ${resumo.loteId}: ${String(resumo.lidos)} lidos, ${novidades}, ` +
         `${String(resumo.falhas.length)} recusados.`,

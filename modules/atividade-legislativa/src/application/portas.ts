@@ -4,6 +4,7 @@ import type { CasaLegislativa } from '../domain/casa-legislativa.js';
 import type { DiaDeSessao } from '../domain/dia-de-sessao.js';
 import type { CapturaId, PessoaId } from '../domain/identificadores.js';
 import type { MandatoVigente } from '../domain/mandato-vigente.js';
+import type { Proposicao } from '../domain/proposicao.js';
 import type { RegistroDeFrequencia } from '../domain/registro-de-frequencia.js';
 import type { VotacaoNominal } from '../domain/votacao-nominal.js';
 
@@ -21,6 +22,12 @@ export interface VotacaoNominalRepository {
   buscar(casa: CasaLegislativa, codigoNaFonte: string): Promise<VotacaoNominal | undefined>;
   /** Grava a votação e seus eventos na mesma transação (ADR-0007). */
   salvar(votacao: VotacaoNominal): Promise<void>;
+}
+
+export interface ProposicaoRepository {
+  buscar(casa: CasaLegislativa, codigoNaFonte: string): Promise<Proposicao | undefined>;
+  /** Grava a proposição e seus eventos na mesma transação (ADR-0007). */
+  salvar(proposicao: Proposicao): Promise<void>;
 }
 
 /** Como a fonte identifica o parlamentar (`camara:204554`). */
@@ -51,6 +58,11 @@ export interface MandatosDosParlamentares {
     casa: CasaLegislativa,
     dia: DiaDeSessao,
   ): Promise<MandatoVigente | undefined>;
+}
+
+/** Quem é o parlamentar, pelo código na fonte, sem depender de mandato (o autor que já saiu). */
+export interface PessoasDosParlamentares {
+  pessoaDe(parlamentar: ParlamentarNaFonte): Promise<PessoaId | undefined>;
 }
 
 /** De onde veio um dado: a resposta bruta guardada no bronze (ADR-0016). */
