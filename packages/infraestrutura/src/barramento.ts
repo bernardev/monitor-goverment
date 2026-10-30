@@ -7,8 +7,9 @@ export type ManipuladorDeEvento = (envelope: EnvelopeDeEvento) => Promise<void>;
 export interface BarramentoDeEventos {
   publicar(envelope: EnvelopeDeEvento): Promise<void>;
   /**
-   * Entrega cada evento do `tipo` à fila do `consumidor`. Cada consumidor tem sua fila, suas
-   * tentativas e sua fila de falhas; um consumidor lento ou quebrado não afeta os outros.
+   * Entrega cada evento do `tipo` ao `consumidor`. Cada par consumidor e tipo tem sua fila, suas
+   * tentativas e sua fila de falhas: um consumidor lento ou quebrado não afeta os outros. Assinar de
+   * novo (outra instância do worker, um reinício) reaproveita a mesma fila.
    */
   assinar(tipo: string, consumidor: string, manipulador: ManipuladorDeEvento): Promise<void>;
   fechar(): Promise<void>;
@@ -30,15 +31,12 @@ export class BarramentoPgBoss implements BarramentoDeEventos {
   }
 
   async assinar(tipo: string, consumidor: string, manipulador: ManipuladorDeEvento): Promise<void> {
-    const falhas = `${consumidor}.falhas`;
+    const fila = `${consumidor}.${tipo}`;
+    const falhas = `${fila}.falhas`;
     await this.boss.createQueue(falhas);
-    await this.boss.createQueue(consumidor, {
-      retryLimit: 5,
-      retryBackoff: true,
-      deadLetter: falhas,
-    });
-    await this.boss.subscribe(tipo, consumidor);
-    await this.boss.work<EnvelopeDeEvento>(consumidor, async (jobs) => {
+    await this.boss.createQueue(fila, { retryLimit: 5, retryBackoff: true, deadLetter: falhas });
+    await this.boss.subscribe(tipo, fila);
+    await this.boss.work<EnvelopeDeEvento>(fila, async (jobs) => {
       for (const job of jobs) await manipulador(job.data);
     });
   }

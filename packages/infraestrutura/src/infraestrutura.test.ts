@@ -137,7 +137,11 @@ describe('infraestrutura de eventos contra PostgreSQL real', () => {
     expect(gravado?.idDeCorrelacao).toBe('cadeia-origem');
   });
 
-  it('o pg-boss entrega o mesmo evento a cada consumidor assinante', async () => {
+  it('o pg-boss entrega o mesmo evento a cada consumidor assinante, uma vez', async () => {
+    // Uma instância anterior do worker já criou as filas; assinar de novo as reaproveita.
+    const anterior = await BarramentoPgBoss.iniciar(postgres.urlDoContexto('barramento'));
+    await anterior.assinar('AlgoAconteceu', 'consulta.projetar', () => Promise.resolve());
+    await anterior.fechar();
     const barramento = await BarramentoPgBoss.iniciar(postgres.urlDoContexto('barramento'));
     const recebidos: string[] = [];
     let concluir!: () => void;
