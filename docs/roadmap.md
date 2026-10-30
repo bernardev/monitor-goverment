@@ -100,7 +100,7 @@ ausência com motivo) e deixa o Senado para quando os senadores estiverem em Age
 | 3.1   | Frequência no plenário da Câmara, com o motivo de cada ausência justificada: conector, `RegistroDeFrequencia`, projeção, API e perfil no site. | Concluída |
 | 3.2   | Votações nominais do plenário da Câmara e o voto de cada deputado; antes, os períodos de exercício dos deputados (inclusive suplentes).        | Concluída |
 | 3.3   | Senado: senadores e seus exercícios em Agentes Públicos, votações nominais e quem não votou, com o motivo, em cada votação.                    | Concluída |
-| 3.4   | Proposições, autoria e tramitação (Câmara e Senado).                                                                                           | A fazer   |
+| 3.4   | Proposições normativas (PEC, PLP, PL, MPV, PDL) da Câmara e do Senado: autoria, situação e tramitação, ligadas às votações.                    | Concluída |
 
 ### Fatia 3.1: frequência na Câmara
 
@@ -193,3 +193,36 @@ ausências sem justificativa e 2.391 presentes sem voto. Coletar de novo não ge
 
 Fica para depois, de propósito: unificar a pessoa que foi deputada e virou senadora (as fontes não têm
 identificador comum, e juntar pelo nome confundiria homônimos) e a frequência diária do Senado.
+
+### Fatia 3.4: proposições
+
+- **Recorte:** só os tipos que podem virar norma (PEC, PLP, PL, MPV e PDL). Requerimentos, pareceres e
+  outros documentos de trâmite seriam metade do volume e não viram lei. Na Câmara, entram as
+  proposições com tramitação nos últimos 3 dias; no Senado, os processos atualizados nesse período.
+  Tramitação não muda depois de registrada, e três dias cobrem um fim de semana sem execução.
+- **Fontes:** na Câmara, três consultas por proposição (detalhe, autores e tramitações), quatro ao
+  mesmo tempo: com oito, a Câmara responde 429, e o cliente HTTP agora espera o que a fonte pede em
+  `Retry-After`. No Senado, uma consulta por processo traz autoria, situação, histórico de situações e
+  norma gerada.
+- **O que a fonte ensinou:** a sequência da tramitação na Câmara não é única (dois despachos do mesmo
+  ato repetem o número) e nem sempre acompanha a data; o importador ordena por data, de forma estável.
+  No Senado, o código do autor só identifica senadores: um deputado autor vem com o código do Senado.
+- **Domínio:** `Proposicao`, uma por casa. O autor parlamentar é ligado à pessoa quando Agentes
+  Públicos o conhece; quem não é parlamentar conhecido (Poder Executivo, comissão, ex-parlamentar)
+  fica com o nome da fonte. Ato novo depois dos conhecidos vira `TramitacaoAvancou`; outra correção da
+  casa, `ProposicaoRetificada`.
+- **Votação e proposição:** a votação aponta a matéria pelo código da casa; no Senado, as votações
+  passaram a trazer o id do processo (contrato v1.1.0), o mesmo das proposições. A página da votação
+  liga para a proposição quando ela já foi coletada, e a da proposição lista as votações.
+- **Leitura:** `GET /v1/proposicoes?casa=&tipo=`, `GET /v1/proposicoes/{id}` e
+  `GET /v1/parlamentares/{id}/proposicoes`; páginas de proposições, da proposição e a seção
+  "Proposições de autoria" no perfil.
+
+Resultado: com a fonte real, a coleta dos últimos 3 dias levou 12 minutos e trouxe 1.735 proposições da
+Câmara e 271 do Senado, todas importadas sem recusa, com 18.681 atos de tramitação. Dos autores, 2.135 de
+2.323 na Câmara e 335 de 555 no Senado ficaram ligados a pessoas; os demais são comissões, a Presidência
+da República e ex-parlamentares. As 190 votações do Senado coletadas de novo passaram a apontar o
+processo; 5 delas já ligam a uma proposição coletada, e o número cresce com a coleta diária.
+
+Fica para depois, de propósito: ligar a mesma matéria nas duas casas, a carga histórica (só entra o
+que se move desde o início da coleta), relatorias e as proposições acessórias (emendas, pareceres).

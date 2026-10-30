@@ -126,7 +126,7 @@ Eventos são fatos no passado, em português, versionados em `packages/contracts
 | --------------------------------------------------------------------- | --------------------- | ----------------------------------- |
 | `LoteIngerido`                                                        | Ingestão              | contexto dono da fonte (importador) |
 | `MandatoRegistrado`, `PeriodoDoMandatoRetificado`                     | Agentes Públicos      | Compromissos, Consulta, Engajamento |
-| `ProposicaoApresentada`, `TramitacaoAvancou`                          | Atividade Legislativa | Compromissos, Consulta, Engajamento |
+| `ProposicaoRegistrada`, `TramitacaoAvancou`, `ProposicaoRetificada`   | Atividade Legislativa | Compromissos, Consulta, Engajamento |
 | `VotacaoNominalRegistrada`, `VotacaoNominalRetificada`                | Atividade Legislativa | Compromissos, Consulta, Engajamento |
 | `PresencaRegistrada`, `AusenciaRegistrada`, `FrequenciaRetificada`    | Atividade Legislativa | Consulta, Engajamento               |
 | `EmendaIndicada`, `EmendaEmpenhada`, `EmendaPaga`                     | Finanças Públicas     | Compromissos, Consulta, Engajamento |

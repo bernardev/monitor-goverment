@@ -85,8 +85,14 @@ subir o Docker e ao rodar API e worker.
    uv run dagster asset materialize -m prometeu_dados.definicoes --select senado_senadores,senado_votacoes
    ```
 
-4. Suba a API e o site; as listas ficam em `http://localhost:3001/parlamentares` e
-   `http://localhost:3001/votacoes`:
+   As proposições normativas dos últimos 3 dias (a parte da Câmara leva cerca de dez minutos):
+
+   ```bash
+   uv run dagster asset materialize -m prometeu_dados.definicoes --select camara_proposicoes,senado_proposicoes
+   ```
+
+4. Suba a API e o site; as listas ficam em `http://localhost:3001/parlamentares`,
+   `http://localhost:3001/votacoes` e `http://localhost:3001/proposicoes`:
 
    ```bash
    node apps/api/dist/main.js
