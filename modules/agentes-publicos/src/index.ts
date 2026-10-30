@@ -81,3 +81,8 @@ export function montarAgentesPublicos(
     criarRelay: (barramento) => new RelayDaOutbox(banco, outbox, barramento),
   };
 }
+
+/** Só a consulta de mandatos, para quem não importa dados (a API editorial, por exemplo). */
+export function montarConsultaDeMandatos(banco: BancoDoContexto): ConsultaDeMandatos {
+  return new ConsultaDeMandatosPostgres(banco);
+}

@@ -50,6 +50,15 @@ importers:
       '@nestjs/platform-express':
         specifier: ^12.3.2
         version: 12.3.2(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@12.3.2)
+      '@prometeu/acervo':
+        specifier: workspace:*
+        version: link:../../modules/acervo
+      '@prometeu/agentes-publicos':
+        specifier: workspace:*
+        version: link:../../modules/agentes-publicos
+      '@prometeu/compromissos':
+        specifier: workspace:*
+        version: link:../../modules/compromissos
       '@prometeu/consulta':
         specifier: workspace:*
         version: link:../../modules/consulta
@@ -84,6 +93,9 @@ importers:
       '@swc/core':
         specifier: ^1.16.20
         version: 1.16.20(@swc/helpers@0.5.23)
+      '@testcontainers/postgresql':
+        specifier: ^12.2.1
+        version: 12.2.1
       '@types/supertest':
         specifier: ^7.2.1
         version: 7.2.1
@@ -152,6 +164,9 @@ importers:
       '@prometeu/agentes-publicos':
         specifier: workspace:*
         version: link:../../modules/agentes-publicos
+      '@prometeu/compromissos':
+        specifier: workspace:*
+        version: link:../../modules/compromissos
       '@prometeu/consulta':
         specifier: workspace:*
         version: link:../../modules/consulta

@@ -11,6 +11,11 @@ import {
   type ResumoDaImportacao,
   SCHEMA_DE_AGENTES_PUBLICOS,
 } from '@prometeu/agentes-publicos';
+import {
+  MIGRACOES_DE_COMPROMISSOS,
+  montarCompromissos,
+  SCHEMA_DE_COMPROMISSOS,
+} from '@prometeu/compromissos';
 import { MIGRACOES_DA_CONSULTA, montarConsulta, SCHEMA_DA_CONSULTA } from '@prometeu/consulta';
 import {
   BancoDoContexto,
@@ -34,6 +39,10 @@ export class Orquestrador implements OnApplicationBootstrap, OnApplicationShutdo
       SCHEMA_DE_AGENTES_PUBLICOS,
       urlDoBanco(SCHEMA_DE_AGENTES_PUBLICOS),
     ),
+    compromissos: BancoDoContexto.conectar(
+      SCHEMA_DE_COMPROMISSOS,
+      urlDoBanco(SCHEMA_DE_COMPROMISSOS),
+    ),
     consulta: BancoDoContexto.conectar(SCHEMA_DA_CONSULTA, urlDoBanco(SCHEMA_DA_CONSULTA)),
     ingestao: BancoDoContexto.conectar('ingestao', urlDoBanco('ingestao')),
   };
@@ -43,6 +52,7 @@ export class Orquestrador implements OnApplicationBootstrap, OnApplicationShutdo
   async onApplicationBootstrap(): Promise<void> {
     await migrar(this.bancos.acervo, MIGRACOES_DO_ACERVO);
     await migrar(this.bancos.agentesPublicos, MIGRACOES_DE_AGENTES_PUBLICOS);
+    await migrar(this.bancos.compromissos, MIGRACOES_DE_COMPROMISSOS);
     await migrar(this.bancos.consulta, MIGRACOES_DA_CONSULTA);
     this.logger.log('Migrações aplicadas.');
 
@@ -55,6 +65,10 @@ export class Orquestrador implements OnApplicationBootstrap, OnApplicationShutdo
       registrarCaptura: acervo.registrarCaptura,
     });
     const consulta = montarConsulta(this.bancos.consulta);
+    const compromissos = montarCompromissos({
+      banco: this.bancos.compromissos,
+      mandatos: agentesPublicos.mandatos,
+    });
 
     await agentesPublicos.assinarConsumidores(barramento, (resumo) => {
       this.relatar(resumo);
@@ -65,6 +79,7 @@ export class Orquestrador implements OnApplicationBootstrap, OnApplicationShutdo
       new RelayDaOutbox(this.bancos.ingestao, outboxDaIngestao, barramento),
       acervo.criarRelay(barramento),
       agentesPublicos.criarRelay(barramento),
+      compromissos.criarRelay(barramento),
     );
     for (const relay of this.relays) {
       relay.iniciar(1000, (erro) => {
