@@ -84,26 +84,35 @@ export class RegistrarVotacaoNominal {
     if (!dia.ok) return dia;
 
     const semMandato: string[] = [];
-    const mandatoDe = async (
+    const encontrado = (
       parlamentar: ParlamentarNaFonte,
-      instante: Date | null,
-    ): Promise<MandatoVigente | undefined> => {
-      const mandato =
-        instante === null
-          ? await this.mandatos.vigenteNoDia(parlamentar, entrada.casa, dia.value)
-          : await this.mandatos.vigenteEm(parlamentar, entrada.casa, instante);
+      mandato: MandatoVigente | undefined,
+    ): MandatoVigente | undefined => {
       if (mandato === undefined) semMandato.push(`${parlamentar.fonte}:${parlamentar.codigo}`);
       return mandato;
     };
 
     const votos: VotoApurado[] = [];
     for (const voto of entrada.votos) {
-      const mandato = await mandatoDe(voto.parlamentar, voto.registradoEm);
+      const mandato = encontrado(
+        voto.parlamentar,
+        voto.registradoEm === null
+          ? await this.mandatos.vigenteNoDia(voto.parlamentar, entrada.casa, dia.value)
+          : await this.mandatos.vigenteEm(voto.parlamentar, entrada.casa, voto.registradoEm),
+      );
       if (mandato) votos.push({ ...voto, mandato });
     }
     const semVoto: SemVotoApurado[] = [];
     for (const registro of entrada.semVoto) {
-      const mandato = await mandatoDe(registro.parlamentar, null);
+      // De licença, o parlamentar está fora do exercício, mas a casa o lista com o motivo até o
+      // suplente tomar posse: a ausência fica ligada ao exercício que a licença encerrou.
+      const noDia = await this.mandatos.vigenteNoDia(registro.parlamentar, entrada.casa, dia.value);
+      const mandato = encontrado(
+        registro.parlamentar,
+        noDia === undefined && registro.situacao === 'ausencia_justificada'
+          ? await this.mandatos.ultimoAntesDoDia(registro.parlamentar, entrada.casa, dia.value)
+          : noDia,
+      );
       let motivo: MotivoDaAusencia | undefined;
       if (registro.motivo !== null) {
         const criado = MotivoDaAusencia.criar(

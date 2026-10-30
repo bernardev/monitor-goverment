@@ -45,6 +45,12 @@ export interface MandatosDosParlamentares {
     casa: CasaLegislativa,
     instante: Date,
   ): Promise<MandatoVigente | undefined>;
+  /** O último mandato encerrado antes do dia: o de quem está de licença, fora do exercício. */
+  ultimoAntesDoDia(
+    parlamentar: ParlamentarNaFonte,
+    casa: CasaLegislativa,
+    dia: DiaDeSessao,
+  ): Promise<MandatoVigente | undefined>;
 }
 
 /** De onde veio um dado: a resposta bruta guardada no bronze (ADR-0016). */

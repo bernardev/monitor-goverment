@@ -14,7 +14,9 @@ const CARGO_NA_CASA: Readonly<Record<CasaLegislativa, Cargo>> = {
 
 /** Atividade Legislativa é cliente de Agentes Públicos, pelo serviço de host aberto. */
 export class MandatosEmAgentesPublicos implements MandatosDosParlamentares {
-  constructor(private readonly mandatos: Pick<ConsultaDeMandatos, 'vigente'>) {}
+  constructor(
+    private readonly mandatos: Pick<ConsultaDeMandatos, 'vigente' | 'ultimoEncerradoAntes'>,
+  ) {}
 
   async vigenteNoDia(
     parlamentar: ParlamentarNaFonte,
@@ -31,6 +33,15 @@ export class MandatosEmAgentesPublicos implements MandatosDosParlamentares {
     instante: Date,
   ): Promise<MandatoVigente | undefined> {
     return paraVigente(await this.mandatos.vigente(parlamentar, CARGO_NA_CASA[casa], instante));
+  }
+
+  async ultimoAntesDoDia(
+    parlamentar: ParlamentarNaFonte,
+    casa: CasaLegislativa,
+    dia: DiaDeSessao,
+  ): Promise<MandatoVigente | undefined> {
+    const cargo = CARGO_NA_CASA[casa];
+    return paraVigente(await this.mandatos.ultimoEncerradoAntes(parlamentar, cargo, dia.inicio));
   }
 }
 

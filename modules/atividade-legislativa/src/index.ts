@@ -56,7 +56,7 @@ export interface DependenciasDeAtividadeLegislativa {
   /** Serviço de host aberto do Acervo (ADR-0016). */
   readonly registrarCaptura: RegistrarCaptura;
   /** Serviço de host aberto de Agentes Públicos: quem é o parlamentar e qual o mandato. */
-  readonly mandatos: Pick<ConsultaDeMandatos, 'vigente'>;
+  readonly mandatos: Pick<ConsultaDeMandatos, 'vigente' | 'ultimoEncerradoAntes'>;
   readonly relogio?: Relogio;
 }
 

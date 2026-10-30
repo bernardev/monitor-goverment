@@ -195,6 +195,23 @@ describe('VotacaoNominal com a relação completa (Senado)', () => {
     expect(resultado.ok).toBe(true);
   });
 
+  it('de licença, a ausência justificada fica no exercício que a licença encerrou', () => {
+    // O exercício terminou no dia 13; o Senado ainda lista o titular, de licença, no dia 14.
+    const encerrado = { ...umMandato(3), fim: new Date('2026-10-14T02:59:59.999Z') };
+    const licenca = { ...umaLicencaSaude(3), mandato: encerrado };
+
+    expect(registrar({ ...umaApuracaoDoSenado(), semVoto: [licenca] }).ok).toBe(true);
+    // Presente sem voto, fora do exercício, não faz sentido.
+    expect(
+      codigoDoErro(
+        registrar({
+          ...umaApuracaoDoSenado(),
+          semVoto: [{ ...umPresenteSemVoto(4), mandato: { ...umMandato(4), fim: encerrado.fim } }],
+        }),
+      ),
+    ).toBe('votacao.voto_fora_do_mandato');
+  });
+
   it('votação secreta pode ter quem presidia, mas nenhum voto conhecido', () => {
     const secreta = umaVotacao({
       ...umaApuracaoDoSenado(),
@@ -226,7 +243,10 @@ describe('VotacaoNominal com a relação completa (Senado)', () => {
       () => ({
         ...umaApuracaoDoSenado(),
         semVoto: [
-          { ...umaLicencaSaude(3), mandato: { ...umMandato(3), fim: new Date('2026-10-01') } },
+          {
+            ...umaLicencaSaude(3),
+            mandato: { ...umMandato(3), inicio: new Date('2026-10-20T03:00:00Z'), fim: null },
+          },
         ],
       }),
     ],

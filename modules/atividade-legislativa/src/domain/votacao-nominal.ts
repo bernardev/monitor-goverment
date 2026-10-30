@@ -363,8 +363,11 @@ function validar(apuracao: ApuracaoDaVotacao, agora: Date): Result<Apurada, Doma
   for (const registro of apuracao.semVoto) {
     const { mandato } = registro;
     if (repetida(mandato)) return repetido(mandato);
-    if (!noMandato(mandato, null, apuracao.dia)) return foraDoMandato(mandato);
     const justificada = registro.situacao === 'ausencia_justificada';
+    // De licença, o parlamentar está fora do exercício: a ausência justificada pode ser de um mandato
+    // já encerrado, mas nunca de um que ainda não começou.
+    const licenciado = justificada && mandato.fim !== null && mandato.fim < apuracao.dia.inicio;
+    if (!licenciado && !noMandato(mandato, null, apuracao.dia)) return foraDoMandato(mandato);
     if (justificada !== (registro.motivo !== undefined)) {
       return falha(
         'votacao.motivo_incoerente',

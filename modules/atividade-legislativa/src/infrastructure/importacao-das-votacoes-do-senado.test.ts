@@ -47,8 +47,9 @@ const senador = (codigo: number, sigla: string, descricao: string | null = null)
 });
 
 /**
- * Ana votou Sim, Bruno estava de licença saúde e Carla presidia. Na segunda votação aparece uma sigla
- * que ninguém traduziu; na terceira, um senador que Agentes Públicos não conhece.
+ * Ana votou Sim, Bruno estava de licença saúde e Carla presidia. Dora saiu do exercício na véspera,
+ * de licença, e o Senado ainda a lista enquanto o suplente não toma posse. Na segunda votação aparece
+ * uma sigla que ninguém traduziu; na terceira, um senador que Agentes Públicos não conhece.
  */
 const VOTACOES: readonly [number, unknown[]][] = [
   [
@@ -57,6 +58,7 @@ const VOTACOES: readonly [number, unknown[]][] = [
       senador(900101, 'Sim'),
       senador(900102, 'LS', 'Licença saúde'),
       senador(900103, 'Presidente (art. 51 RISF)'),
+      senador(900104, 'LS', 'Licença saúde'),
     ],
   ],
   [9102, [senador(900101, 'Sim'), senador(900102, 'XYZ')]],
@@ -113,10 +115,11 @@ describe('importação das votações do Senado (prata → Atividade Legislativa
     const relogio = { agora: () => AGORA };
     const registrarCaptura = montarAcervo(acervo, relogio).registrarCaptura;
     const agentesPublicos = montarAgentesPublicos({ banco: agentes, registrarCaptura, relogio });
-    for (const [codigo, nome] of [
-      ['900101', 'Ana Senadora'],
-      ['900102', 'Bruno Senador'],
-      ['900103', 'Carla Presidente'],
+    for (const [codigo, nome, fim] of [
+      ['900101', 'Ana Senadora', '2031-02-01T02:59:59.999Z'],
+      ['900102', 'Bruno Senador', '2031-02-01T02:59:59.999Z'],
+      ['900103', 'Carla Presidente', '2031-02-01T02:59:59.999Z'],
+      ['900104', 'Dora Licenciada', '2026-10-14T02:59:59.999Z'],
     ] as const) {
       const sincronizada = await agentesPublicos.sincronizar.execute({
         identificador: { fonte: 'senado', codigo },
@@ -128,7 +131,7 @@ describe('importação das votações do Senado (prata → Atividade Legislativa
             cargo: 'senador',
             circunscricao: '35',
             inicio: new Date('2023-02-01T03:00:00.000Z'),
-            fim: new Date('2031-02-01T02:59:59.999Z'),
+            fim: new Date(fim),
           },
         ],
         origem: {
@@ -182,7 +185,10 @@ describe('importação das votações do Senado (prata → Atividade Legislativa
       ['sim', 'Sim', null],
     ]);
     expect(votacao?.semVoto.map((s) => [s.situacao, s.motivoCategoria, s.motivoDescricao])).toEqual(
-      [['ausencia_justificada', 'licenca_saude', 'Licença saúde']],
+      [
+        ['ausencia_justificada', 'licenca_saude', 'Licença saúde'],
+        ['ausencia_justificada', 'licenca_saude', 'Licença saúde'],
+      ],
     );
     // A mesma resposta traz a votação e os votos.
     expect(votacao?.capturaId).toEqual(votacao?.capturaDosVotosId);
