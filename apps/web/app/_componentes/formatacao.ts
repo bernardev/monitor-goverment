@@ -44,6 +44,26 @@ export function nomeDaOpcao(opcao: string): string {
   return OPCOES[opcao] ?? opcao;
 }
 
+const SITUACOES_SEM_VOTO: Readonly<Record<string, string>> = {
+  presente_sem_voto: 'Presente, sem voto registrado',
+  ausente: 'Ausente, sem justificativa',
+  ausencia_justificada: 'Ausência justificada',
+  nao_informada: 'Situação sem legenda pública',
+};
+
+export function nomeDaSituacaoSemVoto(situacao: string): string {
+  return SITUACOES_SEM_VOTO[situacao] ?? situacao;
+}
+
+const CASAS: Readonly<Record<string, string>> = {
+  camara_dos_deputados: 'Câmara dos Deputados',
+  senado_federal: 'Senado Federal',
+};
+
+export function nomeDaCasa(casa: string): string {
+  return CASAS[casa] ?? casa;
+}
+
 const RESULTADOS: Readonly<Record<string, string>> = {
   aprovada: 'Aprovada',
   rejeitada: 'Rejeitada',

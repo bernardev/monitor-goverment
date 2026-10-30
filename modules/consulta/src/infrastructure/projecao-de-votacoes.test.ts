@@ -240,4 +240,70 @@ describe('projeção de votações nominais', () => {
       ],
     });
   });
+
+  it('Senado (contrato v2): sem horário, com quem não votou e o motivo', async () => {
+    const SENADO = '0192d5e0-7777-7000-8000-000000000004';
+    await publicar({
+      ...evento('VotacaoNominalRegistrada', SENADO, '2026-10-30T09:00:00.000Z', {
+        casa: 'senado_federal',
+        codigoNaFonte: '9101',
+        dia: '2026-10-14',
+        registradaEm: null,
+        descricao: 'Votação nominal do PLP 901/2026.',
+        resultado: 'aprovada',
+        secreta: false,
+        relacaoCompleta: true,
+        proposicoes: [],
+        votos: [{ ...voto(ANA, 'sim', 'Sim'), registradoEm: null }],
+        semVoto: [
+          {
+            pessoaId: CARLA,
+            mandatoId: MANDATO,
+            situacao: 'ausencia_justificada',
+            motivo: { categoria: 'licenca_saude', descricaoNaFonte: 'Licença saúde' },
+            registroNaFonte: 'LS',
+            siglaPartidoNaFonte: 'PEX',
+          },
+        ],
+        capturaId: CAPTURA,
+        capturaDosVotosId: CAPTURA,
+      }),
+      versao: 2,
+    });
+
+    const detalhe = await consulta.buscar(SENADO);
+    expect(detalhe).toMatchObject({
+      registradaEm: null,
+      relacaoCompleta: true,
+      placar: { sim: 1 },
+      semVoto: [
+        {
+          pessoaId: CARLA,
+          situacao: 'ausencia_justificada',
+          motivo: { categoria: 'licenca_saude' },
+          registroNaFonte: 'LS',
+        },
+      ],
+    });
+    expect(detalhe?.votos.map((v) => v.pessoaId)).toEqual([ANA]);
+    expect(
+      (
+        await consulta.listar({
+          casa: 'senado_federal',
+          de: '2026-10-01',
+          ate: '2026-10-31',
+          pagina: 1,
+          itensPorPagina: 10,
+        })
+      ).itens.map((v) => v.votacaoId),
+    ).toEqual([SENADO]);
+
+    const daCarla = await consulta.doParlamentar(CARLA, { de: '2026-10-14', ate: '2026-10-14' });
+    const noSenado = daCarla.participacoes.find((p) => p.votacao.votacaoId === SENADO);
+    expect(noSenado?.voto).toBeNull();
+    expect(noSenado?.semVoto).toMatchObject({
+      situacao: 'ausencia_justificada',
+      registroNaFonte: 'LS',
+    });
+  });
 });

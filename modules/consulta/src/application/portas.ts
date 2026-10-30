@@ -19,6 +19,8 @@ export interface ConsultaDeFrequencia {
 }
 
 export interface FiltroDeVotacoes extends PeriodoEmDias {
+  /** Sem casa, as duas. */
+  readonly casa?: 'camara_dos_deputados' | 'senado_federal' | undefined;
   readonly pagina: number;
   readonly itensPorPagina: number;
 }

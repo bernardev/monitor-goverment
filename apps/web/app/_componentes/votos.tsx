@@ -2,7 +2,7 @@ import type { ParticipacaoEmVotacao, VotosDoParlamentar } from '@prometeu/contra
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
-import { dia, nomeDaOpcao, nomeDoMotivo } from './formatacao';
+import { dia, nomeDaOpcao, nomeDaSituacaoSemVoto, nomeDoMotivo } from './formatacao';
 
 /**
  * O voto do parlamentar em cada votação nominal do plenário. Quando não há voto, mostra como a casa
@@ -15,8 +15,9 @@ export function Votos({ votos }: { votos: VotosDoParlamentar }): ReactNode {
   const periodo = `de ${dia(votos.de)} a ${dia(votos.ate)}`;
   const cobertura = (
     <p className="fonte">
-      Entram as votações em que o parlamentar votou e as dos dias em que a casa apurou a frequência
-      dele. Só as votações já coletadas da fonte oficial aparecem aqui.
+      Entram as votações em que o parlamentar votou, as que o listam entre quem não votou (o Senado
+      lista todos os senadores em exercício) e as dos dias em que a casa apurou a frequência dele.
+      Só as votações já coletadas da fonte oficial aparecem aqui.
     </p>
   );
 
@@ -67,10 +68,15 @@ function Opcao({ nome, votos }: { nome: string; votos: number }): ReactNode {
   );
 }
 
-function oQueFez({ voto, frequenciaNoDia }: ParticipacaoEmVotacao): string {
+function oQueFez({ voto, semVoto, frequenciaNoDia }: ParticipacaoEmVotacao): string {
   if (voto) {
     const grafia = voto.registroNaFonte ? ` (registro da casa: “${voto.registroNaFonte}”)` : '';
     return `Voto: ${nomeDaOpcao(voto.opcao)}${grafia}.`;
+  }
+  // A própria votação diz por que ele não votou (Senado): vale mais do que a frequência do dia.
+  if (semVoto) {
+    const motivo = semVoto.motivo ? `: ${nomeDoMotivo(semVoto.motivo.categoria)}` : '';
+    return `Não votou. ${nomeDaSituacaoSemVoto(semVoto.situacao)}${motivo} (registro da casa: “${semVoto.registroNaFonte}”).`;
   }
   if (!frequenciaNoDia) return 'Sem voto registrado.';
   const { situacao, motivo } = frequenciaNoDia;

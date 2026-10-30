@@ -91,6 +91,13 @@ export interface FrequenciaDoParlamentar {
 export type OpcaoDeVoto =
   'sim' | 'nao' | 'abstencao' | 'obstrucao' | 'presidente_da_sessao' | 'secreto';
 
+/**
+ * Por que o parlamentar em exercício não votou, quando a casa informa (o Senado informa; a Câmara não
+ * lista quem não votou). `nao_informada`: registro da casa sem significado público.
+ */
+export type SituacaoSemVoto =
+  'presente_sem_voto' | 'ausente' | 'ausencia_justificada' | 'nao_informada';
+
 /** Proposição que a votação afetou, como a casa a identifica. */
 export interface ProposicaoAfetada {
   readonly codigoNaFonte: string;
@@ -107,14 +114,22 @@ export interface VotacaoNominalResumo {
   readonly codigoNaFonte: string;
   /** Dia do calendário de Brasília, `aaaa-mm-dd`. */
   readonly dia: string;
-  readonly registradaEm: string;
+  /** `null`: a casa não informa o horário (Senado). */
+  readonly registradaEm: string | null;
   /** Palavras da casa, com o resultado. */
   readonly descricao: string;
   readonly resultado: 'aprovada' | 'rejeitada' | 'nao_informado';
   readonly secreta: boolean;
   readonly proposicoes: readonly ProposicaoAfetada[];
-  /** Votos registrados em cada opção. Quem faltou à votação não entra. */
+  /** Votos registrados em cada opção. Quem não votou não entra. */
   readonly placar: Readonly<Record<OpcaoDeVoto, number>>;
+  /**
+   * A casa listou todos os parlamentares em exercício, inclusive quem não votou (Senado). Falso na
+   * Câmara: quem não aparece não é ausente, a fonte só não diz.
+   */
+  readonly relacaoCompleta: boolean;
+  /** Quem não votou, por situação; tudo zero quando `relacaoCompleta` é falso. */
+  readonly contagemSemVoto: Readonly<Record<SituacaoSemVoto, number>>;
   readonly fonte: FonteDoDado;
 }
 
@@ -129,9 +144,29 @@ export interface VotoNaVotacao {
   readonly registroNaFonte: string | null;
 }
 
+/** Como a casa registrou o dia do parlamentar na votação, quando ele não votou. */
+export interface SemVotoNaVotacao {
+  readonly situacao: SituacaoSemVoto;
+  /** Só na ausência justificada. */
+  readonly motivo: {
+    readonly categoria: CategoriaDoMotivo;
+    readonly descricaoNaFonte: string;
+  } | null;
+  /** Como a casa escreveu a situação (`LS`, `P-NRV`). */
+  readonly registroNaFonte: string;
+}
+
+export interface ParlamentarSemVoto extends SemVotoNaVotacao {
+  readonly pessoaId: string;
+  readonly nome: string | null;
+  readonly siglaPartido: string | null;
+}
+
 export interface VotacaoNominalDetalhada extends VotacaoNominalResumo {
   /** Em ordem de nome. */
   readonly votos: readonly VotoNaVotacao[];
+  /** Em ordem de nome; vazio quando `relacaoCompleta` é falso. */
+  readonly semVoto: readonly ParlamentarSemVoto[];
   /** A lista de votos na fonte. */
   readonly fonteDosVotos: FonteDoDado;
 }
@@ -140,15 +175,17 @@ export interface ParticipacaoEmVotacao {
   readonly votacao: VotacaoNominalResumo;
   /** `null`: a casa não registrou voto do parlamentar nesta votação. */
   readonly voto: { readonly opcao: OpcaoDeVoto; readonly registroNaFonte: string | null } | null;
+  /** Por que não votou, quando a casa informa na própria votação (Senado). */
+  readonly semVoto: SemVotoNaVotacao | null;
   /** Como a casa apurou o dia do parlamentar; `null` se a frequência do dia não foi coletada. */
   readonly frequenciaNoDia: Pick<DiaDeFrequencia, 'situacao' | 'motivo' | 'registroNaFonte'> | null;
 }
 
 /**
  * Votações nominais do plenário num período e o que o parlamentar fez em cada uma. Entra a votação em
- * que ele votou e a do dia em que a casa apurou a frequência dele (estava no cargo), votando ou não.
- * Votação de dia sem frequência coletada e sem voto fica de fora: não dá para saber se ele estava no
- * cargo.
+ * que ele votou, a que o lista entre quem não votou (Senado) e a do dia em que a casa apurou a
+ * frequência dele (estava no cargo). Votação sem nada disso fica de fora: não dá para saber se ele
+ * estava no cargo.
  */
 export interface VotosDoParlamentar {
   readonly pessoaId: string;

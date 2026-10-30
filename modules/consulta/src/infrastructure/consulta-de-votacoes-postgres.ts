@@ -5,12 +5,14 @@ import type {
   OpcaoDeVoto,
   Pagina,
   ParticipacaoEmVotacao,
+  SemVotoNaVotacao,
+  SituacaoSemVoto,
   VotacaoNominalDetalhada,
   VotacaoNominalResumo,
   VotosDoParlamentar,
 } from '@prometeu/contracts';
 import type { BancoDoContexto } from '@prometeu/infraestrutura';
-import { and, asc, count, desc, eq, gte, isNotNull, lte, or } from 'drizzle-orm';
+import { and, asc, count, desc, eq, gte, isNotNull, lte, or, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 
 import type { ConsultaDeVotacoes, FiltroDeVotacoes, PeriodoEmDias } from '../application/portas.js';
@@ -25,25 +27,44 @@ const OPCOES: readonly OpcaoDeVoto[] = [
   'secreto',
 ];
 
+const SITUACOES_SEM_VOTO: readonly SituacaoSemVoto[] = [
+  'presente_sem_voto',
+  'ausente',
+  'ausencia_justificada',
+  'nao_informada',
+];
+
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 const capturaDosVotos = alias(captura, 'captura_dos_votos');
 
+/** Da mais recente para a mais antiga; sem horário (Senado), depois das do mesmo dia com horário. */
+const MAIS_RECENTE_PRIMEIRO = [
+  desc(votacao.dia),
+  sql`${votacao.registradaEm} DESC NULLS LAST`,
+  desc(votacao.codigoNaFonte),
+];
+
 type LinhaDeVotacao = typeof votacao.$inferSelect;
 type LinhaDeCaptura = typeof captura.$inferSelect;
+type LinhaDeVoto = typeof voto.$inferSelect;
 
 export class ConsultaDeVotacoesPostgres implements ConsultaDeVotacoes {
   constructor(private readonly banco: BancoDoContexto) {}
 
   async listar(filtro: FiltroDeVotacoes): Promise<Pagina<VotacaoNominalResumo>> {
-    const onde = and(gte(votacao.dia, filtro.de), lte(votacao.dia, filtro.ate));
+    const onde = and(
+      gte(votacao.dia, filtro.de),
+      lte(votacao.dia, filtro.ate),
+      filtro.casa === undefined ? undefined : eq(votacao.casa, filtro.casa),
+    );
     const [linhas, [total]] = await Promise.all([
       this.banco.drizzle
         .select({ votacao, captura })
         .from(votacao)
         .leftJoin(captura, eq(captura.capturaId, votacao.capturaId))
         .where(onde)
-        .orderBy(desc(votacao.registradaEm), desc(votacao.votacaoId))
+        .orderBy(...MAIS_RECENTE_PRIMEIRO)
         .limit(filtro.itensPorPagina)
         .offset((filtro.pagina - 1) * filtro.itensPorPagina),
       this.banco.drizzle.select({ total: count() }).from(votacao).where(onde),
@@ -67,21 +88,27 @@ export class ConsultaDeVotacoesPostgres implements ConsultaDeVotacoes {
       .where(eq(votacao.votacaoId, id));
     if (!linha) return undefined;
 
-    const votos = await this.banco.drizzle
+    const registros = await this.banco.drizzle
       .select({ voto, nome: parlamentar.nome })
       .from(voto)
       .leftJoin(parlamentar, eq(parlamentar.pessoaId, voto.pessoaId))
       .where(eq(voto.votacaoId, id))
       .orderBy(asc(parlamentar.nome), asc(voto.pessoaId));
+    const votos: VotacaoNominalDetalhada['votos'][number][] = [];
+    const semVoto: VotacaoNominalDetalhada['semVoto'][number][] = [];
+    for (const { voto: v, nome } of registros) {
+      const quem = { pessoaId: v.pessoaId, nome, siglaPartido: v.siglaPartidoNaFonte };
+      if (v.opcao !== null) {
+        votos.push({ ...quem, opcao: v.opcao as OpcaoDeVoto, registroNaFonte: v.registroNaFonte });
+      } else {
+        const registro = paraSemVoto(v);
+        if (registro) semVoto.push({ ...quem, ...registro });
+      }
+    }
     return {
       ...paraResumo(linha.votacao, linha.captura),
-      votos: votos.map(({ voto: v, nome }) => ({
-        pessoaId: v.pessoaId,
-        nome,
-        siglaPartido: v.siglaPartidoNaFonte,
-        opcao: v.opcao as OpcaoDeVoto,
-        registroNaFonte: v.registroNaFonte,
-      })),
+      votos,
+      semVoto,
       fonteDosVotos: fonte(linha.votacao.capturaDosVotosId, linha.capturaDosVotos),
     };
   }
@@ -107,27 +134,23 @@ export class ConsultaDeVotacoesPostgres implements ConsultaDeVotacoes {
         and(
           gte(votacao.dia, periodo.de),
           lte(votacao.dia, periodo.ate),
-          // Votou, ou a casa apurou a frequência dele no dia: estava no cargo.
+          // A votação o lista (votou ou não), ou a casa apurou a frequência dele no dia.
           or(isNotNull(voto.pessoaId), isNotNull(frequencia.registroId)),
         ),
       )
-      .orderBy(desc(votacao.registradaEm), desc(votacao.votacaoId));
+      .orderBy(...MAIS_RECENTE_PRIMEIRO);
 
     const participacoes = linhas.map((l): ParticipacaoEmVotacao => ({
       votacao: paraResumo(l.votacao, l.captura),
-      voto: l.voto
-        ? { opcao: l.voto.opcao as OpcaoDeVoto, registroNaFonte: l.voto.registroNaFonte }
-        : null,
+      voto:
+        l.voto?.opcao != null
+          ? { opcao: l.voto.opcao as OpcaoDeVoto, registroNaFonte: l.voto.registroNaFonte }
+          : null,
+      semVoto: l.voto ? paraSemVoto(l.voto) : null,
       frequenciaNoDia: l.frequencia
         ? {
             situacao: l.frequencia.situacao as DiaDeFrequencia['situacao'],
-            motivo:
-              l.frequencia.motivoCategoria === null
-                ? null
-                : {
-                    categoria: l.frequencia.motivoCategoria as CategoriaDoMotivo,
-                    descricaoNaFonte: l.frequencia.motivoDescricao ?? '',
-                  },
+            motivo: motivo(l.frequencia.motivoCategoria, l.frequencia.motivoDescricao),
             registroNaFonte: l.frequencia.registroNaFonte,
           }
         : null,
@@ -142,17 +165,38 @@ function paraResumo(v: LinhaDeVotacao, c: LinhaDeCaptura | null): VotacaoNominal
     casa: v.casa as VotacaoNominalResumo['casa'],
     codigoNaFonte: v.codigoNaFonte,
     dia: v.dia,
-    registradaEm: v.registradaEm.toISOString(),
+    registradaEm: v.registradaEm?.toISOString() ?? null,
     descricao: v.descricao,
     resultado: v.resultado as VotacaoNominalResumo['resultado'],
     secreta: v.secreta,
     proposicoes: v.proposicoes,
-    placar: Object.fromEntries(OPCOES.map((o) => [o, v.placar[o] ?? 0])) as Record<
-      OpcaoDeVoto,
-      number
-    >,
+    placar: contagem(OPCOES, v.placar),
+    relacaoCompleta: v.relacaoCompleta,
+    contagemSemVoto: contagem(SITUACOES_SEM_VOTO, v.contagemSemVoto),
     fonte: fonte(v.capturaId, c),
   };
+}
+
+function contagem<T extends string>(
+  chaves: readonly T[],
+  valores: Record<string, number>,
+): Record<T, number> {
+  return Object.fromEntries(chaves.map((c) => [c, valores[c] ?? 0])) as Record<T, number>;
+}
+
+function paraSemVoto(v: LinhaDeVoto): SemVotoNaVotacao | null {
+  if (v.situacaoSemVoto === null) return null;
+  return {
+    situacao: v.situacaoSemVoto as SituacaoSemVoto,
+    motivo: motivo(v.motivoCategoria, v.motivoDescricao),
+    registroNaFonte: v.registroNaFonte ?? '',
+  };
+}
+
+function motivo(categoria: string | null, descricao: string | null): SemVotoNaVotacao['motivo'] {
+  return categoria === null
+    ? null
+    : { categoria: categoria as CategoriaDoMotivo, descricaoNaFonte: descricao ?? '' };
 }
 
 function fonte(capturaId: string, c: LinhaDeCaptura | null): FonteDoDado {

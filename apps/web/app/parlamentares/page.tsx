@@ -8,7 +8,7 @@ import { nomeDoCargo, UFS } from '../_componentes/formatacao';
 export const metadata: Metadata = {
   title: 'Parlamentares | Prometeu',
   description:
-    'Deputados federais em exercício, com partido, estado e a fonte oficial de cada dado.',
+    'Deputados federais e senadores em exercício, com partido, estado e a fonte oficial de cada dado.',
 };
 
 interface Props {

@@ -21,8 +21,11 @@ export const votacao: VotacaoNominalDetalhada = {
   secreta: false,
   proposicoes: [],
   placar: { sim: 1, nao: 0, abstencao: 0, obstrucao: 0, presidente_da_sessao: 0, secreto: 0 },
+  relacaoCompleta: false,
+  contagemSemVoto: { presente_sem_voto: 0, ausente: 0, ausencia_justificada: 0, nao_informada: 0 },
   fonte: { capturaId: VOTACAO, url: 'https://camara/votacoes/1', coletadaEm: null },
   votos: [],
+  semVoto: [],
   fonteDosVotos: { capturaId: VOTACAO, url: 'https://camara/votacoes/1/votos', coletadaEm: null },
 };
 

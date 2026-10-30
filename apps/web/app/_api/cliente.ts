@@ -58,8 +58,12 @@ export function votosDoParlamentar(pessoaId: string): Promise<VotosDoParlamentar
 }
 
 /** Votações nominais do plenário nos últimos 90 dias, da mais recente para a mais antiga. */
-export async function listarVotacoes(pagina: number): Promise<Pagina<VotacaoNominalResumo>> {
+export async function listarVotacoes(
+  pagina: number,
+  casa?: 'camara' | 'senado',
+): Promise<Pagina<VotacaoNominalResumo>> {
   const busca = new URLSearchParams({ pagina: String(pagina), itens: '50' });
+  if (casa) busca.set('casa', casa);
   const lista = await obter<Pagina<VotacaoNominalResumo>>(`/v1/votacoes?${busca.toString()}`);
   return lista ?? { itens: [], pagina, itensPorPagina: 50, total: 0 };
 }

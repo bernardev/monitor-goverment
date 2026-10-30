@@ -63,7 +63,9 @@ export default async function PerfilDoParlamentar({ params }: Props): Promise<Re
           </section>
         )}
 
-        {frequencia && <Frequencia frequencia={frequencia} />}
+        {/* A frequência diária só é coletada na Câmara; no Senado, a ausência e o motivo vêm em
+            cada votação. */}
+        {frequencia && perfil.cargo !== 'senador' && <Frequencia frequencia={frequencia} />}
         {votos && <Votos votos={votos} />}
       </article>
     </main>

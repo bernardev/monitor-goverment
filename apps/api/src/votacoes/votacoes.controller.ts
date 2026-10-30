@@ -2,10 +2,16 @@ import { Controller, Get, Header, Inject, NotFoundException, Param, Query } from
 import type { ConsultaDeVotacoes } from '@prometeu/consulta';
 import type { Pagina, VotacaoNominalDetalhada, VotacaoNominalResumo } from '@prometeu/contracts';
 
+import { z } from 'zod';
+
 import { CACHE_PUBLICO, ler, paginacao, periodo } from '../dados-abertos.js';
 import { CONSULTA_DE_VOTACOES } from '../parlamentares/parlamentares.controller.js';
 
-const filtro = periodo.and(paginacao);
+const CASAS = { camara: 'camara_dos_deputados', senado: 'senado_federal' } as const;
+
+const filtro = periodo
+  .and(paginacao)
+  .and(z.object({ casa: z.enum(['camara', 'senado']).optional() }));
 
 /** Votações nominais do plenário: placar, voto de cada parlamentar e as fontes (ADR-0008). */
 @Controller('v1/votacoes')
@@ -15,8 +21,14 @@ export class VotacoesController {
   @Get()
   @Header('Cache-Control', CACHE_PUBLICO)
   async listar(@Query() query: Record<string, unknown>): Promise<Pagina<VotacaoNominalResumo>> {
-    const { de, ate, pagina, itens } = ler(filtro, query);
-    return this.votacoes.listar({ de, ate, pagina, itensPorPagina: itens });
+    const { de, ate, pagina, itens, casa } = ler(filtro, query);
+    return this.votacoes.listar({
+      de,
+      ate,
+      casa: casa === undefined ? undefined : CASAS[casa],
+      pagina,
+      itensPorPagina: itens,
+    });
   }
 
   @Get(':votacaoId')

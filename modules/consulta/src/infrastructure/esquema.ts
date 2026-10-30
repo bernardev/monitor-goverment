@@ -82,10 +82,12 @@ export const votacao = schemaDaConsulta.table(
     casa: text('casa').notNull(),
     codigoNaFonte: text('codigo_na_fonte').notNull(),
     dia: date('dia', { mode: 'string' }).notNull(),
-    registradaEm: instante('registrada_em').notNull(),
+    /** Nulo quando a casa não informa o horário (Senado). */
+    registradaEm: instante('registrada_em'),
     descricao: text('descricao').notNull(),
     resultado: text('resultado').notNull(),
     secreta: boolean('secreta').notNull(),
+    relacaoCompleta: boolean('relacao_completa').notNull().default(false),
     proposicoes: jsonb('proposicoes')
       .$type<
         {
@@ -99,6 +101,11 @@ export const votacao = schemaDaConsulta.table(
       .notNull(),
     /** Quantos votos em cada opção. */
     placar: jsonb('placar').$type<Record<string, number>>().notNull(),
+    /** Quem não votou, por situação; vazio quando a casa não lista quem não votou. */
+    contagemSemVoto: jsonb('contagem_sem_voto')
+      .$type<Record<string, number>>()
+      .notNull()
+      .default({}),
     capturaId: uuid('captura_id').notNull(),
     capturaDosVotosId: uuid('captura_dos_votos_id').notNull(),
     ocorridoEm: instante('ocorrido_em').notNull(),
@@ -106,12 +113,19 @@ export const votacao = schemaDaConsulta.table(
   (t) => [index('votacao_por_dia').on(t.dia, t.registradaEm)],
 );
 
+/**
+ * Um registro por parlamentar listado na votação: o voto (`opcao`) ou, quando a casa informa quem
+ * não votou, a situação e o motivo (`situacao_sem_voto`). Um dos dois, nunca os dois.
+ */
 export const voto = schemaDaConsulta.table(
   'voto',
   {
     votacaoId: uuid('votacao_id').notNull(),
     pessoaId: uuid('pessoa_id').notNull(),
-    opcao: text('opcao').notNull(),
+    opcao: text('opcao'),
+    situacaoSemVoto: text('situacao_sem_voto'),
+    motivoCategoria: text('motivo_categoria'),
+    motivoDescricao: text('motivo_descricao'),
     registroNaFonte: text('registro_na_fonte'),
     siglaPartidoNaFonte: text('sigla_partido_na_fonte'),
   },

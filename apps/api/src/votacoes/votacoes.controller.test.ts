@@ -35,6 +35,7 @@ describe('GET /v1/votacoes', () => {
     expect(votacoes.ultimoFiltro).toEqual({
       de: '2026-10-01',
       ate: '2026-10-31',
+      casa: undefined,
       pagina: 2,
       itensPorPagina: 10,
     });
@@ -50,7 +51,13 @@ describe('GET /v1/votacoes', () => {
     expect([pagina, itensPorPagina]).toEqual([1, 50]);
   });
 
-  it.each(['de=2026-10-31&ate=2026-10-01', 'itens=500', 'de=ontem'])(
+  it('filtra pela casa', async () => {
+    await request(servidor).get('/v1/votacoes?casa=senado').expect(200);
+
+    expect(votacoes.ultimoFiltro?.casa).toBe('senado_federal');
+  });
+
+  it.each(['de=2026-10-31&ate=2026-10-01', 'itens=500', 'de=ontem', 'casa=stf'])(
     'recusa parâmetro inválido (%s) com 400',
     async (query) => {
       await request(servidor).get(`/v1/votacoes?${query}`).expect(400);
