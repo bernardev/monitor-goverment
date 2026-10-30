@@ -21,9 +21,11 @@
     "db:gerar": "drizzle-kit generate"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1160.0",
     "@prometeu/infraestrutura": "workspace:*",
     "@prometeu/shared-kernel": "workspace:*",
-    "drizzle-orm": "^0.45.4"
+    "drizzle-orm": "^0.45.4",
+    "undici": "^7.30.1"
   },
   "devDependencies": {
     "@prometeu/contracts": "workspace:*",
