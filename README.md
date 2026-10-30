@@ -73,7 +73,14 @@ subir o Docker e ao rodar API e worker.
    uv run dagster asset materialize -m prometeu_dados.definicoes --select camara_frequencia
    ```
 
-4. Suba a API e o site; a lista fica em `http://localhost:3001/parlamentares`:
+   As votações nominais do plenário (últimos 30 dias) levam menos de um minuto:
+
+   ```bash
+   uv run dagster asset materialize -m prometeu_dados.definicoes --select camara_votacoes
+   ```
+
+4. Suba a API e o site; as listas ficam em `http://localhost:3001/parlamentares` e
+   `http://localhost:3001/votacoes`:
 
    ```bash
    node apps/api/dist/main.js

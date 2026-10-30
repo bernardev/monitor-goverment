@@ -125,9 +125,9 @@ Eventos são fatos no passado, em português, versionados em `packages/contracts
 | Evento                                                                | Publicado por         | Consumido por                       |
 | --------------------------------------------------------------------- | --------------------- | ----------------------------------- |
 | `LoteIngerido`                                                        | Ingestão              | contexto dono da fonte (importador) |
-| `MandatoIniciado`, `MandatoEncerrado`                                 | Agentes Públicos      | Compromissos, Consulta, Engajamento |
+| `MandatoRegistrado`, `PeriodoDoMandatoRetificado`                     | Agentes Públicos      | Compromissos, Consulta, Engajamento |
 | `ProposicaoApresentada`, `TramitacaoAvancou`                          | Atividade Legislativa | Compromissos, Consulta, Engajamento |
-| `VotacaoConcluida`                                                    | Atividade Legislativa | Compromissos, Consulta, Engajamento |
+| `VotacaoNominalRegistrada`, `VotacaoNominalRetificada`                | Atividade Legislativa | Compromissos, Consulta, Engajamento |
 | `PresencaRegistrada`, `AusenciaRegistrada`, `FrequenciaRetificada`    | Atividade Legislativa | Consulta, Engajamento               |
 | `EmendaIndicada`, `EmendaEmpenhada`, `EmendaPaga`                     | Finanças Públicas     | Compromissos, Consulta, Engajamento |
 | `ObraParalisada`, `ObraConcluida`                                     | Obras                 | Compromissos, Consulta, Engajamento |

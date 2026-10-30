@@ -6,19 +6,19 @@
 
 ## Agentes públicos
 
-| Termo                     | Definição                                                                                                                                  | Não confundir com        |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------ |
-| **Pessoa**                | Ser humano identificado de forma única na plataforma, independentemente de cargo.                                                          | Candidatura, Mandato     |
-| **Candidatura**           | Registro de uma pessoa concorrendo a um cargo em uma eleição (fonte: TSE). Promessas de campanha pertencem a uma candidatura.              | Mandato                  |
-| **Mandato**               | Período em que uma pessoa exerce um cargo eletivo em um ente. Nasce de uma candidatura eleita (ou de suplência/posse).                     | Cargo                    |
-| **Cargo**                 | Função eletiva: presidente, governador, prefeito, senador, deputado federal, deputado estadual/distrital, vereador (e vices).              | Mandato                  |
-| **Ente federativo**       | União, estado, Distrito Federal ou município. Identificado pelo código IBGE (União = `0`).                                                 | Órgão                    |
-| **Esfera**                | `federal`, `estadual`, `distrital` ou `municipal`.                                                                                         | —                        |
-| **Casa legislativa**      | Câmara dos Deputados, Senado Federal, Assembleia Legislativa de UF, Câmara Legislativa do DF ou Câmara Municipal.                          | Comissão                 |
-| **Identificador externo** | Código de uma pessoa ou registro numa fonte (ex.: `camara:204554`, `tse:250001234567`).                                                    | Id interno               |
-| **Nome público**          | Nome pelo qual a pessoa é conhecida no exercício da função (nome parlamentar, nome de urna).                                               | Pessoa                   |
-| **Filiação partidária**   | Partido ao qual a pessoa está filiada, como a fonte oficial escreve a sigla. Sem partido é um estado legítimo.                             | Pessoa                   |
-| **Circunscrição**         | Ente que elege o cargo: a União (presidente), uma UF ou o DF (senador, deputado federal, governador) ou um município (prefeito, vereador). | Mandato, Ente federativo |
+| Termo                     | Definição                                                                                                                                                                                    | Não confundir com        |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| **Pessoa**                | Ser humano identificado de forma única na plataforma, independentemente de cargo.                                                                                                            | Candidatura, Mandato     |
+| **Candidatura**           | Registro de uma pessoa concorrendo a um cargo em uma eleição (fonte: TSE). Promessas de campanha pertencem a uma candidatura.                                                                | Mandato                  |
+| **Mandato**               | Período em que uma pessoa exerce um cargo eletivo em um ente, da posse (ou reassunção) até a saída. Quem se licencia e volta tem dois mandatos; o suplente tem o seu enquanto está no cargo. | Cargo                    |
+| **Cargo**                 | Função eletiva: presidente, governador, prefeito, senador, deputado federal, deputado estadual/distrital, vereador (e vices).                                                                | Mandato                  |
+| **Ente federativo**       | União, estado, Distrito Federal ou município. Identificado pelo código IBGE (União = `0`).                                                                                                   | Órgão                    |
+| **Esfera**                | `federal`, `estadual`, `distrital` ou `municipal`.                                                                                                                                           | —                        |
+| **Casa legislativa**      | Câmara dos Deputados, Senado Federal, Assembleia Legislativa de UF, Câmara Legislativa do DF ou Câmara Municipal.                                                                            | Comissão                 |
+| **Identificador externo** | Código de uma pessoa ou registro numa fonte (ex.: `camara:204554`, `tse:250001234567`).                                                                                                      | Id interno               |
+| **Nome público**          | Nome pelo qual a pessoa é conhecida no exercício da função (nome parlamentar, nome de urna).                                                                                                 | Pessoa                   |
+| **Filiação partidária**   | Partido ao qual a pessoa está filiada, como a fonte oficial escreve a sigla. Sem partido é um estado legítimo.                                                                               | Pessoa                   |
+| **Circunscrição**         | Ente que elege o cargo: a União (presidente), uma UF ou o DF (senador, deputado federal, governador) ou um município (prefeito, vereador).                                                   | Mandato, Ente federativo |
 
 ## Compromissos (núcleo)
 
@@ -50,7 +50,10 @@
 | **Tramitação**             | Cada movimento de uma proposição (apresentação, comissão, plenário, sanção, veto, arquivamento).                                                                                                                                      |
 | **Sessão**                 | Reunião deliberativa ou não deliberativa de uma casa ou comissão.                                                                                                                                                                     |
 | **Votação**                | Deliberação sobre uma proposição numa sessão.                                                                                                                                                                                         |
-| **Voto**                   | Posição de um mandato numa votação nominal: `sim`, `nao`, `abstencao`, `obstrucao`, `artigo_17`, `ausente`.                                                                                                                           |
+| **Votação nominal**        | Votação em que a casa registra o voto de cada parlamentar. A simbólica, sem voto por parlamentar, não é nominal.                                                                                                                      |
+| **Voto**                   | Posição de um mandato numa votação nominal: `sim`, `nao`, `abstencao`, `obstrucao`, `presidente_da_sessao` (presidia e só vota para desempatar) ou `secreto`. Ausência não é voto.                                                    |
+| **Votação secreta**        | Votação nominal em que a casa registra quem votou, mas não como. Todos os votos são `secreto`, ou nenhum.                                                                                                                             |
+| **Sem voto registrado**    | O parlamentar estava no cargo e a casa não registrou voto dele na votação. Não é sinônimo de ausência: a situação do dia vem do **registro de frequência**.                                                                           |
 | **Presença**               | Registro de comparecimento de um mandato a uma sessão.                                                                                                                                                                                |
 | **Ausência**               | Não comparecimento, com **motivo da ausência** quando registrado oficialmente (ex.: missão autorizada, licença médica, licença particular) ou `sem_justificativa`.                                                                    |
 | **Dia de sessão**          | Dia do calendário de Brasília em que houve sessão do plenário. É a unidade em que as casas apuram a frequência (`aaaa-mm-dd`, nunca um instante em UTC).                                                                              |

@@ -98,7 +98,7 @@ ausência com motivo) e deixa o Senado para quando os senadores estiverem em Age
 | Fatia | Entrega                                                                                                                                        | Situação  |
 | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
 | 3.1   | Frequência no plenário da Câmara, com o motivo de cada ausência justificada: conector, `RegistroDeFrequencia`, projeção, API e perfil no site. | Concluída |
-| 3.2   | Votações nominais do plenário da Câmara e o voto de cada deputado.                                                                             | A fazer   |
+| 3.2   | Votações nominais do plenário da Câmara e o voto de cada deputado; antes, os períodos de exercício dos deputados (inclusive suplentes).        | Concluída |
 | 3.3   | Senado: senadores em Agentes Públicos, votações nominais e as ausências com motivo que o Senado publica em cada votação.                       | A fazer   |
 | 3.4   | Proposições, autoria e tramitação (Câmara e Senado).                                                                                           | A fazer   |
 
@@ -125,3 +125,35 @@ justificadas (missão autorizada e licença para tratamento de saúde) e 56 sem 
 Fica para depois, de propósito: o significado de "Presença (~)" (sem legenda pública; a grafia é
 guardada e tratada como presença), frequência em comissões e o histórico anterior à janela de 30 dias
 (uma carga inicial por legislatura).
+
+### Fatia 3.2: votações nominais na Câmara
+
+- **Pré-requisito descoberto na fonte:** as três votações nominais de outubro tinham votos de suplentes
+  que já tinham saído do cargo, e Agentes Públicos só conhecia quem estava em exercício no dia da coleta.
+  O conector de deputados passou a percorrer todos os deputados da legislatura e a ler o histórico de
+  cada um (posse, licença, reassunção, afastamento). Cada período de exercício vira um mandato, como diz a
+  definição do domínio; o mandato antigo, que cobria a legislatura inteira, é retificado para o primeiro
+  exercício e mantém o id (`PeriodoDoMandatoRetificado`). A lista de parlamentares do site mostra só quem
+  está no cargo hoje; quem saiu mantém o perfil.
+- **Fonte:** `GET /api/v2/votacoes?idOrgao=180` lista as votações do plenário. Só as nominais têm votos
+  (`/votacoes/{id}/votos`); o detalhe traz as proposições afetadas. Os votos de uma votação ficam numa
+  linha da prata, para que uma correção da Câmara não deixe voto velho para trás. Na votação secreta a
+  fonte diz quem votou, com o voto nulo.
+- **Domínio:** `VotacaoNominal`, com o voto de cada parlamentar ligado ao mandato exercido no instante do
+  voto. Um parlamentar desconhecido recusa a votação inteira, para que o placar nunca fique incompleto.
+  Cada um vota uma vez, e o sigilo vale para todos os votos ou para nenhum.
+- **Ausente não é inferido:** a Câmara não lista quem faltou à votação. No perfil entram as votações em
+  que o parlamentar votou e as dos dias em que a casa apurou a frequência dele; sem voto, o site mostra
+  como o dia foi apurado (presente, ausente, ausência justificada e o motivo), sem adivinhar.
+- **Leitura:** `GET /v1/votacoes`, `GET /v1/votacoes/{votacaoId}` (placar, votos e as duas fontes) e
+  `GET /v1/parlamentares/{pessoaId}/votos`; páginas "Votações nominais" e a seção no perfil.
+
+Resultado: com a fonte real, o histórico de 648 deputados (incluindo 135 que já saíram) levou pouco mais
+de um minuto e virou 963 mandatos, sem recusa: 513 mandatos antigos foram retificados e a lista do site
+continuou com 513 em exercício. A coleta das votações de agosto a outubro trouxe 11 votações nominais
+(uma secreta, com 466 votos sem conteúdo) e nenhuma recusada; os placares batem com a descrição da
+Câmara.
+
+Fica para depois, de propósito: orientação de bancada (`/votacoes/{id}/orientacoes`), votações em
+comissões, a frequência dos suplentes que já saíram (o serviço legado só lista quem está em exercício) e
+o vínculo da votação com a proposição, que vem na fatia 3.4.
