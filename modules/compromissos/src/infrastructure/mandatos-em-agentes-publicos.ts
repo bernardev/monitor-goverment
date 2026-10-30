@@ -8,7 +8,7 @@ import type { MandatoId } from '../domain/identificadores.js';
  * pelo serviço de host aberto, e nunca da palavra de quem propõe o veredito.
  */
 export class MandatosEmAgentesPublicos implements ConsultaDeMandatos {
-  constructor(private readonly mandatos: MandatosPublicados) {}
+  constructor(private readonly mandatos: Pick<MandatosPublicados, 'buscar'>) {}
 
   async fimDoMandato(mandato: MandatoId): Promise<Date | undefined> {
     return (await this.mandatos.buscar(mandato.valor))?.fim ?? undefined;

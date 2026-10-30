@@ -34,6 +34,7 @@ export type {
 export type {
   ConsultaDeMandatos,
   MandatoPublicado,
+  PessoaNaFonte,
 } from './infrastructure/consulta-de-mandatos-postgres.js';
 export type {
   FalhaDeImportacao,

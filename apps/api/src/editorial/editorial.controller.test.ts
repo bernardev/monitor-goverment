@@ -28,7 +28,9 @@ const REVISOR = '7e2d9c14-3b8a-4f6e-8d1c-5a9b0e3f2c48';
 const EDITORA = 'c4f1e8a2-9d3b-4c7e-a6f5-1b2d3e4f5a69';
 const CAPTURA = gerarUuidV7();
 
-const semMandatos: ConsultaDeMandatos = { buscar: () => Promise.resolve(undefined) };
+const semMandatos: Pick<ConsultaDeMandatos, 'buscar'> = {
+  buscar: () => Promise.resolve(undefined),
+};
 const capturaFalsa = {
   execute: () =>
     Promise.resolve(Result.ok({ capturaId: CAPTURA, sha256: 'a'.repeat(64), nova: true })),

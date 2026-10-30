@@ -69,7 +69,7 @@ export const MIGRACOES_DE_COMPROMISSOS = fileURLToPath(new URL('../drizzle', imp
 export interface DependenciasDeCompromissos {
   readonly banco: BancoDoContexto;
   /** Serviço de host aberto de Agentes Públicos, para a data de fim dos mandatos. */
-  readonly mandatos: MandatosPublicados;
+  readonly mandatos: Pick<MandatosPublicados, 'buscar'>;
   readonly relogio?: Relogio;
 }
 

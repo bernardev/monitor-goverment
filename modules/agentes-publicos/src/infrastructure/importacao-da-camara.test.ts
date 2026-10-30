@@ -168,6 +168,27 @@ describe('importação de deputados da Câmara (prata → Agentes Públicos)', (
     expect(await modulo.mandatos.buscar('nao-e-uuid')).toBeUndefined();
   });
 
+  it('outros contextos acham o mandato vigente pelo código da fonte', async () => {
+    const ana = { fonte: 'camara', codigo: '900001' } as const;
+    const dentro = new Date('2026-10-06T15:00:00.000Z');
+
+    expect(await modulo.mandatos.vigente(ana, 'deputado_federal', dentro)).toMatchObject({
+      cargo: 'deputado_federal',
+      circunscricao: '35',
+    });
+    expect(
+      await modulo.mandatos.vigente(ana, 'deputado_federal', new Date('2027-02-01T03:00:00.000Z')),
+    ).toBeUndefined();
+    expect(await modulo.mandatos.vigente(ana, 'senador', dentro)).toBeUndefined();
+    expect(
+      await modulo.mandatos.vigente(
+        { fonte: 'senado', codigo: '900001' },
+        'deputado_federal',
+        dentro,
+      ),
+    ).toBeUndefined();
+  });
+
   it('o mesmo evento entregue de novo não produz efeito', async () => {
     const antes = await banco.drizzle.select().from(outbox);
 

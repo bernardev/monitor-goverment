@@ -15,7 +15,7 @@ const AGORA = new Date('2027-03-01T12:00:00Z');
 const MANDATO_ENCERRADO = gerarUuidV7();
 
 /** Agentes Públicos de mentira: um único mandato, encerrado em janeiro de 2027. */
-const mandatos: ConsultaDeMandatos = {
+const mandatos: Pick<ConsultaDeMandatos, 'buscar'> = {
   buscar: (mandatoId): Promise<MandatoPublicado | undefined> =>
     Promise.resolve(
       mandatoId === MANDATO_ENCERRADO
