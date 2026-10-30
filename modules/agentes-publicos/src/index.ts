@@ -15,6 +15,10 @@ import {
   type ConsultaDeMandatos,
   ConsultaDeMandatosPostgres,
 } from './infrastructure/consulta-de-mandatos-postgres.js';
+import {
+  type ConsultaDePessoas,
+  ConsultaDePessoasPostgres,
+} from './infrastructure/consulta-de-pessoas-postgres.js';
 import { outbox } from './infrastructure/esquema.js';
 import { ImportadorDeDeputadosDaCamara } from './infrastructure/importador-de-deputados-da-camara.js';
 import { ImportadorDeSenadoresDoSenado } from './infrastructure/importador-de-senadores-do-senado.js';
@@ -35,6 +39,7 @@ export type {
   MandatoPublicado,
   PessoaNaFonte,
 } from './infrastructure/consulta-de-mandatos-postgres.js';
+export type { ConsultaDePessoas } from './infrastructure/consulta-de-pessoas-postgres.js';
 export type {
   FalhaDeImportacao,
   ResumoDaImportacao,
@@ -54,6 +59,8 @@ export interface ModuloAgentesPublicos {
   readonly sincronizar: SincronizarAgentePublico;
   /** Serviço de host aberto: outros contextos consultam mandatos por id. */
   readonly mandatos: ConsultaDeMandatos;
+  /** Serviço de host aberto: outros contextos acham a pessoa pelo código da fonte. */
+  readonly pessoas: ConsultaDePessoas;
   importarDeputadosDaCamara(loteId: string): Promise<ResumoDaImportacao>;
   importarSenadoresDoSenado(loteId: string): Promise<ResumoDaImportacao>;
   assinarConsumidores(
@@ -79,6 +86,7 @@ export function montarAgentesPublicos(
   return {
     sincronizar,
     mandatos: new ConsultaDeMandatosPostgres(banco),
+    pessoas: new ConsultaDePessoasPostgres(banco),
     importarDeputadosDaCamara: (loteId) => importadores.deputados.importar(loteId),
     importarSenadoresDoSenado: (loteId) => importadores.senadores.importar(loteId),
     assinarConsumidores: (barramento, aoImportar) =>

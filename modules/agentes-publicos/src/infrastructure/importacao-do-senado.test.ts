@@ -171,6 +171,18 @@ describe('importação de senadores do Senado (prata → Agentes Públicos)', ()
     ]);
   });
 
+  it('outros contextos acham a pessoa pelo código, mesmo fora do cargo', async () => {
+    const [bruno] = await banco.drizzle
+      .select()
+      .from(identificadorExterno)
+      .where(sql`codigo = '900102'`);
+
+    expect(await modulo.pessoas.porCodigo({ fonte: 'senado', codigo: '900102' })).toBe(
+      bruno?.pessoaId,
+    );
+    expect(await modulo.pessoas.porCodigo({ fonte: 'camara', codigo: '900102' })).toBeUndefined();
+  });
+
   it('outros contextos acham o senador em exercício pelo código do Senado', async () => {
     const bruno = { fonte: 'senado', codigo: '900102' } as const;
 
