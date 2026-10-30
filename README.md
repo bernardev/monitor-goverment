@@ -91,8 +91,16 @@ subir o Docker e ao rodar API e worker.
    uv run dagster asset materialize -m prometeu_dados.definicoes --select camara_proposicoes,senado_proposicoes
    ```
 
+   As emendas parlamentares do Portal da Transparência, orçamentos de 2023 em diante (menos de um
+   minuto para coletar; o worker leva cerca de um minuto para importar):
+
+   ```bash
+   uv run dagster asset materialize -m prometeu_dados.definicoes --select transparencia_emendas
+   ```
+
 4. Suba a API e o site; as listas ficam em `http://localhost:3001/parlamentares`,
-   `http://localhost:3001/votacoes` e `http://localhost:3001/proposicoes`:
+   `http://localhost:3001/votacoes`, `http://localhost:3001/proposicoes` e
+   `http://localhost:3001/emendas`:
 
    ```bash
    node apps/api/dist/main.js

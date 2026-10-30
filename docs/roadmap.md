@@ -27,8 +27,8 @@ O que a v1 entrega e quais módulos cada entrega envolve está em
 | 0   | Domínio central: Compromissos               | Agregado `Promessa` (estágio, veredito, errata) e casos de uso, só com testes, sem infraestrutura.                                                                                | Concluída |
 | 1   | Fatia de ponta a ponta: deputados da Câmara | Conector da Câmara com captura; Agentes Públicos (`Pessoa`, `Mandato`); Acervo mínimo; outbox, barramento e inbox; projeção em Consulta; `GET /v1/parlamentares`; página no site. | Concluída |
 | 2   | Compromissos no banco e acesso editorial    | Repositório da `Promessa` com outbox; login e papéis (aceitar ADR-0014); painel mínimo de curadoria para cadastrar promessa e propor veredito.                                    | Concluída |
-| 3   | Atividade Legislativa                       | Proposições, votações e presença com o motivo da ausência (Câmara e Senado).                                                                                                      | Em curso  |
-| 4   | Finanças Públicas e Obras                   | Emenda até a obra: empenho, pagamento, situação e medição da obra.                                                                                                                | A fazer   |
+| 3   | Atividade Legislativa                       | Proposições, votações e presença com o motivo da ausência (Câmara e Senado).                                                                                                      | Concluída |
+| 4   | Finanças Públicas e Obras                   | Emenda até a obra: empenho, pagamento, situação e medição da obra.                                                                                                                | Em curso  |
 | 5   | Compromissos ligado aos fatos               | Sugestão de vínculos a partir dos eventos de Legislativo, Finanças e Obras; reavaliação do estágio.                                                                               | A fazer   |
 | 6   | Engajamento                                 | "Meu governo" por município, acompanhar político ou promessa, alertas.                                                                                                            | A fazer   |
 
@@ -226,3 +226,46 @@ processo; 5 delas já ligam a uma proposição coletada, e o número cresce com 
 
 Fica para depois, de propósito: ligar a mesma matéria nas duas casas, a carga histórica (só entra o
 que se move desde o início da coleta), relatorias e as proposições acessórias (emendas, pareceres).
+
+## Etapa 4 em detalhe
+
+O caminho do dinheiro, em fatias de ponta a ponta. Começa pela emenda, que liga o parlamentar ao
+orçamento, e chega à obra.
+
+| Fatia | Entrega                                                                                                                        | Situação  |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------ | --------- |
+| 4.1   | Emendas parlamentares do Portal da Transparência: autor, destinações e execução (empenhado, liquidado, pago e restos a pagar). | Concluída |
+| 4.2   | Para quem o dinheiro foi: favorecidos e convênios de cada emenda, com o município de destino.                                  | A fazer   |
+| 4.3   | Obras: situação e medição, ligadas à emenda e à ação orçamentária que as pagam.                                                | A fazer   |
+
+### Fatia 4.1: emendas parlamentares
+
+- **Fonte:** o arquivo único de emendas do Portal da Transparência (um ZIP com um CSV em latin-1),
+  coletado por inteiro todo dia. Entram os orçamentos de 2023 em diante. Cada linha é uma destinação
+  (localidade e classificação orçamentária, até o plano orçamentário) com a execução acumulada; as
+  linhas do mesmo código formam a emenda. Valores viram centavos inteiros já na plataforma de dados.
+- **O que a fonte ensinou:** o Portal junta o tipo da emenda e a modalidade no mesmo campo, linha a
+  linha, e 55 emendas individuais têm destinações nas duas modalidades. O tipo ficou na emenda
+  (`individual`, `bancada`, `comissao`, `relator`) e a modalidade (`finalidade_definida` ou
+  `transferencia_especial`, a "emenda PIX") em cada destinação. Município e UF sem código IBGE vêm
+  como `Sem informação`, `-1` ou `-14` e ficam nulos.
+- **Autor:** o Portal identifica o parlamentar só pelo nome. Agentes Públicos, que decide quem é quem,
+  oferece os parlamentares em exercício num período; a emenda é ligada quando o nome normalizado
+  corresponde a um único deputado ou senador em exercício no ano anterior ao do orçamento, quando a
+  emenda é proposta. Sem correspondência única, fica o nome da fonte, sem recusar a emenda.
+- **Domínio:** `Emenda`, com as destinações e a execução em `Dinheiro`. Valores novos da fonte viram
+  `ExecucaoDaEmendaAtualizada`; outra correção (destino, classificação, modalidade, autor),
+  `EmendaRetificada`. Só o estorno de restos a pagar cancelados pode ser negativo.
+- **Leitura:** `GET /v1/emendas?ano=&tipo=&uf=`, `GET /v1/emendas/{id}` e
+  `GET /v1/parlamentares/{id}/emendas`, com a execução somada de todas as emendas do autor. Valores
+  em centavos, como texto. No site, a lista, a página da emenda e a seção "Emendas ao orçamento" no
+  perfil; "pago até agora" soma o pago no ano e os restos a pagar pagos depois.
+
+Resultado: com a fonte real, a coleta levou 33 segundos e a importação, um minuto: 25.131 emendas, todas
+importadas sem recusa. As individuais somam cerca de R$ 24 bilhões empenhados por ano. Dos autores de
+emendas individuais, 99% ficaram ligados a pessoas nos orçamentos de 2024 a 2026 (18.086 de 18.279); no
+de 2023, só 522 de 5.575, porque quem as propôs em 2022 era da legislatura anterior, que Agentes Públicos
+ainda não conhece.
+
+Fica para depois, de propósito: os parlamentares da legislatura 2019-2023 (para ligar os autores do
+orçamento de 2023), os favorecidos e convênios (fatia 4.2) e os orçamentos anteriores a 2023.

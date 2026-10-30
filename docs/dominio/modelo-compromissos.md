@@ -155,11 +155,11 @@ stateDiagram-v2
 
 ## Políticas (reações automáticas a eventos de outros contextos)
 
-| Ao receber                                      | Compromissos faz                                                                          |
-| ----------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `ProposicaoApresentada`                         | Busca promessas semanticamente próximas do mesmo autor/governo e cria `VinculoSugerido`.  |
-| `TramitacaoAvancou` (sanção, arquivamento)      | Se houver vínculo confirmado, recalcula estágio e abre tarefa de reavaliação de veredito. |
-| `EmendaPaga`, `ObraParalisada`, `ObraConcluida` | Idem, para vínculos de orçamento, execução e entrega.                                     |
-| `MandatoEncerrado`                              | Abre tarefa de veredito final para todas as promessas não concluídas do mandato.          |
+| Ao receber                                                      | Compromissos faz                                                                          |
+| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `ProposicaoApresentada`                                         | Busca promessas semanticamente próximas do mesmo autor/governo e cria `VinculoSugerido`.  |
+| `TramitacaoAvancou` (sanção, arquivamento)                      | Se houver vínculo confirmado, recalcula estágio e abre tarefa de reavaliação de veredito. |
+| `ExecucaoDaEmendaAtualizada`, `ObraParalisada`, `ObraConcluida` | Idem, para vínculos de orçamento, execução e entrega.                                     |
+| `MandatoEncerrado`                                              | Abre tarefa de veredito final para todas as promessas não concluídas do mandato.          |
 
 > Políticas **nunca** publicam veredito sozinhas. No máximo sugerem e abrem tarefa. Quem decide é uma pessoa.

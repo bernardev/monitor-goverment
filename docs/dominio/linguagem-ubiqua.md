@@ -68,15 +68,18 @@
 
 ## Finanças públicas
 
-| Termo                                | Definição                                                                                                                                                               |
-| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Dinheiro**                         | Valor monetário em centavos inteiros + moeda. Nunca ponto flutuante.                                                                                                    |
-| **Programa (PPA)**                   | Programa do Plano Plurianual.                                                                                                                                           |
-| **Ação orçamentária**                | Item da LOA ao qual o dinheiro é destinado.                                                                                                                             |
-| **Emenda**                           | Alteração ao orçamento indicada por parlamentar, bancada ou comissão. Tipos: `individual`, `bancada`, `comissao`, `relator`, `transferencia_especial` (a "emenda PIX"). |
-| **Plano de trabalho**                | Documento que detalha onde e como o recurso de uma emenda será aplicado.                                                                                                |
-| **Empenho / Liquidação / Pagamento** | Fases da despesa: reserva → reconhecimento da entrega → saída do dinheiro.                                                                                              |
-| **Transferência**                    | Repasse entre entes (constitucional, legal ou voluntária).                                                                                                              |
+| Termo                                | Definição                                                                                                                                                                   |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Dinheiro**                         | Valor monetário em centavos inteiros + moeda. Nunca ponto flutuante.                                                                                                        |
+| **Programa (PPA)**                   | Programa do Plano Plurianual.                                                                                                                                               |
+| **Ação orçamentária**                | Item da LOA ao qual o dinheiro é destinado.                                                                                                                                 |
+| **Emenda**                           | Alteração ao orçamento indicada por parlamentar, bancada ou comissão. Tipos: `individual`, `bancada`, `comissao`, `relator`. Só a individual tem um parlamentar como autor. |
+| **Destinação**                       | Para onde vai o dinheiro da emenda: uma localidade e uma classificação orçamentária (função, subfunção, programa, ação, plano orçamentário), com a execução acumulada.      |
+| **Modalidade**                       | Como o dinheiro da emenda individual chega ao ente, em cada destinação: `finalidade_definida` ou `transferencia_especial` (a "emenda PIX", direto no caixa).                |
+| **Restos a pagar**                   | Empenho que não foi pago no ano do orçamento e passa como dívida aos anos seguintes, onde pode ser pago ou cancelado.                                                       |
+| **Plano de trabalho**                | Documento que detalha onde e como o recurso de uma emenda será aplicado.                                                                                                    |
+| **Empenho / Liquidação / Pagamento** | Fases da despesa: reserva → reconhecimento da entrega → saída do dinheiro.                                                                                                  |
+| **Transferência**                    | Repasse entre entes (constitucional, legal ou voluntária).                                                                                                                  |
 
 ## Obras e acervo
 

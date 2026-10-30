@@ -40,7 +40,7 @@ O que acontece nas casas legislativas, de forma genérica para Câmara, Senado, 
 
 O dinheiro: do planejamento ao pagamento.
 
-- **Modelo:** `ProgramaPPA`, `AcaoOrcamentaria`, `Emenda` (individual, bancada, comissão, transferência especial/PIX), `PlanoDeTrabalho`, `Empenho`, `Liquidacao`, `Pagamento`, `Transferencia`, `Arrecadacao`.
+- **Modelo:** `ProgramaPPA`, `AcaoOrcamentaria`, `Emenda` (individual, bancada, comissão, relator; a destinação da individual tem modalidade: finalidade definida ou transferência especial/PIX), `PlanoDeTrabalho`, `Empenho`, `Liquidacao`, `Pagamento`, `Transferencia`, `Arrecadacao`.
 - **Regra:** valores monetários sempre como `Dinheiro` (centavos inteiros + moeda). Nunca ponto flutuante.
 
 ### 5. Obras — `obras`
@@ -109,14 +109,14 @@ flowchart LR
   CS --> WEB[Site / API pública]
 ```
 
-| Relação                                       | Padrão                                                 | Significado                                                                                                                                    |
-| --------------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| Fontes oficiais → Ingestão → contextos        | **Camada Anticorrupção (ACL)**                         | O formato da Câmara, do TSE etc. nunca vaza para o domínio. Se a Câmara mudar a API (o que derrubou o Serenata de Amor), só o conector quebra. |
-| Agentes Públicos → todos                      | **Serviço de Host Aberto (OHS)** + linguagem publicada | Todos referenciam pessoas e mandatos por `PessoaId` / `MandatoId` publicados por este contexto.                                                |
-| Acervo → todos                                | **OHS**                                                | Todos referenciam provas por `CapturaId`.                                                                                                      |
-| Legislativo / Finanças / Obras → Compromissos | **Cliente-Fornecedor** via eventos                     | Compromissos reage a fatos (`VotacaoConcluida`, `EmendaPaga`, `ObraParalisada`) para sugerir vínculos e atualizar o estágio da cadeia.         |
-| Compromissos ↔ Editorial                      | **Parceria**                                           | Evoluem juntos: o fluxo editorial governa as mudanças de veredito.                                                                             |
-| Todos → Consulta                              | **Conformista**                                        | Consulta só projeta eventos publicados, não influencia os modelos.                                                                             |
+| Relação                                       | Padrão                                                 | Significado                                                                                                                                            |
+| --------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Fontes oficiais → Ingestão → contextos        | **Camada Anticorrupção (ACL)**                         | O formato da Câmara, do TSE etc. nunca vaza para o domínio. Se a Câmara mudar a API (o que derrubou o Serenata de Amor), só o conector quebra.         |
+| Agentes Públicos → todos                      | **Serviço de Host Aberto (OHS)** + linguagem publicada | Todos referenciam pessoas e mandatos por `PessoaId` / `MandatoId` publicados por este contexto.                                                        |
+| Acervo → todos                                | **OHS**                                                | Todos referenciam provas por `CapturaId`.                                                                                                              |
+| Legislativo / Finanças / Obras → Compromissos | **Cliente-Fornecedor** via eventos                     | Compromissos reage a fatos (`VotacaoConcluida`, `ExecucaoDaEmendaAtualizada`, `ObraParalisada`) para sugerir vínculos e atualizar o estágio da cadeia. |
+| Compromissos ↔ Editorial                      | **Parceria**                                           | Evoluem juntos: o fluxo editorial governa as mudanças de veredito.                                                                                     |
+| Todos → Consulta                              | **Conformista**                                        | Consulta só projeta eventos publicados, não influencia os modelos.                                                                                     |
 
 ## Eventos de integração principais
 
@@ -129,7 +129,7 @@ Eventos são fatos no passado, em português, versionados em `packages/contracts
 | `ProposicaoRegistrada`, `TramitacaoAvancou`, `ProposicaoRetificada`   | Atividade Legislativa | Compromissos, Consulta, Engajamento |
 | `VotacaoNominalRegistrada`, `VotacaoNominalRetificada`                | Atividade Legislativa | Compromissos, Consulta, Engajamento |
 | `PresencaRegistrada`, `AusenciaRegistrada`, `FrequenciaRetificada`    | Atividade Legislativa | Consulta, Engajamento               |
-| `EmendaIndicada`, `EmendaEmpenhada`, `EmendaPaga`                     | Finanças Públicas     | Compromissos, Consulta, Engajamento |
+| `EmendaRegistrada`, `ExecucaoDaEmendaAtualizada`, `EmendaRetificada`  | Finanças Públicas     | Compromissos, Consulta, Engajamento |
 | `ObraParalisada`, `ObraConcluida`                                     | Obras                 | Compromissos, Consulta, Engajamento |
 | `PromessaRegistrada`, `EstagioDaPromessaAvancou`, `VereditoPublicado` | Compromissos          | Consulta, Engajamento               |
 | `ContestacaoRecebida`, `ErrataPublicada`                              | Editorial             | Consulta, Compromissos              |
