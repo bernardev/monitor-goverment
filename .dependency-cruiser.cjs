@@ -36,9 +36,10 @@ module.exports = {
       name: 'dominio-puro',
       comment:
         'ADR-0003: o domínio só depende de si mesmo e do shared-kernel. ' +
-        'Nada de framework, ORM, HTTP ou módulos do Node.',
+        'Nada de framework, ORM, HTTP ou módulos do Node. ' +
+        'Testes de domínio podem usar os construtores de teste do módulo.',
       severity: 'error',
-      from: { path: '^modules/([^/]+)/src/domain/' },
+      from: { path: '^modules/([^/]+)/src/domain/', pathNot: '\\.test\\.ts$' },
       to: {
         pathNot: ['^modules/$1/src/domain/', '^packages/shared-kernel/'],
       },

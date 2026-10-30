@@ -28,6 +28,9 @@ export default tseslint.config(
       '@typescript-eslint/explicit-module-boundary-types': 'error',
       '@typescript-eslint/no-extraneous-class': ['error', { allowWithDecorator: true }],
       '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
+      // Fábricas estáticas de objetos de valor (`CapturaId.de`) são passadas como função para os
+      // leitores de entrada. Elas referenciam a classe pelo nome, nunca `this`.
+      '@typescript-eslint/unbound-method': ['error', { ignoreStatic: true }],
     },
   },
   {
