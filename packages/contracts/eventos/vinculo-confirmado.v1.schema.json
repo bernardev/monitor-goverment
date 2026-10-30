@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prometeu.org/contratos/eventos/vinculo-confirmado.v1.json",
+  "title": "VinculoConfirmado (v1): dados",
+  "description": "Compromissos: uma pessoa confirmou o vínculo.",
+  "type": "object",
+  "required": ["vinculoId", "confirmadoPor"],
+  "additionalProperties": false,
+  "properties": {
+    "vinculoId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "confirmadoPor": {
+      "type": "string",
+      "format": "uuid"
+    }
+  }
+}

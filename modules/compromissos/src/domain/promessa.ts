@@ -33,7 +33,7 @@ export interface DadosDeRegistro {
   readonly agora: Date;
 }
 
-interface EstadoDaPromessa {
+export interface EstadoDaPromessa {
   readonly autor: AutorDaPromessa;
   readonly texto: TextoCanonico;
   readonly tema: Tema;
@@ -99,6 +99,11 @@ export class Promessa extends AggregateRoot<PromessaId> {
       dados.agora,
     );
     return Result.ok(promessa);
+  }
+
+  /** Recria a promessa a partir do que o repositório guardou, sem regras nem eventos. */
+  static reconstituir(id: PromessaId, estado: EstadoDaPromessa): Promessa {
+    return new Promessa(id, estado);
   }
 
   get autor(): AutorDaPromessa {

@@ -23,7 +23,7 @@ export interface DadosDaProposta {
   readonly propostoEm: Date;
 }
 
-interface PropsDaProposta {
+export interface EstadoDaProposta {
   veredito: Veredito;
   justificativa: string;
   evidencias: readonly CapturaId[];
@@ -37,8 +37,8 @@ interface PropsDaProposta {
  * Veredito proposto por um curador e ainda não publicado. As regras que dependem só da proposta ficam
  * aqui; as que dependem da história da promessa (transição, mensurabilidade) ficam no agregado.
  */
-export class PropostaDeVeredito extends ValueObject<PropsDaProposta> {
-  private constructor(props: PropsDaProposta) {
+export class PropostaDeVeredito extends ValueObject<EstadoDaProposta> {
+  private constructor(props: EstadoDaProposta) {
     super(props);
   }
 
@@ -74,6 +74,11 @@ export class PropostaDeVeredito extends ValueObject<PropsDaProposta> {
         propostoEm: new Date(dados.propostoEm),
       }),
     );
+  }
+
+  /** Recria a proposta gravada; as regras já foram conferidas quando ela foi feita. */
+  static reconstituir(estado: EstadoDaProposta): PropostaDeVeredito {
+    return new PropostaDeVeredito(estado);
   }
 
   get veredito(): Veredito {

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prometeu.org/contratos/eventos/vinculo-rejeitado.v1.json",
+  "title": "VinculoRejeitado (v1): dados",
+  "description": "Compromissos: sugestão rejeitada ou confirmação desfeita.",
+  "type": "object",
+  "required": ["vinculoId", "estavaConfirmado", "rejeitadoPor", "motivo"],
+  "additionalProperties": false,
+  "properties": {
+    "vinculoId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "estavaConfirmado": {
+      "type": "boolean"
+    },
+    "rejeitadoPor": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "motivo": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

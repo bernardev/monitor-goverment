@@ -17,13 +17,13 @@ export interface NovoVinculo {
   readonly evidencias: readonly CapturaId[];
 }
 
-interface Decisao {
+export interface Decisao {
   readonly por: CuradorId;
   readonly em: Date;
   readonly motivo: string | undefined;
 }
 
-interface PropsDoVinculo extends NovoVinculo {
+export interface EstadoDoVinculo extends NovoVinculo {
   readonly situacao: SituacaoDoVinculo;
   readonly sugeridoEm: Date;
   readonly decisao: Decisao | undefined;
@@ -38,7 +38,7 @@ interface PropsDoVinculo extends NovoVinculo {
 export class Vinculo extends Entity<VinculoId> {
   private constructor(
     id: VinculoId,
-    private readonly props: PropsDoVinculo,
+    private readonly props: EstadoDoVinculo,
   ) {
     super(id);
   }
@@ -68,6 +68,10 @@ export class Vinculo extends Entity<VinculoId> {
     );
   }
 
+  static reconstituir(id: VinculoId, estado: EstadoDoVinculo): Vinculo {
+    return new Vinculo(id, estado);
+  }
+
   get alvo(): ReferenciaExterna {
     return this.props.alvo;
   }
@@ -86,6 +90,14 @@ export class Vinculo extends Entity<VinculoId> {
 
   get evidencias(): readonly CapturaId[] {
     return this.props.evidencias;
+  }
+
+  get sugeridoEm(): Date {
+    return new Date(this.props.sugeridoEm);
+  }
+
+  get decisao(): Decisao | undefined {
+    return this.props.decisao;
   }
 
   get decididoPor(): CuradorId | undefined {

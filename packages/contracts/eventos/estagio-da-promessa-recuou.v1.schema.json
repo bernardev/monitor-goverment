@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prometeu.org/contratos/eventos/estagio-da-promessa-recuou.v1.json",
+  "title": "EstagioDaPromessaRecuou (v1): dados",
+  "description": "Compromissos: um vínculo confirmado foi desfeito e o estágio recuou.",
+  "type": "object",
+  "required": ["de", "para"],
+  "additionalProperties": false,
+  "properties": {
+    "de": {
+      "enum": ["prometida", "ato", "orcamento", "execucao", "entrega"]
+    },
+    "para": {
+      "enum": ["prometida", "ato", "orcamento", "execucao", "entrega"]
+    }
+  }
+}

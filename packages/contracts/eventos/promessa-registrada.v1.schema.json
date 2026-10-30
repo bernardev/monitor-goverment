@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prometeu.org/contratos/eventos/promessa-registrada.v1.json",
+  "title": "PromessaRegistrada (v1): dados",
+  "description": "Compromissos: uma promessa foi registrada com a primeira fonte. idDoAgregado é o PromessaId.",
+  "type": "object",
+  "required": [
+    "pessoaId",
+    "candidaturaId",
+    "mandatoId",
+    "texto",
+    "tema",
+    "mensurabilidade",
+    "competencia",
+    "fonteId",
+    "capturaId",
+    "registradoPor"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "pessoaId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "candidaturaId": {
+      "type": ["string", "null"],
+      "format": "uuid"
+    },
+    "mandatoId": {
+      "type": ["string", "null"],
+      "format": "uuid"
+    },
+    "texto": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "tema": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "mensurabilidade": {
+      "enum": ["mensuravel", "parcialmente_mensuravel", "generica"]
+    },
+    "competencia": {
+      "enum": ["propria", "compartilhada", "fora_da_competencia"]
+    },
+    "fonteId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "capturaId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "registradoPor": {
+      "type": "string",
+      "format": "uuid"
+    }
+  }
+}

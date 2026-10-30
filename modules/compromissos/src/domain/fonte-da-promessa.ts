@@ -39,6 +39,10 @@ export class FonteDaPromessa extends Entity<FonteId> {
     );
   }
 
+  static reconstituir(id: FonteId, dados: NovaFonte): FonteDaPromessa {
+    return new FonteDaPromessa(id, dados);
+  }
+
   get tipo(): TipoDeFonte {
     return this.dados.tipo;
   }

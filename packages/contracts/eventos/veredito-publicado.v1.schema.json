@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prometeu.org/contratos/eventos/veredito-publicado.v1.json",
+  "title": "VereditoPublicado (v1): dados",
+  "description": "Compromissos: um veredito entrou no histórico público.",
+  "type": "object",
+  "required": [
+    "registroId",
+    "veredito",
+    "anterior",
+    "justificativa",
+    "evidencias",
+    "fundamento",
+    "propostoPor",
+    "revisadoPor",
+    "corrige"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "registroId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "veredito": {
+      "enum": [
+        "nao_iniciada",
+        "em_andamento",
+        "travada",
+        "cumprida",
+        "cumprida_parcialmente",
+        "nao_cumprida"
+      ]
+    },
+    "anterior": {
+      "enum": [
+        "nao_iniciada",
+        "em_andamento",
+        "travada",
+        "cumprida",
+        "cumprida_parcialmente",
+        "nao_cumprida"
+      ]
+    },
+    "justificativa": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidencias": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "fundamento": {
+      "enum": ["mandato_encerrado", "ato_em_sentido_contrario", null]
+    },
+    "propostoPor": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "revisadoPor": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "corrige": {
+      "type": ["string", "null"],
+      "format": "uuid"
+    }
+  }
+}

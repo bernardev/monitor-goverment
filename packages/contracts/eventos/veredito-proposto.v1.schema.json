@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prometeu.org/contratos/eventos/veredito-proposto.v1.json",
+  "title": "VereditoProposto (v1): dados",
+  "description": "Compromissos: um veredito aguarda revisão.",
+  "type": "object",
+  "required": ["veredito", "vigente", "errata", "exigeRevisao", "propostoPor"],
+  "additionalProperties": false,
+  "properties": {
+    "veredito": {
+      "enum": [
+        "nao_iniciada",
+        "em_andamento",
+        "travada",
+        "cumprida",
+        "cumprida_parcialmente",
+        "nao_cumprida"
+      ]
+    },
+    "vigente": {
+      "enum": [
+        "nao_iniciada",
+        "em_andamento",
+        "travada",
+        "cumprida",
+        "cumprida_parcialmente",
+        "nao_cumprida"
+      ]
+    },
+    "errata": {
+      "type": "boolean"
+    },
+    "exigeRevisao": {
+      "type": "boolean"
+    },
+    "propostoPor": {
+      "type": "string",
+      "format": "uuid"
+    }
+  }
+}

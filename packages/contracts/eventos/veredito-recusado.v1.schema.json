@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prometeu.org/contratos/eventos/veredito-recusado.v1.json",
+  "title": "VereditoRecusado (v1): dados",
+  "description": "Compromissos: a proposta voltou ao curador com motivo.",
+  "type": "object",
+  "required": ["veredito", "propostoPor", "recusadoPor", "motivo"],
+  "additionalProperties": false,
+  "properties": {
+    "veredito": {
+      "enum": [
+        "nao_iniciada",
+        "em_andamento",
+        "travada",
+        "cumprida",
+        "cumprida_parcialmente",
+        "nao_cumprida"
+      ]
+    },
+    "propostoPor": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "recusadoPor": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "motivo": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

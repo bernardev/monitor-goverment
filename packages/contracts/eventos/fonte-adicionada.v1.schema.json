@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prometeu.org/contratos/eventos/fonte-adicionada.v1.json",
+  "title": "FonteAdicionada (v1): dados",
+  "description": "Compromissos: nova fonte para uma promessa.",
+  "type": "object",
+  "required": ["fonteId", "tipo", "capturaId", "adicionadaPor"],
+  "additionalProperties": false,
+  "properties": {
+    "fonteId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "tipo": {
+      "enum": [
+        "plano_de_governo",
+        "debate",
+        "entrevista",
+        "sabatina",
+        "discurso",
+        "publicacao_oficial"
+      ]
+    },
+    "capturaId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "adicionadaPor": {
+      "type": "string",
+      "format": "uuid"
+    }
+  }
+}
