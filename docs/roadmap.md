@@ -95,12 +95,12 @@ sistema visual do painel.
 A etapa é grande; vai em fatias, cada uma de ponta a ponta. A ordem começa pelo diferencial do produto (a
 ausência com motivo) e deixa o Senado para quando os senadores estiverem em Agentes Públicos.
 
-| Fatia | Entrega                                                                                                                                        | Situação  |
-| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
-| 3.1   | Frequência no plenário da Câmara, com o motivo de cada ausência justificada: conector, `RegistroDeFrequencia`, projeção, API e perfil no site. | Concluída |
-| 3.2   | Votações nominais do plenário da Câmara e o voto de cada deputado; antes, os períodos de exercício dos deputados (inclusive suplentes).        | Concluída |
-| 3.3   | Senado: senadores em Agentes Públicos, votações nominais e as ausências com motivo que o Senado publica em cada votação.                       | A fazer   |
-| 3.4   | Proposições, autoria e tramitação (Câmara e Senado).                                                                                           | A fazer   |
+| Fatia | Entrega                                                                                                                                        | Situação                                   |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| 3.1   | Frequência no plenário da Câmara, com o motivo de cada ausência justificada: conector, `RegistroDeFrequencia`, projeção, API e perfil no site. | Concluída                                  |
+| 3.2   | Votações nominais do plenário da Câmara e o voto de cada deputado; antes, os períodos de exercício dos deputados (inclusive suplentes).        | Concluída                                  |
+| 3.3   | Senado: senadores e seus exercícios em Agentes Públicos, votações nominais e quem não votou, com o motivo, em cada votação.                    | Implementada; falta verificar com o Docker |
+| 3.4   | Proposições, autoria e tramitação (Câmara e Senado).                                                                                           | A fazer                                    |
 
 ### Fatia 3.1: frequência na Câmara
 
@@ -157,3 +157,33 @@ Câmara.
 Fica para depois, de propósito: orientação de bancada (`/votacoes/{id}/orientacoes`), votações em
 comissões, a frequência dos suplentes que já saíram (o serviço legado só lista quem está em exercício) e
 o vínculo da votação com a proposição, que vem na fatia 3.4.
+
+### Fatia 3.3: Senado
+
+- **Senadores:** como na Câmara, a lista de quem está em exercício não basta. O conector percorre os
+  senadores da legislatura em curso e lê os mandatos de cada um, que trazem os exercícios (início, fim e
+  causa do afastamento). A UF vem do mandato: o detalhe de quem já saiu não a traz. A API do Senado
+  recusa conexões quando recebe muitas consultas ao mesmo tempo; elas vão uma de cada vez (13 segundos
+  para os 245 senadores da legislatura 57, 107 deles com exercício nela).
+- **Exercício que se toca no mesmo dia:** o Senado às vezes encerra um exercício e abre o seguinte da
+  mesma pessoa no mesmo dia (o titular renuncia e o suplente, que já estava no cargo, continua). A
+  prata guarda as datas como vieram; Agentes Públicos junta os dois num mandato só.
+- **Votações:** uma consulta traz as votações nominais da janela, cada uma com todos os senadores em
+  exercício. Quem não votou vem com a situação: presente sem voto (`P-NRV`), não compareceu (`NCom`),
+  ou ausente com motivo (`AP`, `LS`, `MIS`, `LP`, `LAP`). `NA` ("Dispositivo não citado") não tem
+  legenda pública e é guardada como situação não informada.
+- **Domínio:** `VotacaoNominal` passou a registrar, quando a casa informa, quem não votou e por quê
+  (relação completa). Na Câmara a relação continua incompleta e nada é inferido. O Senado não informa
+  horário: o voto vale para o mandato exercido no dia. Os eventos da votação foram para a v2 do
+  contrato; a projeção lê a v1 e a v2.
+- **Leitura:** `GET /v1/votacoes?casa=senado`, a lista "Não votaram" na página da votação e, no
+  perfil, o motivo que a própria votação informa. O perfil do senador não mostra "Presença no
+  plenário": a frequência diária do Senado não é coletada.
+
+Verificado sem Docker (ele precisou ser encerrado): os conectores rodaram contra a fonte real sem gravar
+nada, validando os 245 senadores e as 190 votações nominais de 2025 e 2026; tipos, lint, formato,
+arquitetura e os testes que não usam container passaram. Falta rodar os testes de integração e a carga
+de ponta a ponta com o banco.
+
+Fica para depois, de propósito: unificar a pessoa que foi deputada e virou senadora (as fontes não têm
+identificador comum, e juntar pelo nome confundiria homônimos) e a frequência diária do Senado.

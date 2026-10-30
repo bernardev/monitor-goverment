@@ -79,6 +79,12 @@ subir o Docker e ao rodar API e worker.
    uv run dagster asset materialize -m prometeu_dados.definicoes --select camara_votacoes
    ```
 
+   O Senado (senadores e votações nominais, menos de um minuto):
+
+   ```bash
+   uv run dagster asset materialize -m prometeu_dados.definicoes --select senado_senadores,senado_votacoes
+   ```
+
 4. Suba a API e o site; as listas ficam em `http://localhost:3001/parlamentares` e
    `http://localhost:3001/votacoes`:
 
