@@ -89,7 +89,7 @@ class ConectorDeputadosDaCamara:
                     "id_deputado": deputado["id"],
                     "id_legislatura": deputado["idLegislatura"],
                     "nome": " ".join(deputado["nome"].split()),
-                    "sigla_partido": deputado["siglaPartido"].strip().upper(),
+                    "sigla_partido": deputado["siglaPartido"].strip(),
                     "sigla_uf": deputado["siglaUf"],
                     "url_foto": deputado.get("urlFoto") or None,
                     "email": deputado.get("email") or None,

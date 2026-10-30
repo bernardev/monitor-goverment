@@ -4,7 +4,7 @@
       "id": 900001,
       "uri": "https://dadosabertos.camara.leg.br/api/v2/deputados/900001",
       "nome": "Ana  Exemplo",
-      "siglaPartido": "pex",
+      "siglaPartido": " PEX ",
       "uriPartido": "https://dadosabertos.camara.leg.br/api/v2/partidos/1",
       "siglaUf": "SP",
       "idLegislatura": 57,

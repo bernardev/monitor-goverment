@@ -57,6 +57,16 @@ export class CodigoIbge extends ValueObject<{ valor: string }> {
     return new CodigoIbge(CODIGO_UNIAO);
   }
 
+  /** Código da unidade da federação a partir da sigla (`SP` → `35`), como as fontes costumam informar. */
+  static daUf(sigla: string): Result<CodigoIbge, DomainError> {
+    const procurada = sigla.trim().toUpperCase();
+    const codigo = Object.entries(UFS).find(([, uf]) => uf === procurada)?.[0];
+    if (codigo === undefined) {
+      return Result.fail(new DomainError('codigo_ibge.uf_invalida', `UF inválida: "${sigla}"`));
+    }
+    return Result.ok(new CodigoIbge(codigo));
+  }
+
   static criar(valor: string): Result<CodigoIbge, DomainError> {
     const codigo = valor.trim();
     const valido =

@@ -27,6 +27,20 @@ describe('CodigoIbge', () => {
     expect(resultado.ok).toBe(false);
   });
 
+  it.each([
+    ['SP', '35'],
+    ['df', '53'],
+    [' ba ', '29'],
+  ])('a UF %s tem o código %s', (sigla, esperado) => {
+    const resultado = CodigoIbge.daUf(sigla);
+    expect(resultado.ok && resultado.value.valor).toBe(esperado);
+  });
+
+  it.each(['', 'XX', 'São Paulo'])('rejeita a UF "%s"', (sigla) => {
+    const resultado = CodigoIbge.daUf(sigla);
+    expect(resultado.ok ? undefined : resultado.error.code).toBe('codigo_ibge.uf_invalida');
+  });
+
   it('é igual a outro código com o mesmo valor', () => {
     expect(codigo('35').equals(codigo(' 35 '))).toBe(true);
     expect(CodigoIbge.uniao().ehUniao()).toBe(true);
