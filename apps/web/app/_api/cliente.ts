@@ -5,6 +5,9 @@ import type {
   Pagina,
   ParlamentarResumo,
   PerfilDeParlamentar,
+  VotacaoNominalDetalhada,
+  VotacaoNominalResumo,
+  VotosDoParlamentar,
 } from '@prometeu/contracts';
 
 // O site só conversa com a API pública (ADR-0004); nunca lê o banco nem importa módulos.
@@ -47,4 +50,20 @@ export function frequenciaDoParlamentar(
   return obter<FrequenciaDoParlamentar>(
     `/v1/parlamentares/${encodeURIComponent(pessoaId)}/frequencia`,
   );
+}
+
+/** Votações nominais do plenário nos últimos 90 dias (período padrão da API). */
+export function votosDoParlamentar(pessoaId: string): Promise<VotosDoParlamentar | undefined> {
+  return obter<VotosDoParlamentar>(`/v1/parlamentares/${encodeURIComponent(pessoaId)}/votos`);
+}
+
+/** Votações nominais do plenário nos últimos 90 dias, da mais recente para a mais antiga. */
+export async function listarVotacoes(pagina: number): Promise<Pagina<VotacaoNominalResumo>> {
+  const busca = new URLSearchParams({ pagina: String(pagina), itens: '50' });
+  const lista = await obter<Pagina<VotacaoNominalResumo>>(`/v1/votacoes?${busca.toString()}`);
+  return lista ?? { itens: [], pagina, itensPorPagina: 50, total: 0 };
+}
+
+export function buscarVotacao(votacaoId: string): Promise<VotacaoNominalDetalhada | undefined> {
+  return obter<VotacaoNominalDetalhada>(`/v1/votacoes/${encodeURIComponent(votacaoId)}`);
 }

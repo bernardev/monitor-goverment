@@ -6,9 +6,14 @@ export default function PaginaInicial(): ReactNode {
     <main>
       <h1>Prometeu</h1>
       <p>Prometeu, cumpriu? Acompanhe cada promessa até a entrega, com fonte em cada etapa.</p>
-      <p>
-        <Link href="/parlamentares">Ver os parlamentares</Link>
-      </p>
+      <ul>
+        <li>
+          <Link href="/parlamentares">Parlamentares</Link>
+        </li>
+        <li>
+          <Link href="/votacoes">Votações nominais</Link>
+        </li>
+      </ul>
     </main>
   );
 }

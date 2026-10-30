@@ -1,5 +1,16 @@
 import { definirInbox } from '@prometeu/infraestrutura';
-import { char, date, index, jsonb, pgSchema, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  char,
+  date,
+  index,
+  jsonb,
+  pgSchema,
+  primaryKey,
+  text,
+  timestamp,
+  uuid,
+} from 'drizzle-orm/pg-core';
 
 // Projeções de leitura (ADR-0008): descartáveis e reconstruíveis a partir dos eventos. Nenhuma regra
 // de negócio mora aqui; só a forma que o site e a API pública precisam.
@@ -58,6 +69,56 @@ export const frequencia = schemaDaConsulta.table(
     ocorridoEm: instante('ocorrido_em').notNull(),
   },
   (t) => [index('frequencia_por_pessoa').on(t.pessoaId, t.dia)],
+);
+
+/**
+ * Votações nominais. O evento traz o estado completo da votação; vale o mais novo (`ocorrido_em`), e
+ * os votos são trocados junto.
+ */
+export const votacao = schemaDaConsulta.table(
+  'votacao',
+  {
+    votacaoId: uuid('votacao_id').primaryKey(),
+    casa: text('casa').notNull(),
+    codigoNaFonte: text('codigo_na_fonte').notNull(),
+    dia: date('dia', { mode: 'string' }).notNull(),
+    registradaEm: instante('registrada_em').notNull(),
+    descricao: text('descricao').notNull(),
+    resultado: text('resultado').notNull(),
+    secreta: boolean('secreta').notNull(),
+    proposicoes: jsonb('proposicoes')
+      .$type<
+        {
+          codigoNaFonte: string;
+          sigla: string;
+          numero: number;
+          ano: number;
+          ementa: string | null;
+        }[]
+      >()
+      .notNull(),
+    /** Quantos votos em cada opção. */
+    placar: jsonb('placar').$type<Record<string, number>>().notNull(),
+    capturaId: uuid('captura_id').notNull(),
+    capturaDosVotosId: uuid('captura_dos_votos_id').notNull(),
+    ocorridoEm: instante('ocorrido_em').notNull(),
+  },
+  (t) => [index('votacao_por_dia').on(t.dia, t.registradaEm)],
+);
+
+export const voto = schemaDaConsulta.table(
+  'voto',
+  {
+    votacaoId: uuid('votacao_id').notNull(),
+    pessoaId: uuid('pessoa_id').notNull(),
+    opcao: text('opcao').notNull(),
+    registroNaFonte: text('registro_na_fonte'),
+    siglaPartidoNaFonte: text('sigla_partido_na_fonte'),
+  },
+  (t) => [
+    primaryKey({ columns: [t.votacaoId, t.pessoaId] }),
+    index('voto_por_pessoa').on(t.pessoaId),
+  ],
 );
 
 export const captura = schemaDaConsulta.table('captura', {

@@ -31,6 +31,29 @@ export function nomeDoMotivo(categoria: string): string {
   return MOTIVOS[categoria] ?? categoria;
 }
 
+const OPCOES: Readonly<Record<string, string>> = {
+  sim: 'Sim',
+  nao: 'Não',
+  abstencao: 'Abstenção',
+  obstrucao: 'Obstrução',
+  presidente_da_sessao: 'Presidia a sessão',
+  secreto: 'Votou (voto secreto)',
+};
+
+export function nomeDaOpcao(opcao: string): string {
+  return OPCOES[opcao] ?? opcao;
+}
+
+const RESULTADOS: Readonly<Record<string, string>> = {
+  aprovada: 'Aprovada',
+  rejeitada: 'Rejeitada',
+  nao_informado: 'Resultado não informado pela casa',
+};
+
+export function nomeDoResultado(resultado: string): string {
+  return RESULTADOS[resultado] ?? resultado;
+}
+
 const DATA = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'long', timeZone: 'America/Sao_Paulo' });
 const DATA_E_HORA = new Intl.DateTimeFormat('pt-BR', {
   dateStyle: 'short',

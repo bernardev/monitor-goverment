@@ -4,9 +4,16 @@ export type {
   FonteDoDado,
   FrequenciaDoParlamentar,
   MandatoAtual,
+  OpcaoDeVoto,
   Pagina,
   ParlamentarResumo,
+  ParticipacaoEmVotacao,
   PerfilDeParlamentar,
+  ProposicaoAfetada,
+  VotacaoNominalDetalhada,
+  VotacaoNominalResumo,
+  VotoNaVotacao,
+  VotosDoParlamentar,
 } from './api.js';
 export type {
   ErroDeNegocio,

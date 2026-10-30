@@ -84,6 +84,86 @@ export interface FrequenciaDoParlamentar {
   readonly dias: readonly DiaDeFrequencia[];
 }
 
+/**
+ * Como o parlamentar votou, em categorias comparáveis entre casas. `presidente_da_sessao`: presidia e
+ * não vota, salvo para desempatar. `secreto`: votou em votação secreta, sem o voto conhecido.
+ */
+export type OpcaoDeVoto =
+  'sim' | 'nao' | 'abstencao' | 'obstrucao' | 'presidente_da_sessao' | 'secreto';
+
+/** Proposição que a votação afetou, como a casa a identifica. */
+export interface ProposicaoAfetada {
+  readonly codigoNaFonte: string;
+  readonly sigla: string;
+  readonly numero: number;
+  readonly ano: number;
+  readonly ementa: string | null;
+}
+
+export interface VotacaoNominalResumo {
+  readonly votacaoId: string;
+  readonly casa: 'camara_dos_deputados' | 'senado_federal';
+  /** Como a casa identifica a votação (`2635476-36`). */
+  readonly codigoNaFonte: string;
+  /** Dia do calendário de Brasília, `aaaa-mm-dd`. */
+  readonly dia: string;
+  readonly registradaEm: string;
+  /** Palavras da casa, com o resultado. */
+  readonly descricao: string;
+  readonly resultado: 'aprovada' | 'rejeitada' | 'nao_informado';
+  readonly secreta: boolean;
+  readonly proposicoes: readonly ProposicaoAfetada[];
+  /** Votos registrados em cada opção. Quem faltou à votação não entra. */
+  readonly placar: Readonly<Record<OpcaoDeVoto, number>>;
+  readonly fonte: FonteDoDado;
+}
+
+export interface VotoNaVotacao {
+  readonly pessoaId: string;
+  /** `null`: a pessoa ainda não chegou à projeção de parlamentares. */
+  readonly nome: string | null;
+  /** Partido no dia da votação, como a casa informou. */
+  readonly siglaPartido: string | null;
+  readonly opcao: OpcaoDeVoto;
+  /** Como a casa escreveu o voto (`Artigo 17`); `null` na votação secreta. */
+  readonly registroNaFonte: string | null;
+}
+
+export interface VotacaoNominalDetalhada extends VotacaoNominalResumo {
+  /** Em ordem de nome. */
+  readonly votos: readonly VotoNaVotacao[];
+  /** A lista de votos na fonte. */
+  readonly fonteDosVotos: FonteDoDado;
+}
+
+export interface ParticipacaoEmVotacao {
+  readonly votacao: VotacaoNominalResumo;
+  /** `null`: a casa não registrou voto do parlamentar nesta votação. */
+  readonly voto: { readonly opcao: OpcaoDeVoto; readonly registroNaFonte: string | null } | null;
+  /** Como a casa apurou o dia do parlamentar; `null` se a frequência do dia não foi coletada. */
+  readonly frequenciaNoDia: Pick<DiaDeFrequencia, 'situacao' | 'motivo' | 'registroNaFonte'> | null;
+}
+
+/**
+ * Votações nominais do plenário num período e o que o parlamentar fez em cada uma. Entra a votação em
+ * que ele votou e a do dia em que a casa apurou a frequência dele (estava no cargo), votando ou não.
+ * Votação de dia sem frequência coletada e sem voto fica de fora: não dá para saber se ele estava no
+ * cargo.
+ */
+export interface VotosDoParlamentar {
+  readonly pessoaId: string;
+  readonly de: string;
+  readonly ate: string;
+  readonly resumo: {
+    readonly votacoes: number;
+    readonly comVoto: number;
+    readonly semVotoRegistrado: number;
+    readonly porOpcao: readonly { readonly opcao: OpcaoDeVoto; readonly votos: number }[];
+  };
+  /** Da mais recente para a mais antiga. */
+  readonly participacoes: readonly ParticipacaoEmVotacao[];
+}
+
 export interface Pagina<T> {
   readonly itens: readonly T[];
   readonly pagina: number;

@@ -2,17 +2,22 @@ import { Inject, Module, type OnApplicationShutdown } from '@nestjs/common';
 import { montarConsulta, SCHEMA_DA_CONSULTA } from '@prometeu/consulta';
 import { BancoDoContexto, urlDoBanco } from '@prometeu/infraestrutura';
 
+import { VotacoesController } from '../votacoes/votacoes.controller.js';
 import {
   CONSULTA_DE_FREQUENCIA,
   CONSULTA_DE_PARLAMENTARES,
+  CONSULTA_DE_VOTACOES,
   ParlamentaresController,
 } from './parlamentares.controller.js';
 
 const BANCO_DA_CONSULTA = Symbol('BancoDaConsulta');
 
-/** A API pública só lê projeções do contexto Consulta (ADR-0008), com o usuário desse contexto. */
+/**
+ * Parlamentares e a atividade deles no plenário. A API pública só lê projeções do contexto Consulta
+ * (ADR-0008), com o usuário desse contexto.
+ */
 @Module({
-  controllers: [ParlamentaresController],
+  controllers: [ParlamentaresController, VotacoesController],
   providers: [
     {
       provide: BANCO_DA_CONSULTA,
@@ -28,6 +33,11 @@ const BANCO_DA_CONSULTA = Symbol('BancoDaConsulta');
       provide: CONSULTA_DE_FREQUENCIA,
       inject: [BANCO_DA_CONSULTA],
       useFactory: (banco: BancoDoContexto) => montarConsulta(banco).frequencia,
+    },
+    {
+      provide: CONSULTA_DE_VOTACOES,
+      inject: [BANCO_DA_CONSULTA],
+      useFactory: (banco: BancoDoContexto) => montarConsulta(banco).votacoes,
     },
   ],
 })

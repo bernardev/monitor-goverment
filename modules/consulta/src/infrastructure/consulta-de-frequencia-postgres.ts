@@ -6,16 +6,13 @@ import type {
 import type { BancoDoContexto } from '@prometeu/infraestrutura';
 import { and, desc, eq, gte, lte } from 'drizzle-orm';
 
-import type { ConsultaDeFrequencia, PeriodoDeFrequencia } from '../application/portas.js';
+import type { ConsultaDeFrequencia, PeriodoEmDias } from '../application/portas.js';
 import { captura, frequencia } from './esquema.js';
 
 export class ConsultaDeFrequenciaPostgres implements ConsultaDeFrequencia {
   constructor(private readonly banco: BancoDoContexto) {}
 
-  async doParlamentar(
-    pessoaId: string,
-    periodo: PeriodoDeFrequencia,
-  ): Promise<FrequenciaDoParlamentar> {
+  async doParlamentar(pessoaId: string, periodo: PeriodoEmDias): Promise<FrequenciaDoParlamentar> {
     const linhas = await this.banco.drizzle
       .select({ frequencia, captura })
       .from(frequencia)

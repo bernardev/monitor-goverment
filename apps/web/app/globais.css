@@ -52,3 +52,7 @@ main {
 .lista span {
   display: block;
 }
+
+.resumo .recuo {
+  padding-left: 1rem;
+}

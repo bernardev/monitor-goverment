@@ -13,13 +13,19 @@ import {
   EVENTOS_PROJETADOS,
   type ProjetorDeParlamentares,
 } from '../infrastructure/projetor-de-parlamentares.js';
+import {
+  EVENTOS_DE_VOTACAO,
+  type ProjetorDeVotacoes,
+} from '../infrastructure/projetor-de-votacoes.js';
 
 export const CONSUMIDOR_DE_PARLAMENTARES = 'consulta.projetar_parlamentares';
 export const CONSUMIDOR_DE_FREQUENCIA = 'consulta.projetar_frequencia';
+export const CONSUMIDOR_DE_VOTACOES = 'consulta.projetar_votacoes';
 
 export interface Projetores {
   readonly parlamentares: ProjetorDeParlamentares;
   readonly frequencia: ProjetorDeFrequencia;
+  readonly votacoes: ProjetorDeVotacoes;
 }
 
 export async function assinarConsumidores(
@@ -41,5 +47,11 @@ export async function assinarConsumidores(
   );
   for (const tipo of EVENTOS_DE_FREQUENCIA) {
     await barramento.assinar(tipo, CONSUMIDOR_DE_FREQUENCIA, frequencia);
+  }
+  const votacoes = consumidorIdempotente(banco, inbox, CONSUMIDOR_DE_VOTACOES, (envelope) =>
+    projetores.votacoes.aplicar(envelope),
+  );
+  for (const tipo of EVENTOS_DE_VOTACAO) {
+    await barramento.assinar(tipo, CONSUMIDOR_DE_VOTACOES, votacoes);
   }
 }

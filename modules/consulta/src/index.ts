@@ -7,19 +7,24 @@ import type { BancoDoContexto, BarramentoDeEventos } from '@prometeu/infraestrut
 import type {
   ConsultaDeFrequencia,
   ConsultaDeParlamentares,
+  ConsultaDeVotacoes,
   Relogio,
 } from './application/portas.js';
 import { ConsultaDeFrequenciaPostgres } from './infrastructure/consulta-de-frequencia-postgres.js';
 import { ConsultaDeParlamentaresPostgres } from './infrastructure/consulta-de-parlamentares-postgres.js';
+import { ConsultaDeVotacoesPostgres } from './infrastructure/consulta-de-votacoes-postgres.js';
 import { ProjetorDeFrequencia } from './infrastructure/projetor-de-frequencia.js';
 import { ProjetorDeParlamentares } from './infrastructure/projetor-de-parlamentares.js';
+import { ProjetorDeVotacoes } from './infrastructure/projetor-de-votacoes.js';
 import { assinarConsumidores } from './interface/consumidores.js';
 
 export type {
   ConsultaDeFrequencia,
   ConsultaDeParlamentares,
+  ConsultaDeVotacoes,
   FiltroDeParlamentares,
-  PeriodoDeFrequencia,
+  FiltroDeVotacoes,
+  PeriodoEmDias,
   Relogio,
 } from './application/portas.js';
 
@@ -29,6 +34,7 @@ export const MIGRACOES_DA_CONSULTA = fileURLToPath(new URL('../drizzle', import.
 export interface ModuloConsulta {
   readonly parlamentares: ConsultaDeParlamentares;
   readonly frequencia: ConsultaDeFrequencia;
+  readonly votacoes: ConsultaDeVotacoes;
   assinarConsumidores(barramento: BarramentoDeEventos): Promise<void>;
 }
 
@@ -41,10 +47,12 @@ export function montarConsulta(
   return {
     parlamentares: new ConsultaDeParlamentaresPostgres(banco, relogio),
     frequencia: new ConsultaDeFrequenciaPostgres(banco),
+    votacoes: new ConsultaDeVotacoesPostgres(banco),
     assinarConsumidores: (barramento) =>
       assinarConsumidores(barramento, banco, {
         parlamentares: new ProjetorDeParlamentares(banco),
         frequencia: new ProjetorDeFrequencia(banco),
+        votacoes: new ProjetorDeVotacoes(banco),
       }),
   };
 }

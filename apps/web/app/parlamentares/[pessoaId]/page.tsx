@@ -3,10 +3,11 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 
-import { buscarParlamentar, frequenciaDoParlamentar } from '../../_api/cliente';
+import { buscarParlamentar, frequenciaDoParlamentar, votosDoParlamentar } from '../../_api/cliente';
 import { Fonte } from '../../_componentes/fonte';
 import { Frequencia } from '../../_componentes/frequencia';
 import { data, nomeDoCargo } from '../../_componentes/formatacao';
+import { Votos } from '../../_componentes/votos';
 
 interface Props {
   readonly params: Promise<{ pessoaId: string }>;
@@ -19,9 +20,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PerfilDoParlamentar({ params }: Props): Promise<ReactNode> {
   const { pessoaId } = await params;
-  const [perfil, frequencia] = await Promise.all([
+  const [perfil, frequencia, votos] = await Promise.all([
     buscarParlamentar(pessoaId),
     frequenciaDoParlamentar(pessoaId),
+    votosDoParlamentar(pessoaId),
   ]);
   if (!perfil) notFound();
 
@@ -62,6 +64,7 @@ export default async function PerfilDoParlamentar({ params }: Props): Promise<Re
         )}
 
         {frequencia && <Frequencia frequencia={frequencia} />}
+        {votos && <Votos votos={votos} />}
       </article>
     </main>
   );

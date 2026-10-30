@@ -4,7 +4,7 @@ import type {
   ConsultaDeFrequencia,
   ConsultaDeParlamentares,
   FiltroDeParlamentares,
-  PeriodoDeFrequencia,
+  PeriodoEmDias,
 } from '@prometeu/consulta';
 import type {
   FrequenciaDoParlamentar,
@@ -15,9 +15,11 @@ import type {
 import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
+import { VotacoesFalsas } from '../votacoes/votacoes-falsas.js';
 import {
   CONSULTA_DE_FREQUENCIA,
   CONSULTA_DE_PARLAMENTARES,
+  CONSULTA_DE_VOTACOES,
   ParlamentaresController,
 } from './parlamentares.controller.js';
 
@@ -54,9 +56,9 @@ class ConsultaFalsa implements ConsultaDeParlamentares {
 }
 
 class FrequenciaFalsa implements ConsultaDeFrequencia {
-  ultimoPeriodo: PeriodoDeFrequencia | undefined;
+  ultimoPeriodo: PeriodoEmDias | undefined;
 
-  doParlamentar(pessoaId: string, periodo: PeriodoDeFrequencia): Promise<FrequenciaDoParlamentar> {
+  doParlamentar(pessoaId: string, periodo: PeriodoEmDias): Promise<FrequenciaDoParlamentar> {
     this.ultimoPeriodo = periodo;
     return Promise.resolve({
       pessoaId,
@@ -77,6 +79,7 @@ describe('GET /v1/parlamentares', () => {
   let app: INestApplication;
   const consulta = new ConsultaFalsa();
   const frequencia = new FrequenciaFalsa();
+  const votacoes = new VotacoesFalsas();
   let servidor: Parameters<typeof request>[0];
 
   beforeAll(async () => {
@@ -85,6 +88,7 @@ describe('GET /v1/parlamentares', () => {
       providers: [
         { provide: CONSULTA_DE_PARLAMENTARES, useValue: consulta },
         { provide: CONSULTA_DE_FREQUENCIA, useValue: frequencia },
+        { provide: CONSULTA_DE_VOTACOES, useValue: votacoes },
       ],
     }).compile();
     app = modulo.createNestApplication();
@@ -100,6 +104,7 @@ describe('GET /v1/parlamentares', () => {
   beforeEach(() => {
     consulta.ultimoFiltro = undefined;
     frequencia.ultimoPeriodo = undefined;
+    votacoes.ultimoPeriodo = undefined;
   });
 
   it('lista com paginação padrão e cabeçalho de cache para a CDN', async () => {
@@ -177,5 +182,22 @@ describe('GET /v1/parlamentares', () => {
 
   it('responde 404 para parlamentar desconhecido', async () => {
     await request(servidor).get('/v1/parlamentares/nao-e-uuid/frequencia').expect(404);
+  });
+
+  it('devolve os votos do período pedido', async () => {
+    const resposta = await request(servidor)
+      .get(`/v1/parlamentares/${ANA}/votos?de=2026-10-01&ate=2026-10-31`)
+      .expect(200);
+
+    expect(votacoes.ultimoPeriodo).toEqual({ de: '2026-10-01', ate: '2026-10-31' });
+    expect(resposta.body).toMatchObject({ pessoaId: ANA, resumo: { votacoes: 0 } });
+  });
+
+  it('votos: período inválido é 400 e parlamentar desconhecido é 404', async () => {
+    await request(servidor).get(`/v1/parlamentares/${ANA}/votos?de=2026-13-01`).expect(400);
+    await request(servidor)
+      .get('/v1/parlamentares/0192d5e0-4444-7000-8000-0000000000ff/votos')
+      .expect(404);
+    expect(votacoes.ultimoPeriodo).toBeUndefined();
   });
 });
