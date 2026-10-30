@@ -73,6 +73,7 @@ export class ConsultaDeEmendasPostgres implements ConsultaDeEmendas {
         programa: d.programa,
         acao: d.acao,
         planoOrcamentario: d.planoOrcamentario,
+        modalidade: d.modalidade,
         execucao: execucaoDe(d),
       })),
     };
@@ -161,6 +162,9 @@ function paraResumo(e: LinhaDeEmenda, c: LinhaDeCaptura | null): EmendaResumo {
     autor: { pessoaId: e.autorPessoaId, nome: e.autorNome },
     ufs: e.ufs,
     localidades: [...new Set(e.destinacoes.map((d) => d.localidade))],
+    modalidades: [
+      ...new Set(e.destinacoes.flatMap((d) => (d.modalidade === null ? [] : [d.modalidade]))),
+    ].sort(),
     execucao: {
       empenhadoCentavos: e.empenhado.toString(),
       liquidadoCentavos: e.liquidado.toString(),

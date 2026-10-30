@@ -2,17 +2,26 @@ import type { BancoDoContexto } from '@prometeu/infraestrutura';
 import { eq } from 'drizzle-orm';
 
 import type { RegistrarEmenda, RegistrarEmendaInput } from '../application/registrar-emenda.js';
-import type { TipoDeEmenda } from '../domain/tipo-de-emenda.js';
+import type { Modalidade, TipoDeEmenda } from '../domain/tipo-de-emenda.js';
 import { transparenciaEmenda } from './prata-do-portal.js';
 import type { FalhaDeImportacao, ResumoDaImportacao } from './resumo-da-importacao.js';
 
-/** Grafias do Portal (contrato `transparencia_emenda`). */
-const TIPO: Readonly<Record<string, TipoDeEmenda>> = {
-  'Emenda Individual - Transferências com Finalidade Definida': 'individual',
-  'Emenda Individual - Transferências Especiais': 'transferencia_especial',
-  'Emenda de Bancada': 'bancada',
-  'Emenda de Comissão': 'comissao',
-  'Emenda de Relator': 'relator',
+/**
+ * Grafias do Portal (contrato `transparencia_emenda`). O Portal junta o tipo e a modalidade num
+ * campo só, linha a linha: a emenda individual pode ter linhas nas duas modalidades.
+ */
+const TIPO: Readonly<Record<string, { tipo: TipoDeEmenda; modalidade: Modalidade | null }>> = {
+  'Emenda Individual - Transferências com Finalidade Definida': {
+    tipo: 'individual',
+    modalidade: 'finalidade_definida',
+  },
+  'Emenda Individual - Transferências Especiais': {
+    tipo: 'individual',
+    modalidade: 'transferencia_especial',
+  },
+  'Emenda de Bancada': { tipo: 'bancada', modalidade: null },
+  'Emenda de Comissão': { tipo: 'comissao', modalidade: null },
+  'Emenda de Relator': { tipo: 'relator', modalidade: null },
 };
 
 type Linha = typeof transparenciaEmenda.$inferSelect;
@@ -83,12 +92,12 @@ function paraEntrada(
   linhas: readonly Linha[],
 ): RegistrarEmendaInput | undefined {
   const [primeira] = linhas;
-  const tipo = primeira ? TIPO[primeira.tipo] : undefined;
+  const tipo = primeira ? TIPO[primeira.tipo]?.tipo : undefined;
   if (primeira === undefined || tipo === undefined) return undefined;
   // O que identifica a emenda é igual em todas as suas linhas; se não for, a fonte se contradiz.
   const coerente = linhas.every(
     (l) =>
-      l.tipo === primeira.tipo &&
+      TIPO[l.tipo]?.tipo === tipo &&
       l.ano === primeira.ano &&
       l.codigoAutor === primeira.codigoAutor &&
       l.nomeAutor === primeira.nomeAutor &&
@@ -110,6 +119,7 @@ function paraEntrada(
       programa: { codigo: l.codigoPrograma, nome: l.nomePrograma },
       acao: { codigo: l.codigoAcao, nome: l.nomeAcao },
       planoOrcamentario: { codigo: l.codigoPlanoOrcamentario, nome: l.nomePlanoOrcamentario },
+      modalidade: TIPO[l.tipo]?.modalidade ?? null,
       execucao: {
         empenhado: l.empenhadoCentavos,
         liquidado: l.liquidadoCentavos,

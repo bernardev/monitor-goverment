@@ -18,6 +18,7 @@ export interface DestinacaoGravada {
   programa: ClassificacaoGravada;
   acao: ClassificacaoGravada;
   planoOrcamentario: ClassificacaoGravada;
+  modalidade: 'finalidade_definida' | 'transferencia_especial' | null;
   empenhado: string;
   liquidado: string;
   pago: string;

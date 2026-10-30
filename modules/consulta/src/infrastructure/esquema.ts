@@ -221,6 +221,7 @@ export interface DestinacaoProjetada extends ExecucaoProjetada {
   programa: ClassificacaoProjetada;
   acao: ClassificacaoProjetada;
   planoOrcamentario: ClassificacaoProjetada;
+  modalidade: 'finalidade_definida' | 'transferencia_especial' | null;
 }
 
 const centavos = (nome: string) => bigint(nome, { mode: 'bigint' }).notNull();

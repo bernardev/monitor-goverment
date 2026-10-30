@@ -9,9 +9,7 @@ export const CONSULTA_DE_EMENDAS = Symbol('ConsultaDeEmendas');
 
 const filtro = paginacao.extend({
   ano: z.coerce.number().int().min(2000).max(2100).optional(),
-  tipo: z
-    .enum(['individual', 'transferencia_especial', 'bancada', 'comissao', 'relator'])
-    .optional(),
+  tipo: z.enum(['individual', 'bancada', 'comissao', 'relator']).optional(),
   uf: z
     .string()
     .regex(/^[A-Za-z]{2}$/, 'use a sigla da UF, como SP')

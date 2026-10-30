@@ -119,7 +119,6 @@ export const UFS = [
 
 const TIPOS_DE_EMENDA: Readonly<Record<string, string>> = {
   individual: 'Individual',
-  transferencia_especial: 'Individual, transferência especial',
   bancada: 'De bancada estadual',
   comissao: 'De comissão',
   relator: 'Do relator-geral',
@@ -127,6 +126,15 @@ const TIPOS_DE_EMENDA: Readonly<Record<string, string>> = {
 
 export function nomeDoTipoDeEmenda(tipo: string): string {
   return TIPOS_DE_EMENDA[tipo] ?? tipo;
+}
+
+const MODALIDADES: Readonly<Record<string, string>> = {
+  finalidade_definida: 'com finalidade definida',
+  transferencia_especial: 'transferência especial',
+};
+
+export function nomeDaModalidade(modalidade: string): string {
+  return MODALIDADES[modalidade] ?? modalidade;
 }
 
 const REAIS = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });

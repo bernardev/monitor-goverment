@@ -40,6 +40,7 @@ function destinacao(acao = '2E90', mudancas: Partial<Destinacao> = {}): Destinac
     programa: classificacao('5118', 'ATENÇÃO ESPECIALIZADA À SAÚDE'),
     acao: classificacao(acao, 'INCREMENTO TEMPORÁRIO'),
     planoOrcamentario: classificacao('0000', 'DIVERSAS'),
+    modalidade: 'finalidade_definida',
     execucao: execucao(),
     ...mudancas,
   };
@@ -135,6 +136,24 @@ describe('Emenda', () => {
     expect(emenda.captura).toEqual(captura(1));
   });
 
+  it('a emenda individual pode ter destinações nas duas modalidades', () => {
+    const pix = destinacao('00SX', { modalidade: 'transferencia_especial' });
+
+    expect(registrar(apuracao({ destinacoes: [destinacao('2E90'), pix] })).ok).toBe(true);
+  });
+
+  it('mudar a modalidade de uma destinação é retificação', () => {
+    const emenda = valor(registrar());
+    emenda.pullDomainEvents();
+    const pix = destinacao('00SX', { modalidade: 'transferencia_especial' });
+
+    valor(
+      emenda.atualizar(apuracao({ destinacoes: [destinacao('2E90'), pix] }), captura(2), AGORA),
+    );
+
+    expect(emenda.pullDomainEvents().map((e) => e.tipo)).toEqual(['EmendaRetificada']);
+  });
+
   it('restos a pagar cancelados podem ser estorno (negativo)', () => {
     const estorno = destinacao('2E90', { execucao: execucao({ restosCancelados: -500_000 }) });
 
@@ -158,6 +177,17 @@ describe('Emenda', () => {
       }),
     ],
     [
+      'emenda.modalidade_inconsistente',
+      apuracao({
+        tipo: 'bancada',
+        autor: { pessoa: undefined, nomeNaFonte: 'BANCADA DA BAHIA', codigoNaFonte: '7106' },
+      }),
+    ],
+    [
+      'emenda.modalidade_inconsistente',
+      apuracao({ destinacoes: [destinacao('2E90', { modalidade: null })] }),
+    ],
+    [
       'emenda.autor_sem_nome',
       apuracao({ autor: { pessoa: undefined, nomeNaFonte: ' ', codigoNaFonte: '9001' } }),
     ],
@@ -177,7 +207,9 @@ describe('eventos da emenda respeitam os contratos publicados', () => {
         apuracao({
           tipo: 'bancada',
           autor: { pessoa: undefined, nomeNaFonte: 'BANCADA DA BAHIA', codigoNaFonte: '7106' },
-          destinacoes: [destinacao('2E90', { municipioIbge: null, ufIbge: null })],
+          destinacoes: [
+            destinacao('2E90', { municipioIbge: null, ufIbge: null, modalidade: null }),
+          ],
         }),
       ),
     );
@@ -190,6 +222,7 @@ describe('eventos da emenda respeitam os contratos publicados', () => {
             destinacao('2E90', {
               municipioIbge: null,
               ufIbge: null,
+              modalidade: null,
               execucao: execucao({ restosCancelados: -10 }),
             }),
           ],

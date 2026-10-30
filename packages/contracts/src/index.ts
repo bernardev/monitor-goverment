@@ -13,6 +13,7 @@ export type {
   FonteDoDado,
   FrequenciaDoParlamentar,
   MandatoAtual,
+  ModalidadeDaEmenda,
   OpcaoDeVoto,
   Pagina,
   ParlamentarResumo,

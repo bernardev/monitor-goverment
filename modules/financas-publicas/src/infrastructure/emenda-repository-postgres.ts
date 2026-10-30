@@ -5,7 +5,7 @@ import { and, eq } from 'drizzle-orm';
 import type { EmendaRepository } from '../application/portas.js';
 import { Emenda } from '../domain/emenda.js';
 import { CapturaId, EmendaId, PessoaId } from '../domain/identificadores.js';
-import { TIPOS_DE_EMENDA } from '../domain/tipo-de-emenda.js';
+import { MODALIDADES, TIPOS_DE_EMENDA } from '../domain/tipo-de-emenda.js';
 import { emenda, outbox } from './esquema.js';
 import { ConflitoDeConcorrencia, confiavel, conhecido } from './persistencia.js';
 
@@ -48,6 +48,7 @@ export class EmendaRepositoryPostgres implements EmendaRepository {
           programa: { ...d.programa },
           acao: { ...d.acao },
           planoOrcamentario: { ...d.planoOrcamentario },
+          modalidade: d.modalidade,
           empenhado: d.execucao.empenhado.centavos.toString(),
           liquidado: d.execucao.liquidado.centavos.toString(),
           pago: d.execucao.pago.centavos.toString(),
@@ -100,6 +101,8 @@ function paraEmenda(linha: typeof emenda.$inferSelect): Emenda {
         programa: d.programa,
         acao: d.acao,
         planoOrcamentario: d.planoOrcamentario,
+        modalidade:
+          d.modalidade === null ? null : conhecido(MODALIDADES, d.modalidade, 'modalidade'),
         execucao: {
           empenhado: real(d.empenhado),
           liquidado: real(d.liquidado),

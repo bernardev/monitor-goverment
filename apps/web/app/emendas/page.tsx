@@ -17,13 +17,7 @@ interface Props {
   readonly searchParams: Promise<{ pagina?: string; ano?: string; tipo?: string; uf?: string }>;
 }
 
-const TIPOS: readonly TipoDeEmenda[] = [
-  'individual',
-  'transferencia_especial',
-  'bancada',
-  'comissao',
-  'relator',
-];
+const TIPOS: readonly TipoDeEmenda[] = ['individual', 'bancada', 'comissao', 'relator'];
 
 /** A coleta começa no orçamento de 2023; o do ano seguinte é votado no fim do ano corrente. */
 const PRIMEIRO_ANO = 2023;

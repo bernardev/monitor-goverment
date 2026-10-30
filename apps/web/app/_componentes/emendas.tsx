@@ -2,11 +2,16 @@ import type { EmendaResumo, EmendasDoParlamentar } from '@prometeu/contracts';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
-import { nomeDoTipoDeEmenda, pagoAteAgora, reais } from './formatacao';
+import { nomeDaModalidade, nomeDoTipoDeEmenda, pagoAteAgora, reais } from './formatacao';
 
 /** `Emenda 0001/2026`: o número é por autor e por ano, como o Portal da Transparência escreve. */
 export function identificacaoDaEmenda(e: { numero: string; ano: number }): string {
   return `Emenda ${e.numero}/${String(e.ano)}`;
+}
+
+/** `Individual, transferência especial`: o tipo e a modalidade de cada destinação. */
+export function tipoEModalidade(e: Pick<EmendaResumo, 'tipo' | 'modalidades'>): string {
+  return [nomeDoTipoDeEmenda(e.tipo), ...e.modalidades.map(nomeDaModalidade)].join(', ');
 }
 
 /** Onde a emenda aplica o dinheiro, sem despejar dezenas de localidades numa linha. */
@@ -31,7 +36,7 @@ export function ItemDeEmenda({
       <Link href={`/emendas/${e.emendaId}`}>{identificacaoDaEmenda(e)}</Link>
       {comAutor ? ` · ${e.autor.nome}` : ''}
       <span>
-        {nomeDoTipoDeEmenda(e.tipo)} · {destinos(e.localidades)}
+        {tipoEModalidade(e)} · {destinos(e.localidades)}
       </span>
       <span>
         Empenhado {reais(e.execucao.empenhadoCentavos)} · pago até agora{' '}

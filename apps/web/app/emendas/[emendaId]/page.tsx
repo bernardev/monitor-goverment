@@ -5,9 +5,9 @@ import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 
 import { buscarEmenda } from '../../_api/cliente';
-import { identificacaoDaEmenda } from '../../_componentes/emendas';
+import { identificacaoDaEmenda, tipoEModalidade } from '../../_componentes/emendas';
 import { Fonte } from '../../_componentes/fonte';
-import { nomeDoTipoDeEmenda, pagoAteAgora, reais } from '../../_componentes/formatacao';
+import { nomeDaModalidade, pagoAteAgora, reais } from '../../_componentes/formatacao';
 
 interface Props {
   readonly params: Promise<{ emendaId: string }>;
@@ -69,8 +69,8 @@ export default async function PaginaDaEmenda({ params }: Props): Promise<ReactNo
           )}
         </h1>
         <p>
-          Emenda {nomeDoTipoDeEmenda(emenda.tipo).toLowerCase()} ao orçamento de {emenda.ano},
-          código {emenda.codigoNaFonte} no Portal da Transparência.
+          Emenda {tipoEModalidade(emenda).toLowerCase()} ao orçamento de {emenda.ano}, código{' '}
+          {emenda.codigoNaFonte} no Portal da Transparência.
         </p>
         {emenda.autor.pessoaId && (
           <p className="fonte">
@@ -98,6 +98,7 @@ export default async function PaginaDaEmenda({ params }: Props): Promise<ReactNo
                 key={`${d.localidade}|${d.funcao.codigo}|${d.subfuncao.codigo}|${d.programa.codigo}|${d.acao.codigo}|${d.planoOrcamentario.codigo}`}
               >
                 <strong>{d.localidade}</strong>
+                {d.modalidade ? ` · ${nomeDaModalidade(d.modalidade)}` : ''}
                 <span>
                   Ação {classificacao(d.acao)} · programa {classificacao(d.programa)}
                 </span>

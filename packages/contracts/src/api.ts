@@ -268,13 +268,14 @@ export interface Pagina<T> {
   readonly total: number;
 }
 
-/** Como a fonte classifica a emenda. As duas primeiras têm um parlamentar como autor. */
-export type TipoDeEmenda =
-  | 'individual'
-  | 'transferencia_especial'
-  | 'bancada'
-  | 'comissao'
-  | 'relator';
+/** Quem indica a emenda: a individual tem um parlamentar como autor; as outras são coletivas. */
+export type TipoDeEmenda = 'individual' | 'bancada' | 'comissao' | 'relator';
+
+/**
+ * Como o dinheiro da emenda individual chega ao ente: para uma ação com finalidade definida, ou
+ * direto no caixa, como transferência especial (a "emenda PIX").
+ */
+export type ModalidadeDaEmenda = 'finalidade_definida' | 'transferencia_especial';
 
 /**
  * Fases da despesa, acumuladas até a coleta. Valores em centavos, como texto decimal
@@ -316,6 +317,8 @@ export interface EmendaResumo {
   readonly ufs: readonly string[];
   /** Destinos como a fonte os descreve (`SÃO PAULO - SP`, `MÚLTIPLO`, `Nacional`). */
   readonly localidades: readonly string[];
+  /** As modalidades das destinações; vazio em emenda coletiva. */
+  readonly modalidades: readonly ModalidadeDaEmenda[];
   /** A soma das destinações. */
   readonly execucao: ExecucaoDaEmenda;
   readonly fonte: FonteDoDado;
@@ -337,6 +340,8 @@ export interface DestinacaoDaEmenda {
   readonly programa: ClassificacaoOrcamentaria;
   readonly acao: ClassificacaoOrcamentaria;
   readonly planoOrcamentario: ClassificacaoOrcamentaria;
+  /** `null` em emenda coletiva. */
+  readonly modalidade: ModalidadeDaEmenda | null;
   readonly execucao: ExecucaoDaEmenda;
 }
 

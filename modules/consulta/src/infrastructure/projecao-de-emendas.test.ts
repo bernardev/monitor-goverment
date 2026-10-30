@@ -52,6 +52,7 @@ function destinacao(localidade: string, ibge: [string | null, string | null], ce
     programa: classificacao('5118'),
     acao: classificacao('2E90'),
     planoOrcamentario: classificacao('0000'),
+    modalidade: 'finalidade_definida' as string | null,
     empenhadoCentavos: empenhado,
     liquidadoCentavos: liquidado,
     pagoCentavos: pago,
@@ -66,11 +67,10 @@ const SAO_PAULO = destinacao(
   ['3550308', '3500000'],
   ['100000000', '60000000', '50000000', '0', '0', '0'],
 );
-const CAMPINAS = destinacao(
-  'CAMPINAS - SP',
-  ['3509502', '3500000'],
-  ['20000000', '0', '0', '0', '0', '0'],
-);
+const CAMPINAS = {
+  ...destinacao('CAMPINAS - SP', ['3509502', '3500000'], ['20000000', '0', '0', '0', '0', '0']),
+  modalidade: 'transferencia_especial',
+};
 
 function emenda(
   tipo: string,
@@ -157,11 +157,14 @@ describe('projeção de emendas', () => {
           autor: [null, 'BANCADA DA BAHIA'],
         },
         [
-          destinacao(
-            'SALVADOR - BA',
-            ['2927408', '2900000'],
-            ['900000000', '0', '0', '0', '0', '0'],
-          ),
+          {
+            ...destinacao(
+              'SALVADOR - BA',
+              ['2927408', '2900000'],
+              ['900000000', '0', '0', '0', '0', '0'],
+            ),
+            modalidade: null,
+          },
         ],
       ),
     );
@@ -187,6 +190,7 @@ describe('projeção de emendas', () => {
       autor: { pessoaId: ANA, nome: 'ANA EXEMPLO' },
       ufs: ['SP'],
       localidades: ['SÃO PAULO - SP', 'CAMPINAS - SP'],
+      modalidades: ['finalidade_definida', 'transferencia_especial'],
       execucao: { empenhadoCentavos: '120000000', pagoCentavos: '50000000' },
       fonte: { capturaId: CAPTURA, coletadaEm: '2026-10-30T09:00:00.000Z' },
     });

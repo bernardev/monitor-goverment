@@ -8,7 +8,7 @@ import {
 
 import type { EmendaPublicada, EventoDeFinancasPublicas } from './eventos.js';
 import { type CapturaId, EmendaId, type PessoaId } from './identificadores.js';
-import { type TipoDeEmenda, temAutorIndividual } from './tipo-de-emenda.js';
+import { type Modalidade, type TipoDeEmenda, temAutorIndividual } from './tipo-de-emenda.js';
 
 /** Item da classificação orçamentária: função, subfunção, programa, ação, plano orçamentário. */
 export interface Classificacao {
@@ -49,6 +49,8 @@ export interface Destinacao {
   readonly programa: Classificacao;
   readonly acao: Classificacao;
   readonly planoOrcamentario: Classificacao;
+  /** Só a emenda individual tem modalidade; a coletiva, `null`. */
+  readonly modalidade: Modalidade | null;
   readonly execucao: Execucao;
 }
 
@@ -198,6 +200,7 @@ export class Emenda extends AggregateRoot<EmendaId> {
         programa: { ...d.programa },
         acao: { ...d.acao },
         planoOrcamentario: { ...d.planoOrcamentario },
+        modalidade: d.modalidade,
         empenhadoCentavos: d.execucao.empenhado.centavos.toString(),
         liquidadoCentavos: d.execucao.liquidado.centavos.toString(),
         pagoCentavos: d.execucao.pago.centavos.toString(),
@@ -220,7 +223,8 @@ export class Emenda extends AggregateRoot<EmendaId> {
 
 /**
  * Invariantes: orçamento de um ano possível, ao menos uma destinação e sem repetir destino, valores
- * das fases não negativos (só o cancelamento de restos pode ser estorno) e autor coletivo sem pessoa.
+ * das fases não negativos (só o cancelamento de restos pode ser estorno), autor coletivo sem pessoa
+ * e modalidade só nas destinações de emenda individual.
  */
 function validar(apuracao: ApuracaoDaEmenda, agora: Date): Result<void, DomainError> {
   // O orçamento do ano seguinte é votado no fim do ano corrente.
@@ -238,6 +242,13 @@ function validar(apuracao: ApuracaoDaEmenda, agora: Date): Result<void, DomainEr
     return falha(
       'emenda.autor_coletivo_com_pessoa',
       'Emenda de bancada, comissão ou relator tem autor coletivo, não uma pessoa.',
+    );
+  }
+  const individual = temAutorIndividual(apuracao.tipo);
+  if (apuracao.destinacoes.some((d) => (d.modalidade !== null) !== individual)) {
+    return falha(
+      'emenda.modalidade_inconsistente',
+      'Toda destinação de emenda individual tem modalidade; a de emenda coletiva, não.',
     );
   }
   if (apuracao.destinacoes.length === 0) {
@@ -298,6 +309,7 @@ function mesmasDestinacoes(
     return (
       x.municipioIbge === y.municipioIbge &&
       x.ufIbge === y.ufIbge &&
+      x.modalidade === y.modalidade &&
       x.funcao.nome === y.funcao.nome &&
       x.subfuncao.nome === y.subfuncao.nome &&
       x.programa.nome === y.programa.nome &&

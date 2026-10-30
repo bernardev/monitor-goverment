@@ -21,7 +21,7 @@ import type { ResumoDaImportacao } from './infrastructure/resumo-da-importacao.j
 import { assinarConsumidores } from './interface/consumidores.js';
 
 export type * from './domain/eventos.js';
-export type { TipoDeEmenda } from './domain/tipo-de-emenda.js';
+export type { Modalidade, TipoDeEmenda } from './domain/tipo-de-emenda.js';
 export type { Relogio } from './application/portas.js';
 export type {
   RegistrarEmenda,

@@ -29,6 +29,7 @@ export const emenda: EmendaDetalhada = {
   autor: { pessoaId: null, nome: 'ANA EXEMPLO' },
   ufs: ['SP'],
   localidades: ['SÃO PAULO - SP'],
+  modalidades: ['finalidade_definida'],
   execucao,
   fonte: { capturaId: EMENDA, url: 'https://portal/emendas', coletadaEm: null },
   destinacoes: [],

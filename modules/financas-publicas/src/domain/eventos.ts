@@ -1,6 +1,6 @@
 import type { DomainEvent } from '@prometeu/shared-kernel';
 
-import type { TipoDeEmenda } from './tipo-de-emenda.js';
+import type { Modalidade, TipoDeEmenda } from './tipo-de-emenda.js';
 
 // Dados só com primitivos serializáveis: vão para a outbox em JSON (ADR-0007) e são a linguagem
 // publicada deste contexto para os outros (packages/contracts/eventos). Ausência é `null`.
@@ -34,6 +34,8 @@ export interface EmendaPublicada {
     programa: ClassificacaoPublicada;
     acao: ClassificacaoPublicada;
     planoOrcamentario: ClassificacaoPublicada;
+    /** `null` em emenda coletiva. */
+    modalidade: Modalidade | null;
     empenhadoCentavos: string;
     liquidadoCentavos: string;
     pagoCentavos: string;

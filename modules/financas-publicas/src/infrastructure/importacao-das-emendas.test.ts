@@ -48,11 +48,12 @@ const PRATA = sql.raw(`
 `);
 
 const TIPO_INDIVIDUAL = 'Emenda Individual - Transferências com Finalidade Definida';
+const TIPO_PIX = 'Emenda Individual - Transferências Especiais';
 
 /**
- * A emenda 2026 da Ana tem duas ações; a de 2024 também é dela (ela já estava no cargo em 2023). A
- * do ex-deputado não identifica ninguém, e a de bancada é coletiva. No segundo lote, a Ana recebe
- * mais um pagamento.
+ * A emenda 2026 da Ana tem duas ações, uma em cada modalidade; a de 2024 também é dela (ela já
+ * estava no cargo em 2023). A do ex-deputado não identifica ninguém, e a de bancada é coletiva. No
+ * segundo lote, a Ana recebe mais um pagamento.
  */
 function linhas(lote: string, pagoDaAna: number) {
   const linha = (
@@ -72,7 +73,7 @@ function linhas(lote: string, pagoDaAna: number) {
   return sql`
     INSERT INTO ingestao.transparencia_emenda VALUES
       ${linha('202690010001', 2026, TIPO_INDIVIDUAL, ['9001', 'ANA EXEMPLO'], '2E90', pagoDaAna)},
-      ${linha('202690010001', 2026, TIPO_INDIVIDUAL, ['9001', 'ANA EXEMPLO'], '00SX', 0)},
+      ${linha('202690010001', 2026, TIPO_PIX, ['9001', 'ANA EXEMPLO'], '00SX', 0)},
       ${linha('202490010007', 2024, TIPO_INDIVIDUAL, ['9001', 'ANA EXEMPLO'], '2E90', 0)},
       ${linha('202690020001', 2026, TIPO_INDIVIDUAL, ['9002', 'EX DEPUTADO'], '2E90', 0)},
       ${linha('202571060003', 2025, 'Emenda de Bancada', ['7106', 'BANCADA DA BAHIA'], '2E90', 0)}
@@ -179,9 +180,9 @@ describe('importação das emendas do Portal (prata → Finanças Públicas)', (
       ['202690020001', 'individual', null],
     ]);
     const daAna = emendas.find((e) => e.codigoNaFonte === '202690010001');
-    expect(daAna?.destinacoes.map((d) => [d.acao.codigo, d.pago])).toEqual([
-      ['00SX', '0'],
-      ['2E90', '25000000'],
+    expect(daAna?.destinacoes.map((d) => [d.acao.codigo, d.modalidade, d.pago])).toEqual([
+      ['00SX', 'transferencia_especial', '0'],
+      ['2E90', 'finalidade_definida', '25000000'],
     ]);
   });
 
