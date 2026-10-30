@@ -55,7 +55,7 @@ def deputado(id_deputado: int, partido: str, conteudo: bytes) -> RegistroPrata:
             "sigla_partido": partido,
             "sigla_uf": "SP",
             "url_foto": None,
-            "email": None,
+            "exercicios": [{"inicio": "2023-02-01T12:05:00-03:00", "fim": None}],
         },
         origem=Origem.da_resposta(resposta),
     )

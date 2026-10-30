@@ -3,20 +3,20 @@
     {
       "id": 900001,
       "uri": "https://dadosabertos.camara.leg.br/api/v2/deputados/900001",
-      "nome": "Ana  Exemplo",
-      "siglaPartido": " PEX ",
+      "nome": "Ana Exemplo",
+      "siglaPartido": "PEX",
       "uriPartido": "https://dadosabertos.camara.leg.br/api/v2/partidos/1",
       "siglaUf": "SP",
       "idLegislatura": 57,
       "urlFoto": "https://www.camara.leg.br/internet/deputado/bandep/900001.jpg",
-      "email": "dep.anaexemplo@camara.leg.br"
+      "email": null
     },
     {
       "id": 900002,
       "uri": "https://dadosabertos.camara.leg.br/api/v2/deputados/900002",
       "nome": "Bruno Modelo",
       "siglaPartido": "PMO",
-      "uriPartido": "https://dadosabertos.camara.leg.br/api/v2/partidos/2",
+      "uriPartido": "https://dadosabertos.camara.leg.br/api/v2/partidos/1",
       "siglaUf": "BA",
       "idLegislatura": 57,
       "urlFoto": "",
@@ -26,19 +26,19 @@
   "links": [
     {
       "rel": "self",
-      "href": "https://dadosabertos.camara.leg.br/api/v2/deputados?itens=2&ordem=ASC&ordenarPor=nome&pagina=1"
+      "href": "https://dadosabertos.camara.leg.br/api/v2/deputados?idLegislatura=57&itens=2&ordem=ASC&ordenarPor=nome&pagina=1"
     },
     {
       "rel": "next",
-      "href": "https://dadosabertos.camara.leg.br/api/v2/deputados?itens=2&ordem=ASC&ordenarPor=nome&pagina=2"
+      "href": "https://dadosabertos.camara.leg.br/api/v2/deputados?idLegislatura=57&itens=2&ordem=ASC&ordenarPor=nome&pagina=2"
     },
     {
       "rel": "first",
-      "href": "https://dadosabertos.camara.leg.br/api/v2/deputados?itens=2&ordem=ASC&ordenarPor=nome&pagina=1"
+      "href": "https://dadosabertos.camara.leg.br/api/v2/deputados?idLegislatura=57&itens=2&ordem=ASC&ordenarPor=nome&pagina=1"
     },
     {
       "rel": "last",
-      "href": "https://dadosabertos.camara.leg.br/api/v2/deputados?itens=2&ordem=ASC&ordenarPor=nome&pagina=2"
+      "href": "https://dadosabertos.camara.leg.br/api/v2/deputados?idLegislatura=57&itens=2&ordem=ASC&ordenarPor=nome&pagina=2"
     }
   ]
 }

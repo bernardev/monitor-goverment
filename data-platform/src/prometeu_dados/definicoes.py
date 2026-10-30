@@ -80,7 +80,10 @@ def _executar(
 
 @asset(
     group_name="camara",
-    description="Deputados federais em exercício e suas legislaturas (prata: camara_deputado).",
+    description=(
+        "Deputados federais da legislatura atual e seus períodos de exercício, inclusive suplentes "
+        "que já saíram (prata: camara_deputado)."
+    ),
 )
 def camara_deputados(context: AssetExecutionContext) -> MaterializeResult[None]:
     agora = datetime.now(UTC)

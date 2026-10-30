@@ -1,0 +1,37 @@
+{
+  "dados": [
+    {
+      "id": 900003,
+      "uri": "https://dadosabertos.camara.leg.br/api/v2/deputados/900003",
+      "nome": "Carla Amostra",
+      "nomeEleitoral": "CARLA AMOSTRA",
+      "siglaPartido": "PEX",
+      "uriPartido": "https://dadosabertos.camara.leg.br/api/v2/partidos/1",
+      "siglaUf": "RS",
+      "idLegislatura": 57,
+      "email": null,
+      "urlFoto": "https://www.camara.leg.br/internet/deputado/bandep/900003.jpg",
+      "dataHora": "2023-02-01T00:00",
+      "situacao": null,
+      "condicaoEleitoral": null,
+      "descricaoStatus": "Nome no início da legislatura / Partido no início da legislatura"
+    },
+    {
+      "id": 900003,
+      "uri": "https://dadosabertos.camara.leg.br/api/v2/deputados/900003",
+      "nome": "Carla Amostra",
+      "nomeEleitoral": "CARLA AMOSTRA",
+      "siglaPartido": "PEX",
+      "uriPartido": "https://dadosabertos.camara.leg.br/api/v2/partidos/1",
+      "siglaUf": "RS",
+      "idLegislatura": 57,
+      "email": null,
+      "urlFoto": "https://www.camara.leg.br/internet/deputado/bandep/900003.jpg",
+      "dataHora": "2025-01-01T13:00",
+      "situacao": "CONVOCADO",
+      "condicaoEleitoral": null,
+      "descricaoStatus": "DIVERSO - Convocação Eleito ou Suplente"
+    }
+  ],
+  "links": []
+}

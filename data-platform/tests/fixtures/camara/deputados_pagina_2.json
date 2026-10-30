@@ -9,21 +9,32 @@
       "siglaUf": "RS",
       "idLegislatura": 57,
       "urlFoto": "https://www.camara.leg.br/internet/deputado/bandep/900003.jpg",
-      "email": "dep.carlaamostra@camara.leg.br"
+      "email": null
+    },
+    {
+      "id": 900001,
+      "uri": "https://dadosabertos.camara.leg.br/api/v2/deputados/900001",
+      "nome": "Ana Exemplo",
+      "siglaPartido": "POU",
+      "uriPartido": "https://dadosabertos.camara.leg.br/api/v2/partidos/1",
+      "siglaUf": "SP",
+      "idLegislatura": 57,
+      "urlFoto": "https://www.camara.leg.br/internet/deputado/bandep/900001.jpg",
+      "email": null
     }
   ],
   "links": [
     {
       "rel": "self",
-      "href": "https://dadosabertos.camara.leg.br/api/v2/deputados?itens=2&ordem=ASC&ordenarPor=nome&pagina=2"
+      "href": "https://dadosabertos.camara.leg.br/api/v2/deputados?idLegislatura=57&itens=2&ordem=ASC&ordenarPor=nome&pagina=2"
     },
     {
       "rel": "first",
-      "href": "https://dadosabertos.camara.leg.br/api/v2/deputados?itens=2&ordem=ASC&ordenarPor=nome&pagina=1"
+      "href": "https://dadosabertos.camara.leg.br/api/v2/deputados?idLegislatura=57&itens=2&ordem=ASC&ordenarPor=nome&pagina=1"
     },
     {
       "rel": "last",
-      "href": "https://dadosabertos.camara.leg.br/api/v2/deputados?itens=2&ordem=ASC&ordenarPor=nome&pagina=2"
+      "href": "https://dadosabertos.camara.leg.br/api/v2/deputados?idLegislatura=57&itens=2&ordem=ASC&ordenarPor=nome&pagina=2"
     }
   ]
 }
