@@ -16,12 +16,11 @@ import {
   ConsultaDeMandatosPostgres,
 } from './infrastructure/consulta-de-mandatos-postgres.js';
 import { outbox } from './infrastructure/esquema.js';
-import {
-  ImportadorDeDeputadosDaCamara,
-  type ResumoDaImportacao,
-} from './infrastructure/importador-de-deputados-da-camara.js';
+import { ImportadorDeDeputadosDaCamara } from './infrastructure/importador-de-deputados-da-camara.js';
+import { ImportadorDeSenadoresDoSenado } from './infrastructure/importador-de-senadores-do-senado.js';
 import { PessoaRepositoryPostgres } from './infrastructure/pessoa-repository-postgres.js';
 import { RegistroDeCapturasNoAcervo } from './infrastructure/registro-de-capturas-no-acervo.js';
+import type { ResumoDaImportacao } from './infrastructure/resumo-da-importacao.js';
 import { assinarConsumidores } from './interface/consumidores.js';
 
 export type { Cargo } from './domain/cargo.js';
@@ -39,7 +38,7 @@ export type {
 export type {
   FalhaDeImportacao,
   ResumoDaImportacao,
-} from './infrastructure/importador-de-deputados-da-camara.js';
+} from './infrastructure/resumo-da-importacao.js';
 
 export const SCHEMA_DE_AGENTES_PUBLICOS = 'agentes_publicos';
 export const MIGRACOES_DE_AGENTES_PUBLICOS = fileURLToPath(new URL('../drizzle', import.meta.url));
@@ -56,6 +55,7 @@ export interface ModuloAgentesPublicos {
   /** Serviço de host aberto: outros contextos consultam mandatos por id. */
   readonly mandatos: ConsultaDeMandatos;
   importarDeputadosDaCamara(loteId: string): Promise<ResumoDaImportacao>;
+  importarSenadoresDoSenado(loteId: string): Promise<ResumoDaImportacao>;
   assinarConsumidores(
     barramento: BarramentoDeEventos,
     aoImportar: (resumo: ResumoDaImportacao) => void,
@@ -72,13 +72,17 @@ export function montarAgentesPublicos(
     new RegistroDeCapturasNoAcervo(dependencias.registrarCaptura),
     dependencias.relogio ?? { agora: () => new Date() },
   );
-  const importador = new ImportadorDeDeputadosDaCamara(banco, sincronizar);
+  const importadores = {
+    deputados: new ImportadorDeDeputadosDaCamara(banco, sincronizar),
+    senadores: new ImportadorDeSenadoresDoSenado(banco, sincronizar),
+  };
   return {
     sincronizar,
     mandatos: new ConsultaDeMandatosPostgres(banco),
-    importarDeputadosDaCamara: (loteId) => importador.importar(loteId),
+    importarDeputadosDaCamara: (loteId) => importadores.deputados.importar(loteId),
+    importarSenadoresDoSenado: (loteId) => importadores.senadores.importar(loteId),
     assinarConsumidores: (barramento, aoImportar) =>
-      assinarConsumidores(barramento, banco, importador, aoImportar),
+      assinarConsumidores(barramento, banco, importadores, aoImportar),
     criarRelay: (barramento) => new RelayDaOutbox(banco, outbox, barramento),
   };
 }

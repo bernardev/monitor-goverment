@@ -7,22 +7,10 @@ import type {
   SincronizarAgentePublicoInput,
 } from '../application/sincronizar-agente-publico.js';
 import { camaraDeputado, camaraLegislatura } from './prata-da-camara.js';
+import type { FalhaDeImportacao, ResumoDaImportacao } from './resumo-da-importacao.js';
 
 /** Como a Câmara escreve "sem partido" (deputado desfiliado). */
 const SEM_PARTIDO = 'S.PART.';
-
-export interface FalhaDeImportacao {
-  readonly codigoNaFonte: string;
-  readonly erro: string;
-  readonly mensagem: string;
-}
-
-export interface ResumoDaImportacao {
-  readonly loteId: string;
-  readonly lidos: number;
-  readonly pessoasNovas: number;
-  readonly falhas: readonly FalhaDeImportacao[];
-}
 
 /**
  * Camada anticorrupção da Câmara (ADR-0005): traduz as linhas prata de um lote para a linguagem deste

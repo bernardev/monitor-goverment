@@ -6,27 +6,37 @@ import {
 } from '@prometeu/infraestrutura';
 
 import { inbox } from '../infrastructure/esquema.js';
-import type {
-  ImportadorDeDeputadosDaCamara,
-  ResumoDaImportacao,
-} from '../infrastructure/importador-de-deputados-da-camara.js';
+import type { ResumoDaImportacao } from '../infrastructure/resumo-da-importacao.js';
 
 export const CONSUMIDOR_DA_CAMARA = 'agentes_publicos.importar_deputados_da_camara';
+export const CONSUMIDOR_DO_SENADO = 'agentes_publicos.importar_senadores_do_senado';
 
-/** Importa cada lote de deputados que a plataforma de dados grava na prata (ADR-0005). */
+interface Importador {
+  importar(loteId: string): Promise<ResumoDaImportacao>;
+}
+
+export interface Importadores {
+  readonly deputados: Importador;
+  readonly senadores: Importador;
+}
+
+/** Importa cada lote de deputados e de senadores que a plataforma de dados grava na prata (ADR-0005). */
 export async function assinarConsumidores(
   barramento: BarramentoDeEventos,
   banco: BancoDoContexto,
-  importador: ImportadorDeDeputadosDaCamara,
+  importadores: Importadores,
   aoImportar: (resumo: ResumoDaImportacao) => void,
 ): Promise<void> {
-  await barramento.assinar(
-    'LoteIngerido',
-    CONSUMIDOR_DA_CAMARA,
-    consumidorIdempotente(banco, inbox, CONSUMIDOR_DA_CAMARA, async (envelope) => {
-      const lote = envelope.dados as unknown as DadosLoteIngerido;
-      if (lote.fonte !== 'camara' || lote.tabela !== 'camara_deputado') return;
-      aoImportar(await importador.importar(envelope.id));
-    }),
-  );
+  const assinatura = (consumidor: string, fonte: string, tabela: string, importador: Importador) =>
+    barramento.assinar(
+      'LoteIngerido',
+      consumidor,
+      consumidorIdempotente(banco, inbox, consumidor, async (envelope) => {
+        const lote = envelope.dados as unknown as DadosLoteIngerido;
+        if (lote.fonte !== fonte || lote.tabela !== tabela) return;
+        aoImportar(await importador.importar(envelope.id));
+      }),
+    );
+  await assinatura(CONSUMIDOR_DA_CAMARA, 'camara', 'camara_deputado', importadores.deputados);
+  await assinatura(CONSUMIDOR_DO_SENADO, 'senado', 'senado_senador', importadores.senadores);
 }
