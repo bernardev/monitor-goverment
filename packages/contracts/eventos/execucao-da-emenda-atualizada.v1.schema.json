@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prometeu.org/contratos/eventos/execucao-da-emenda-atualizada.v1.json",
+  "title": "ExecucaoDaEmendaAtualizada (v1): dados",
+  "description": "Finanças Públicas: os valores de empenho, liquidação ou pagamento da emenda mudaram; traz o estado completo. idDoAgregado é o id da emenda.",
+  "type": "object",
+  "required": ["codigoNaFonte", "ano", "tipo", "numero", "autor", "destinacoes", "capturaId"],
+  "additionalProperties": false,
+  "properties": {
+    "codigoNaFonte": {
+      "type": "string",
+      "pattern": "^\\d+$",
+      "description": "Código da emenda no Portal da Transparência."
+    },
+    "ano": {
+      "type": "integer",
+      "description": "Ano do orçamento."
+    },
+    "tipo": {
+      "enum": ["individual", "transferencia_especial", "bancada", "comissao", "relator"]
+    },
+    "numero": {
+      "type": "string"
+    },
+    "autor": {
+      "type": "object",
+      "required": ["pessoaId", "nomeNaFonte", "codigoNaFonte"],
+      "additionalProperties": false,
+      "properties": {
+        "pessoaId": {
+          "type": ["string", "null"],
+          "format": "uuid",
+          "description": "null: autor coletivo ou parlamentar não identificado."
+        },
+        "nomeNaFonte": {
+          "type": "string",
+          "minLength": 1
+        },
+        "codigoNaFonte": {
+          "type": "string"
+        }
+      }
+    },
+    "destinacoes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "localidade",
+          "municipioIbge",
+          "ufIbge",
+          "funcao",
+          "subfuncao",
+          "programa",
+          "acao",
+          "planoOrcamentario",
+          "empenhadoCentavos",
+          "liquidadoCentavos",
+          "pagoCentavos",
+          "restosInscritosCentavos",
+          "restosCanceladosCentavos",
+          "restosPagosCentavos"
+        ],
+        "properties": {
+          "localidade": {
+            "type": "string"
+          },
+          "municipioIbge": {
+            "type": ["string", "null"],
+            "pattern": "^\\d{7}$"
+          },
+          "ufIbge": {
+            "type": ["string", "null"],
+            "pattern": "^\\d{7}$"
+          },
+          "funcao": {
+            "type": "object",
+            "required": ["codigo", "nome"],
+            "additionalProperties": false,
+            "properties": {
+              "codigo": {
+                "type": "string"
+              },
+              "nome": {
+                "type": "string"
+              }
+            }
+          },
+          "subfuncao": {
+            "type": "object",
+            "required": ["codigo", "nome"],
+            "additionalProperties": false,
+            "properties": {
+              "codigo": {
+                "type": "string"
+              },
+              "nome": {
+                "type": "string"
+              }
+            }
+          },
+          "programa": {
+            "type": "object",
+            "required": ["codigo", "nome"],
+            "additionalProperties": false,
+            "properties": {
+              "codigo": {
+                "type": "string"
+              },
+              "nome": {
+                "type": "string"
+              }
+            }
+          },
+          "acao": {
+            "type": "object",
+            "required": ["codigo", "nome"],
+            "additionalProperties": false,
+            "properties": {
+              "codigo": {
+                "type": "string"
+              },
+              "nome": {
+                "type": "string"
+              }
+            }
+          },
+          "planoOrcamentario": {
+            "type": "object",
+            "required": ["codigo", "nome"],
+            "additionalProperties": false,
+            "properties": {
+              "codigo": {
+                "type": "string"
+              },
+              "nome": {
+                "type": "string"
+              }
+            }
+          },
+          "empenhadoCentavos": {
+            "type": "string",
+            "pattern": "^-?\\d+$",
+            "description": "Centavos inteiros, em texto: JSON não tem inteiro de 64 bits."
+          },
+          "liquidadoCentavos": {
+            "type": "string",
+            "pattern": "^-?\\d+$",
+            "description": "Centavos inteiros, em texto: JSON não tem inteiro de 64 bits."
+          },
+          "pagoCentavos": {
+            "type": "string",
+            "pattern": "^-?\\d+$",
+            "description": "Centavos inteiros, em texto: JSON não tem inteiro de 64 bits."
+          },
+          "restosInscritosCentavos": {
+            "type": "string",
+            "pattern": "^-?\\d+$",
+            "description": "Centavos inteiros, em texto: JSON não tem inteiro de 64 bits."
+          },
+          "restosCanceladosCentavos": {
+            "type": "string",
+            "pattern": "^-?\\d+$",
+            "description": "Centavos inteiros, em texto: JSON não tem inteiro de 64 bits."
+          },
+          "restosPagosCentavos": {
+            "type": "string",
+            "pattern": "^-?\\d+$",
+            "description": "Centavos inteiros, em texto: JSON não tem inteiro de 64 bits."
+          }
+        }
+      }
+    },
+    "capturaId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Captura do Acervo que prova o dado (ADR-0009)."
+    }
+  }
+}
