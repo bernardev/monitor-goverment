@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prometeu.org/contratos/eventos/ausencia-registrada.v1.json",
+  "title": "AusenciaRegistrada (v1): dados",
+  "description": "Atividade Legislativa: o parlamentar faltou num dia com sessão do plenário, com ou sem justificativa aceita pela casa. idDoAgregado é o id do registro de frequência.",
+  "type": "object",
+  "required": [
+    "casa",
+    "dia",
+    "pessoaId",
+    "mandatoId",
+    "situacao",
+    "motivo",
+    "registroNaFonte",
+    "sessoes",
+    "capturaId"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "casa": {
+      "enum": ["camara_dos_deputados", "senado_federal"]
+    },
+    "dia": {
+      "type": "string",
+      "format": "date",
+      "description": "Dia do calendário de Brasília em que houve sessão."
+    },
+    "pessoaId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "mandatoId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Mandato de Agentes Públicos em que a frequência foi apurada."
+    },
+    "situacao": {
+      "enum": ["presente", "ausente", "ausencia_justificada"]
+    },
+    "motivo": {
+      "description": "Só na ausência justificada: por que a casa aceitou a ausência.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "required": ["categoria", "descricaoNaFonte"],
+          "additionalProperties": false,
+          "properties": {
+            "categoria": {
+              "enum": [
+                "licenca_saude",
+                "licenca_gestante",
+                "licenca_paternidade",
+                "licenca_particular",
+                "missao_autorizada",
+                "atividade_parlamentar",
+                "decisao_da_mesa",
+                "outro"
+              ]
+            },
+            "descricaoNaFonte": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Palavras da fonte, para conferência."
+            }
+          }
+        }
+      ]
+    },
+    "registroNaFonte": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Como a fonte escreveu a situação do dia."
+    },
+    "sessoes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["descricao", "presente"],
+        "additionalProperties": false,
+        "properties": {
+          "descricao": {
+            "type": "string",
+            "minLength": 1
+          },
+          "presente": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "capturaId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Captura do Acervo que prova o dado (ADR-0009)."
+    }
+  }
+}

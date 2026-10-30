@@ -176,6 +176,9 @@ importers:
       '@prometeu/agentes-publicos':
         specifier: workspace:*
         version: link:../../modules/agentes-publicos
+      '@prometeu/atividade-legislativa':
+        specifier: workspace:*
+        version: link:../../modules/atividade-legislativa
       '@prometeu/compromissos':
         specifier: workspace:*
         version: link:../../modules/compromissos
@@ -263,9 +266,31 @@ importers:
 
   modules/atividade-legislativa:
     dependencies:
+      '@prometeu/acervo':
+        specifier: workspace:*
+        version: link:../acervo
+      '@prometeu/agentes-publicos':
+        specifier: workspace:*
+        version: link:../agentes-publicos
+      '@prometeu/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@prometeu/infraestrutura':
+        specifier: workspace:*
+        version: link:../../packages/infraestrutura
       '@prometeu/shared-kernel':
         specifier: workspace:*
         version: link:../../packages/shared-kernel
+      drizzle-orm:
+        specifier: ^0.45.4
+        version: 0.45.4(@opentelemetry/api@1.10.0)(@types/pg@8.23.1)(pg@8.23.1)
+    devDependencies:
+      '@testcontainers/postgresql':
+        specifier: ^12.2.1
+        version: 12.2.1
+      drizzle-kit:
+        specifier: ^0.31.11
+        version: 0.31.11
 
   modules/compromissos:
     dependencies:
@@ -300,6 +325,9 @@ importers:
       '@prometeu/agentes-publicos':
         specifier: workspace:*
         version: link:../agentes-publicos
+      '@prometeu/atividade-legislativa':
+        specifier: workspace:*
+        version: link:../atividade-legislativa
       '@prometeu/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
