@@ -76,6 +76,17 @@ subir o Docker e ao rodar API e worker.
    API_URL=http://localhost:3000 pnpm --filter @prometeu/web exec next start -p 3001
    ```
 
+### Painel de curadoria
+
+O Keycloak sobe junto com o Docker, com usuários de exemplo (`curadora`, `revisor`, `editora`, senha
+`desenvolvimento`; ver [infra/docker/keycloak](infra/docker/keycloak/README.md)). Com o worker e a API no
+ar, suba o painel em `http://localhost:3002` (em modo produção ele exige as variáveis `CURADORIA_*`, como
+no `.env.example`):
+
+```bash
+pnpm --filter @prometeu/curadoria exec next dev -p 3002
+```
+
 | Comando      | O que faz                                                  |
 | ------------ | ---------------------------------------------------------- |
 | `pnpm dev`   | Sobe API, worker, site e painel em modo de desenvolvimento |

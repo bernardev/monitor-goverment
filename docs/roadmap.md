@@ -26,7 +26,7 @@ O que a v1 entrega e quais módulos cada entrega envolve está em
 | --- | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
 | 0   | Domínio central: Compromissos               | Agregado `Promessa` (estágio, veredito, errata) e casos de uso, só com testes, sem infraestrutura.                                                                                | Concluída |
 | 1   | Fatia de ponta a ponta: deputados da Câmara | Conector da Câmara com captura; Agentes Públicos (`Pessoa`, `Mandato`); Acervo mínimo; outbox, barramento e inbox; projeção em Consulta; `GET /v1/parlamentares`; página no site. | Concluída |
-| 2   | Compromissos no banco e acesso editorial    | Repositório da `Promessa` com outbox; login e papéis (aceitar ADR-0014); painel mínimo de curadoria para cadastrar promessa e propor veredito.                                    | A fazer   |
+| 2   | Compromissos no banco e acesso editorial    | Repositório da `Promessa` com outbox; login e papéis (aceitar ADR-0014); painel mínimo de curadoria para cadastrar promessa e propor veredito.                                    | Concluída |
 | 3   | Atividade Legislativa                       | Proposições, votações e presença com o motivo da ausência (Câmara e Senado).                                                                                                      | A fazer   |
 | 4   | Finanças Públicas e Obras                   | Emenda até a obra: empenho, pagamento, situação e medição da obra.                                                                                                                | A fazer   |
 | 5   | Compromissos ligado aos fatos               | Sugestão de vínculos a partir dos eventos de Legislativo, Finanças e Obras; reavaliação do estágio.                                                                               | A fazer   |
@@ -69,3 +69,23 @@ Fica para depois, de propósito: Senado e assembleias (mesmo contrato, novos con
 identidade entre fontes, revalidação sob demanda do site, observabilidade completa, comando para reconstruir
 projeções, limite de requisições na API pública e gravação de respostas reais da Câmara como fixtures dos
 testes de contrato.
+
+## Etapa 2 em detalhe
+
+- **Compromissos no banco:** repositório da `Promessa` com controle de versão (concorrência otimista),
+  eventos na outbox e histórico de vereditos protegido por gatilho no banco (invariante 5).
+- **Identidade:** Keycloak com o realm `prometeu` ([ADR-0014](adr/0014-identidade-e-acesso.md)). A API
+  confere assinatura, emissor e audiência do token e exige papel por rota.
+- **API editorial** (`/v1/editorial`): registrar promessa, adicionar fonte, capturar documento, propor,
+  publicar e recusar veredito. O autor de cada ato vem do token, nunca do corpo da requisição.
+- **Captura de documentos:** o Acervo baixa o documento da URL informada (só https, sem rede interna,
+  conferindo o IP também na conexão), guarda pelo hash e registra a captura.
+- **Painel de curadoria:** login com PKCE, sessão em cookie cifrado, lista de promessas, cadastro com
+  captura da fonte, proposta, publicação e recusa de veredito.
+
+Resultado: a jornada completa (login real, captura de uma página real, registro, proposta, recusa de "não
+cumprida" com mandato em curso, publicação por outra pessoa) roda contra os serviços locais.
+
+Fica para depois, de propósito: vínculos pelo painel (etapa 5), OTP obrigatório no realm de produção,
+fila de revisão com filtros, renovação de sessão gravada também nas páginas (hoje só em ações e rotas) e o
+sistema visual do painel.
