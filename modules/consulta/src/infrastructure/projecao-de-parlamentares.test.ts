@@ -49,14 +49,31 @@ const registrada = (pessoaId: string, nome: string, partido: string | null, quan
     capturaId: CAPTURA_1,
   });
 
-const mandato = (pessoaId: string, circunscricao: string, quando: string) =>
+const AGORA = new Date('2026-10-30T12:00:00.000Z');
+
+const mandato = (
+  pessoaId: string,
+  circunscricao: string,
+  quando: string,
+  periodo = { inicio: '2023-02-01T03:00:00.000Z', fim: '2027-02-01T02:59:59.999Z' },
+  mandatoId = MANDATO,
+) =>
   evento('MandatoRegistrado', pessoaId, quando, {
-    mandatoId: MANDATO,
+    mandatoId,
     cargo: 'deputado_federal',
     circunscricao,
-    inicio: '2023-02-01T03:00:00.000Z',
-    fim: '2027-02-01T02:59:59.999Z',
+    ...periodo,
     capturaId: CAPTURA_1,
+  });
+
+const retificado = (pessoaId: string, inicio: string, fim: string, quando: string) =>
+  evento('PeriodoDoMandatoRetificado', pessoaId, quando, {
+    mandatoId: MANDATO,
+    inicio,
+    fim,
+    inicioAnterior: '2023-02-01T03:00:00.000Z',
+    fimAnterior: '2027-02-01T02:59:59.999Z',
+    capturaId: CAPTURA_2,
   });
 
 const filiacao = (pessoaId: string, de: string | null, para: string | null, quando: string) =>
@@ -96,7 +113,7 @@ describe('projeção de parlamentares', () => {
       sql`TRUNCATE consulta.parlamentar, consulta.captura, consulta.inbox`,
     );
     barramento = new BarramentoEmMemoria();
-    const modulo = montarConsulta(banco);
+    const modulo = montarConsulta(banco, { agora: () => AGORA });
     await modulo.assinarConsumidores(barramento);
     consulta = modulo.parlamentares;
   });
@@ -185,5 +202,51 @@ describe('projeção de parlamentares', () => {
       1,
     );
     expect((await consulta.listar({ uf: 'XX', pagina: 1, itensPorPagina: 10 })).total).toBe(0);
+  });
+
+  it('a retificação muda o período do mandato exibido, e um exercício mais novo o substitui', async () => {
+    await publicar(
+      registrada(ANA, 'Ana Exemplo', 'PEX', '2026-10-30T09:00:00.000Z'),
+      mandato(ANA, '35', '2026-10-30T09:00:00.000Z'),
+      retificado(
+        ANA,
+        '2023-02-01T15:05:00.000Z',
+        '2026-03-31T21:00:00.000Z',
+        '2026-10-30T10:00:00.000Z',
+      ),
+    );
+    expect((await consulta.buscar(ANA))?.mandato).toMatchObject({
+      inicio: '2023-02-01T15:05:00.000Z',
+      fim: '2026-03-31T21:00:00.000Z',
+    });
+
+    const REASSUNCAO = '0192d5e0-6666-7000-8000-000000000002';
+    await publicar(
+      mandato(
+        ANA,
+        '35',
+        '2026-10-30T10:00:00.000Z',
+        { inicio: '2026-07-31T13:30:00.000Z', fim: '2027-02-01T02:59:59.999Z' },
+        REASSUNCAO,
+      ),
+    );
+    expect((await consulta.buscar(ANA))?.mandato).toMatchObject({ mandatoId: REASSUNCAO });
+  });
+
+  it('lista só quem está no cargo; o suplente que saiu mantém o perfil', async () => {
+    await publicar(
+      registrada(ANA, 'Ana Exemplo', 'PEX', '2026-10-30T09:00:00.000Z'),
+      mandato(ANA, '35', '2026-10-30T09:00:00.000Z'),
+      registrada(BRUNO, 'Bruno Modelo', 'PMO', '2026-10-30T09:00:00.000Z'),
+      mandato(BRUNO, '29', '2026-10-30T09:00:00.000Z', {
+        inicio: '2026-06-16T20:13:00.000Z',
+        fim: '2026-10-15T03:00:00.000Z',
+      }),
+    );
+
+    const lista = await consulta.listar({ pagina: 1, itensPorPagina: 10 });
+
+    expect(lista.itens.map((p) => p.nome)).toEqual(['Ana Exemplo']);
+    expect((await consulta.buscar(BRUNO))?.mandato?.fim).toBe('2026-10-15T03:00:00.000Z');
   });
 });

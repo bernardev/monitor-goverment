@@ -29,6 +29,9 @@ describe('eventos de Agentes Públicos respeitam os contratos publicados (packag
     );
     pessoa.atualizarFoto(undefined, umaCaptura(), AGORA);
     valor(pessoa.registrarMandato(umMandato(), AGORA));
+    valor(
+      pessoa.sincronizarMandatos([umMandato({ fim: new Date('2026-03-31T21:00:00.000Z') })], AGORA),
+    );
 
     const eventos = [...registrada.pullDomainEvents(), ...pessoa.pullDomainEvents()];
     expect(new Set(eventos.map((e) => e.tipo))).toEqual(
@@ -38,6 +41,7 @@ describe('eventos de Agentes Públicos respeitam os contratos publicados (packag
         'FiliacaoPartidariaAlterada',
         'FotoOficialAlterada',
         'MandatoRegistrado',
+        'PeriodoDoMandatoRetificado',
       ]),
     );
     for (const evento of eventos) {

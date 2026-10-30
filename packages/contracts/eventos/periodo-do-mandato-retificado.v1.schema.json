@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prometeu.org/contratos/eventos/periodo-do-mandato-retificado.v1.json",
+  "title": "PeriodoDoMandatoRetificado (v1): dados",
+  "description": "Agentes Públicos: a fonte corrigiu as datas de um exercício já registrado. O mandato mantém o id. idDoAgregado é o PessoaId do titular.",
+  "type": "object",
+  "required": ["mandatoId", "inicio", "fim", "inicioAnterior", "fimAnterior", "capturaId"],
+  "additionalProperties": false,
+  "properties": {
+    "mandatoId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "inicio": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "fim": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "inicioAnterior": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "fimAnterior": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "capturaId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Captura do Acervo que prova o novo período (ADR-0009)."
+    }
+  }
+}

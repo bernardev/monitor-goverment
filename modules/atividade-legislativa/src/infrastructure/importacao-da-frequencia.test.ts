@@ -121,12 +121,14 @@ describe('importação da frequência da Câmara (prata → Atividade Legislativ
         nome,
         siglaPartido: 'PEX',
         urlDaFoto: null,
-        mandato: {
-          cargo: 'deputado_federal',
-          circunscricao: uf,
-          inicio: new Date('2023-02-01T03:00:00.000Z'),
-          fim: new Date('2027-02-01T02:59:59.999Z'),
-        },
+        mandatos: [
+          {
+            cargo: 'deputado_federal',
+            circunscricao: uf,
+            inicio: new Date('2023-02-01T03:00:00.000Z'),
+            fim: new Date('2027-02-01T02:59:59.999Z'),
+          },
+        ],
         origem: {
           fonte: 'camara',
           url: 'https://camara/deputados',

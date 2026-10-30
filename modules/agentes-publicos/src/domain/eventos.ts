@@ -45,9 +45,23 @@ export type MandatoRegistrado = DomainEvent<
   }
 >;
 
+/** A fonte corrigiu as datas de um exercício já registrado; o mandato mantém o id. */
+export type PeriodoDoMandatoRetificado = DomainEvent<
+  'PeriodoDoMandatoRetificado',
+  {
+    mandatoId: string;
+    inicio: string;
+    fim: string | null;
+    inicioAnterior: string;
+    fimAnterior: string | null;
+    capturaId: string;
+  }
+>;
+
 export type EventoDeAgentesPublicos =
   | PessoaRegistrada
   | NomePublicoAlterado
   | FiliacaoPartidariaAlterada
   | FotoOficialAlterada
-  | MandatoRegistrado;
+  | MandatoRegistrado
+  | PeriodoDoMandatoRetificado;

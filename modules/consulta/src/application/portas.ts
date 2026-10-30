@@ -23,6 +23,10 @@ export interface FiltroDeParlamentares {
   readonly itensPorPagina: number;
 }
 
+export interface Relogio {
+  agora(): Date;
+}
+
 /** Leitura das projeções para a API pública (ADR-0008). */
 export interface ConsultaDeParlamentares {
   listar(filtro: FiltroDeParlamentares): Promise<Pagina<ParlamentarResumo>>;

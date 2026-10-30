@@ -21,7 +21,7 @@ export interface NovoMandato {
 export class Mandato extends Entity<MandatoId> {
   private constructor(
     id: MandatoId,
-    private readonly dados: NovoMandato,
+    private dados: NovoMandato,
   ) {
     super(id);
   }
@@ -70,9 +70,22 @@ export class Mandato extends Entity<MandatoId> {
 
   /** Ninguém exerce o mesmo cargo duas vezes ao mesmo tempo. */
   sobrepoe(novo: NovoMandato): boolean {
-    if (this.dados.cargo !== novo.cargo) return false;
-    const fimDeste = this.dados.periodo.fim ?? new Date(8.64e15);
-    const fimDoNovo = novo.periodo.fim ?? new Date(8.64e15);
-    return this.dados.periodo.inicio <= fimDoNovo && novo.periodo.inicio <= fimDeste;
+    return sobrepostos(this.dados, novo);
   }
+
+  /**
+   * A fonte corrigiu as datas do exercício. O id fica, porque outros contextos já referenciam o
+   * mandato. Quem chama garante que o novo período não se sobrepõe a outro mandato.
+   */
+  retificarPeriodo(periodo: Periodo, captura: CapturaId): void {
+    this.dados = { ...this.dados, periodo, captura };
+  }
+}
+
+/** Dois mandatos do mesmo cargo com algum instante em comum. */
+export function sobrepostos(a: NovoMandato, b: NovoMandato): boolean {
+  if (a.cargo !== b.cargo) return false;
+  const fimDeA = a.periodo.fim ?? new Date(8.64e15);
+  const fimDeB = b.periodo.fim ?? new Date(8.64e15);
+  return a.periodo.inicio <= fimDeB && b.periodo.inicio <= fimDeA;
 }

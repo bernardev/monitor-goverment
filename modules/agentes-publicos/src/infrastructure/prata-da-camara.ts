@@ -1,6 +1,6 @@
-import { date, integer, pgSchema, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { date, integer, jsonb, pgSchema, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
-// Leitura das tabelas prata da Câmara (packages/contracts/prata/camara, v1). O schema `ingestao` é da
+// Leitura das tabelas prata da Câmara (packages/contracts/prata/camara, v2). O schema `ingestao` é da
 // plataforma de dados; este contexto só lê, com a permissão dada em infra/docker/postgres.
 // Fica fora do drizzle.config.ts de propósito: estas tabelas não têm migração aqui.
 
@@ -13,6 +13,8 @@ export const camaraDeputado = ingestao.table('camara_deputado', {
   siglaPartido: text('sigla_partido').notNull(),
   siglaUf: text('sigla_uf').notNull(),
   urlFoto: text('url_foto'),
+  /** Instantes ISO 8601 com fuso; `fim` nulo no exercício em curso. */
+  exercicios: jsonb('exercicios').$type<{ inicio: string; fim: string | null }[]>().notNull(),
   loteId: uuid('lote_id').notNull(),
   origemFonte: text('origem_fonte').notNull(),
   origemUrl: text('origem_url').notNull(),

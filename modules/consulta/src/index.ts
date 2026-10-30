@@ -4,7 +4,11 @@ import { fileURLToPath } from 'node:url';
 
 import type { BancoDoContexto, BarramentoDeEventos } from '@prometeu/infraestrutura';
 
-import type { ConsultaDeFrequencia, ConsultaDeParlamentares } from './application/portas.js';
+import type {
+  ConsultaDeFrequencia,
+  ConsultaDeParlamentares,
+  Relogio,
+} from './application/portas.js';
 import { ConsultaDeFrequenciaPostgres } from './infrastructure/consulta-de-frequencia-postgres.js';
 import { ConsultaDeParlamentaresPostgres } from './infrastructure/consulta-de-parlamentares-postgres.js';
 import { ProjetorDeFrequencia } from './infrastructure/projetor-de-frequencia.js';
@@ -16,6 +20,7 @@ export type {
   ConsultaDeParlamentares,
   FiltroDeParlamentares,
   PeriodoDeFrequencia,
+  Relogio,
 } from './application/portas.js';
 
 export const SCHEMA_DA_CONSULTA = 'consulta';
@@ -27,9 +32,14 @@ export interface ModuloConsulta {
   assinarConsumidores(barramento: BarramentoDeEventos): Promise<void>;
 }
 
-export function montarConsulta(banco: BancoDoContexto): ModuloConsulta {
+const RELOGIO_DO_SISTEMA: Relogio = { agora: () => new Date() };
+
+export function montarConsulta(
+  banco: BancoDoContexto,
+  relogio: Relogio = RELOGIO_DO_SISTEMA,
+): ModuloConsulta {
   return {
-    parlamentares: new ConsultaDeParlamentaresPostgres(banco),
+    parlamentares: new ConsultaDeParlamentaresPostgres(banco, relogio),
     frequencia: new ConsultaDeFrequenciaPostgres(banco),
     assinarConsumidores: (barramento) =>
       assinarConsumidores(barramento, banco, {

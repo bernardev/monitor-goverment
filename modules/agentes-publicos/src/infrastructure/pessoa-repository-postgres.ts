@@ -1,6 +1,6 @@
 import { type BancoDoContexto, gravarNaOutbox } from '@prometeu/infraestrutura';
 import { CodigoIbge, type DomainError, Periodo, type Result } from '@prometeu/shared-kernel';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 
 import type { PessoaRepository } from '../application/portas.js';
 import { CARGOS } from '../domain/cargo.js';
@@ -92,7 +92,7 @@ export class PessoaRepositoryPostgres implements PessoaRepository {
           })),
         )
         .onConflictDoNothing();
-      // Mandatos não mudam depois de registrados: só os novos entram.
+      // Cargo e ente não mudam depois de registrados; o período pode ser retificado pela fonte.
       if (alvo.mandatos.length > 0) {
         await tx
           .insert(mandato)
@@ -107,7 +107,14 @@ export class PessoaRepositoryPostgres implements PessoaRepository {
               capturaId: m.captura.valor,
             })),
           )
-          .onConflictDoNothing();
+          .onConflictDoUpdate({
+            target: mandato.id,
+            set: {
+              inicio: sql.raw('excluded.inicio'),
+              fim: sql.raw('excluded.fim'),
+              capturaId: sql.raw('excluded.captura_id'),
+            },
+          });
       }
       await gravarNaOutbox(tx, outbox, alvo.pullDomainEvents());
     });

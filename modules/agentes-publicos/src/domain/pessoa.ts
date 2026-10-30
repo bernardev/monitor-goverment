@@ -3,7 +3,7 @@ import { AggregateRoot, DomainError, Result, criarEvento } from '@prometeu/share
 import type { EventoDeAgentesPublicos } from './eventos.js';
 import type { IdentificadorExterno } from './identificador-externo.js';
 import { type CapturaId, type MandatoId, PessoaId } from './identificadores.js';
-import { Mandato, type NovoMandato } from './mandato.js';
+import { Mandato, type NovoMandato, sobrepostos } from './mandato.js';
 import type { NomePublico } from './nome-publico.js';
 import type { SiglaPartidaria } from './sigla-partidaria.js';
 import type { UrlPublica } from './url-publica.js';
@@ -128,15 +128,7 @@ export class Pessoa extends AggregateRoot<PessoaId> {
     const existente = this.estado.mandatos.find((m) => m.correspondeA(novo));
     if (existente) return Result.ok(existente.id);
 
-    if (this.estado.mandatos.some((m) => m.sobrepoe(novo))) {
-      return Result.fail(
-        new DomainError(
-          'mandato.sobreposto',
-          `Já existe um mandato de ${novo.cargo} que se sobrepõe a este período.`,
-          { pessoaId: this.id.valor, cargo: novo.cargo },
-        ),
-      );
-    }
+    if (this.estado.mandatos.some((m) => m.sobrepoe(novo))) return this.sobreposto(novo.cargo);
     const mandato = Mandato.criar(novo);
     if (!mandato.ok) return mandato;
 
@@ -154,6 +146,73 @@ export class Pessoa extends AggregateRoot<PessoaId> {
       agora,
     );
     return Result.ok(mandato.value.id);
+  }
+
+  /**
+   * Aplica, de uma vez, os períodos de exercício que a fonte informa: ela é a autoridade sobre eles,
+   * e cada período vira um mandato. Um mandato já registrado que se sobrepõe a um único período é
+   * retificado para ele em vez de duplicado; o id fica, porque outros contextos já o referenciam.
+   * Períodos que se sobrepõem entre si, ou que tocam mais de um mandato registrado, são recusados.
+   */
+  sincronizarMandatos(
+    periodos: readonly NovoMandato[],
+    agora: Date,
+  ): Result<MandatoId[], DomainError> {
+    const ordenados = [...periodos].sort(
+      (a, b) => a.periodo.inicio.getTime() - b.periodo.inicio.getTime(),
+    );
+    const sobrepostoAoAnterior = ordenados.find((novo, i) => {
+      const anterior = ordenados[i - 1];
+      return anterior !== undefined && sobrepostos(anterior, novo);
+    });
+    if (sobrepostoAoAnterior) return this.sobreposto(sobrepostoAoAnterior.cargo);
+
+    const aplicados = new Set<Mandato>();
+    const ids: MandatoId[] = [];
+    for (const novo of ordenados) {
+      const tocados = this.estado.mandatos.filter((m) => !aplicados.has(m) && m.sobrepoe(novo));
+      const [existente, ...outros] = tocados;
+      if (existente === undefined) {
+        const registrado = this.registrarMandato(novo, agora);
+        if (!registrado.ok) return registrado;
+        const mandato = this.estado.mandatos.find((m) => m.id.equals(registrado.value));
+        if (mandato) aplicados.add(mandato);
+        ids.push(registrado.value);
+        continue;
+      }
+      if (outros.length > 0 || !existente.circunscricao.equals(novo.circunscricao)) {
+        return this.sobreposto(novo.cargo);
+      }
+      if (!existente.periodo.equals(novo.periodo)) {
+        const anterior = existente.periodo;
+        existente.retificarPeriodo(novo.periodo, novo.captura);
+        this.emitir(
+          'PeriodoDoMandatoRetificado',
+          {
+            mandatoId: existente.id.valor,
+            inicio: novo.periodo.inicio.toISOString(),
+            fim: novo.periodo.fim?.toISOString() ?? null,
+            inicioAnterior: anterior.inicio.toISOString(),
+            fimAnterior: anterior.fim?.toISOString() ?? null,
+            capturaId: novo.captura.valor,
+          },
+          agora,
+        );
+      }
+      aplicados.add(existente);
+      ids.push(existente.id);
+    }
+    return Result.ok(ids);
+  }
+
+  private sobreposto(cargo: string): Result<never, DomainError> {
+    return Result.fail(
+      new DomainError(
+        'mandato.sobreposto',
+        `Já existe um mandato de ${cargo} que se sobrepõe a este período.`,
+        { pessoaId: this.id.valor, cargo },
+      ),
+    );
   }
 
   private emitir<T extends EventoDeAgentesPublicos['tipo']>(

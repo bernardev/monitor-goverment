@@ -23,7 +23,7 @@ import { mandato, outbox, pessoa } from './esquema.js';
 const LOTE_1 = '0192d5e0-3333-7000-8000-000000000001';
 const LOTE_2 = '0192d5e0-3333-7000-8000-000000000002';
 
-// Tabelas prata como a plataforma de dados as cria (data-platform/migracoes, contrato v1.0.0).
+// Tabelas prata como a plataforma de dados as cria (data-platform/migracoes, contrato v2.0.0).
 const PRATA = sql.raw(`
   CREATE TABLE ingestao.camara_legislatura (
     id_legislatura integer PRIMARY KEY, data_inicio date NOT NULL, data_fim date NOT NULL,
@@ -33,7 +33,8 @@ const PRATA = sql.raw(`
   );
   CREATE TABLE ingestao.camara_deputado (
     id_deputado integer NOT NULL, id_legislatura integer NOT NULL, nome text NOT NULL,
-    sigla_partido text NOT NULL, sigla_uf char(2) NOT NULL, url_foto text, email text,
+    sigla_partido text NOT NULL, sigla_uf char(2) NOT NULL, url_foto text,
+    exercicios jsonb NOT NULL,
     lote_id uuid NOT NULL, origem_fonte text NOT NULL, origem_url text NOT NULL,
     origem_coletada_em timestamptz NOT NULL, origem_sha256 char(64) NOT NULL,
     origem_caminho text NOT NULL, origem_tipo_de_conteudo text NOT NULL,
@@ -47,13 +48,23 @@ const LEGISLATURA_57 = sql`
      '2026-10-30T09:00:00Z', ${'1'.repeat(64)}, 'bronze/camara/l', 'application/json');
 `;
 
+const EXERCICIOS_DA_ANA = JSON.stringify([
+  { inicio: '2023-02-01T12:05:00-03:00', fim: '2026-03-31T18:00:00-03:00' },
+  { inicio: '2026-07-31T10:30:00-03:00', fim: null },
+]);
+const EXERCICIOS_DO_BRUNO = JSON.stringify([
+  { inicio: '2026-06-16T17:13:00-03:00', fim: '2026-10-15T00:00:00-03:00' },
+]);
+const EXERCICIOS_DA_CARLA = JSON.stringify([{ inicio: '2023-02-01T12:05:00-03:00', fim: null }]);
+
 function deputados(lote: string, sha256: string, partidoDaAna: string) {
   const origem = sql`${lote}, 'camara', 'https://camara/deputados', '2026-10-30T09:00:00Z', ${sha256}, 'bronze/camara/d', 'application/json'`;
   return sql`
     INSERT INTO ingestao.camara_deputado VALUES
-      (900001, 57, 'Ana Exemplo', ${partidoDaAna}, 'SP', null, null, ${origem}),
-      (900002, 57, 'Bruno Modelo', 'PMO', 'BA', 'https://camara.leg.br/900002.jpg', null, ${origem}),
-      (900003, 57, 'Uf Inexistente', 'PEX', 'XX', null, null, ${origem})
+      (900001, 57, 'Ana Exemplo', ${partidoDaAna}, 'SP', null, ${EXERCICIOS_DA_ANA}, ${origem}),
+      (900002, 57, 'Bruno Modelo', 'PMO', 'BA', 'https://camara.leg.br/900002.jpg',
+       ${EXERCICIOS_DO_BRUNO}, ${origem}),
+      (900003, 57, 'Uf Inexistente', 'PEX', 'XX', null, ${EXERCICIOS_DA_CARLA}, ${origem})
     ON CONFLICT (id_deputado, id_legislatura) DO UPDATE SET
       sigla_partido = EXCLUDED.sigla_partido, lote_id = EXCLUDED.lote_id,
       origem_sha256 = EXCLUDED.origem_sha256
@@ -70,7 +81,7 @@ const loteIngerido = (id: string, tabela = 'camara_deputado'): EnvelopeDeEvento 
   dados: {
     fonte: 'camara',
     tabela,
-    versaoDoContrato: '1.0.0',
+    versaoDoContrato: '2.0.0',
     coletadoDe: '2026-10-30T09:00:00Z',
     coletadoAte: '2026-10-30T09:00:00Z',
     registros: 3,
@@ -116,7 +127,7 @@ describe('importação de deputados da Câmara (prata → Agentes Públicos)', (
     await postgres.parar();
   });
 
-  it('importa o lote: pessoas, mandatos, capturas e eventos na outbox', async () => {
+  it('importa o lote: pessoas, um mandato por exercício, capturas e eventos na outbox', async () => {
     await ingestao.drizzle.execute(deputados(LOTE_1, 'a'.repeat(64), 'PEX'));
 
     await barramento.publicar(loteIngerido(LOTE_1));
@@ -131,14 +142,22 @@ describe('importação de deputados da Câmara (prata → Agentes Públicos)', (
       ['Ana Exemplo', 'PEX'],
       ['Bruno Modelo', 'PMO'],
     ]);
-    const mandatos = await banco.drizzle.select().from(mandato).orderBy(mandato.circunscricao);
-    expect(mandatos.map((m) => [m.cargo, m.circunscricao, m.inicio.toISOString()])).toEqual([
-      ['deputado_federal', '29', '2023-02-01T03:00:00.000Z'],
-      ['deputado_federal', '35', '2023-02-01T03:00:00.000Z'],
+    const mandatos = await banco.drizzle
+      .select()
+      .from(mandato)
+      .orderBy(mandato.circunscricao, mandato.inicio);
+    expect(
+      mandatos.map((m) => [m.circunscricao, m.inicio.toISOString(), m.fim?.toISOString()]),
+    ).toEqual([
+      ['29', '2026-06-16T20:13:00.000Z', '2026-10-15T03:00:00.000Z'],
+      ['35', '2023-02-01T15:05:00.000Z', '2026-03-31T21:00:00.000Z'],
+      // Em curso: termina, no máximo, com a legislatura.
+      ['35', '2026-07-31T13:30:00.000Z', '2027-02-01T02:59:59.999Z'],
     ]);
 
     const eventos = await banco.drizzle.select().from(outbox);
     expect(eventos.map((e) => e.tipo).sort()).toEqual([
+      'MandatoRegistrado',
       'MandatoRegistrado',
       'MandatoRegistrado',
       'PessoaRegistrada',
@@ -156,7 +175,8 @@ describe('importação de deputados da Câmara (prata → Agentes Públicos)', (
     const [registrado] = await banco.drizzle
       .select()
       .from(mandato)
-      .where(sql`circunscricao = '35'`);
+      .where(sql`circunscricao = '35'`)
+      .orderBy(sql`inicio DESC`);
     if (!registrado) throw new Error('Mandato não importado.');
 
     expect(await modulo.mandatos.buscar(registrado.id)).toMatchObject({
@@ -180,6 +200,14 @@ describe('importação de deputados da Câmara (prata → Agentes Públicos)', (
       await modulo.mandatos.vigente(ana, 'deputado_federal', new Date('2027-02-01T03:00:00.000Z')),
     ).toBeUndefined();
     expect(await modulo.mandatos.vigente(ana, 'senador', dentro)).toBeUndefined();
+    // De licença, a Ana não estava no cargo; o suplente Bruno esteve só entre a posse e a saída.
+    const deLicenca = new Date('2026-05-04T15:00:00.000Z');
+    expect(await modulo.mandatos.vigente(ana, 'deputado_federal', deLicenca)).toBeUndefined();
+    const bruno = { fonte: 'camara', codigo: '900002' } as const;
+    expect(await modulo.mandatos.vigente(bruno, 'deputado_federal', dentro)).toBeDefined();
+    expect(
+      await modulo.mandatos.vigente(bruno, 'deputado_federal', new Date('2026-10-20T15:00:00Z')),
+    ).toBeUndefined();
     expect(
       await modulo.mandatos.vigente(
         { fonte: 'senado', codigo: '900001' },

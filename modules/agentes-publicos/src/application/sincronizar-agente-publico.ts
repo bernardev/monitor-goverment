@@ -16,25 +16,27 @@ export interface SincronizarAgentePublicoInput {
   /** `null`: sem partido. */
   readonly siglaPartido: string | null;
   readonly urlDaFoto: string | null;
-  readonly mandato: {
+  /** Todos os períodos de exercício que a fonte informa; ela é a autoridade sobre eles. */
+  readonly mandatos: readonly {
     readonly cargo: string;
     /** Código IBGE do ente que elege o cargo. */
     readonly circunscricao: string;
     readonly inicio: Date;
     readonly fim: Date | null;
-  };
+  }[];
   readonly origem: OrigemDoDado;
 }
 
 export interface SincronizarAgentePublicoOutput {
   readonly pessoaId: string;
-  readonly mandatoId: string;
+  readonly mandatoIds: readonly string[];
   readonly pessoaNova: boolean;
 }
 
 /**
- * Aplica o retrato que uma fonte oficial dá de uma pessoa em exercício: cria a pessoa na primeira vez
- * e, nas seguintes, registra só o que mudou. Repetir com os mesmos dados não gera eventos.
+ * Aplica o retrato que uma fonte oficial dá de uma pessoa e dos seus períodos de exercício: cria a
+ * pessoa na primeira vez e, nas seguintes, registra só o que mudou. Repetir com os mesmos dados não
+ * gera eventos.
  */
 export class SincronizarAgentePublico {
   constructor(
@@ -57,12 +59,12 @@ export class SincronizarAgentePublico {
     if (!filiacao.ok) return filiacao;
     const foto = lerOpcional(UrlPublica.criar, input.urlDaFoto);
     if (!foto.ok) return foto;
-    const cargo = lerOpcao(CARGOS, input.mandato.cargo, 'mandato.cargo');
-    if (!cargo.ok) return cargo;
-    const circunscricao = CodigoIbge.criar(input.mandato.circunscricao);
-    if (!circunscricao.ok) return circunscricao;
-    const periodo = Periodo.criar(input.mandato.inicio, input.mandato.fim ?? undefined);
-    if (!periodo.ok) return periodo;
+    const periodos: Omit<NovoMandato, 'captura'>[] = [];
+    for (const mandato of input.mandatos) {
+      const lido = lerMandato(mandato);
+      if (!lido.ok) return lido;
+      periodos.push(lido.value);
+    }
 
     const captura = await this.capturas.registrar(input.origem);
     if (!captura.ok) return captura;
@@ -85,20 +87,33 @@ export class SincronizarAgentePublico {
       existente.atualizarFoto(foto.value, captura.value, agora);
     }
 
-    const mandato: NovoMandato = {
-      cargo: cargo.value,
-      circunscricao: circunscricao.value,
-      periodo: periodo.value,
-      captura: captura.value,
-    };
-    const mandatoId = pessoa.registrarMandato(mandato, agora);
-    if (!mandatoId.ok) return mandatoId;
+    const mandatoIds = pessoa.sincronizarMandatos(
+      periodos.map((p) => ({ ...p, captura: captura.value })),
+      agora,
+    );
+    if (!mandatoIds.ok) return mandatoIds;
 
     await this.pessoas.salvar(pessoa);
     return Result.ok({
       pessoaId: pessoa.id.valor,
-      mandatoId: mandatoId.value.valor,
+      mandatoIds: mandatoIds.value.map((id) => id.valor),
       pessoaNova: existente === undefined,
     });
   }
+}
+
+function lerMandato(
+  mandato: SincronizarAgentePublicoInput['mandatos'][number],
+): Result<Omit<NovoMandato, 'captura'>, DomainError> {
+  const cargo = lerOpcao(CARGOS, mandato.cargo, 'mandato.cargo');
+  if (!cargo.ok) return cargo;
+  const circunscricao = CodigoIbge.criar(mandato.circunscricao);
+  if (!circunscricao.ok) return circunscricao;
+  const periodo = Periodo.criar(mandato.inicio, mandato.fim ?? undefined);
+  if (!periodo.ok) return periodo;
+  return Result.ok({
+    cargo: cargo.value,
+    circunscricao: circunscricao.value,
+    periodo: periodo.value,
+  });
 }

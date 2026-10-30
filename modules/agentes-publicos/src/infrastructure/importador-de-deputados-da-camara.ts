@@ -44,7 +44,8 @@ export class ImportadorDeDeputadosDaCamara {
         camaraLegislatura,
         eq(camaraLegislatura.idLegislatura, camaraDeputado.idLegislatura),
       )
-      .where(eq(camaraDeputado.loteId, loteId));
+      .where(eq(camaraDeputado.loteId, loteId))
+      .orderBy(camaraDeputado.idDeputado, camaraDeputado.idLegislatura);
 
     let pessoasNovas = 0;
     const falhas: FalhaDeImportacao[] = [];
@@ -80,11 +81,14 @@ function paraEntrada(
     nome: deputado.nome,
     siglaPartido: deputado.siglaPartido === SEM_PARTIDO ? null : deputado.siglaPartido,
     urlDaFoto: deputado.urlFoto,
-    mandato: {
+    // Cada período de exercício é um mandato. O que está em curso termina, no máximo, com a
+    // legislatura.
+    mandatos: deputado.exercicios.map((exercicio) => ({
       cargo: 'deputado_federal',
       circunscricao,
-      ...periodoDaLegislatura(legislatura.dataInicio, legislatura.dataFim),
-    },
+      inicio: new Date(exercicio.inicio),
+      fim: exercicio.fim === null ? fimDaLegislatura(legislatura.dataFim) : new Date(exercicio.fim),
+    })),
     origem: {
       fonte: deputado.origemFonte,
       url: deputado.origemUrl,
@@ -97,12 +101,9 @@ function paraEntrada(
 }
 
 /**
- * A Câmara informa datas sem hora. A legislatura começa no primeiro instante do dia de início e
- * termina no último instante do dia de fim, no horário de Brasília (sem horário de verão desde 2019).
+ * A Câmara informa a data sem hora: a legislatura termina no último instante do dia, no horário de
+ * Brasília (sem horário de verão desde 2019).
  */
-function periodoDaLegislatura(inicio: string, fim: string): { inicio: Date; fim: Date } {
-  return {
-    inicio: new Date(`${inicio}T00:00:00.000-03:00`),
-    fim: new Date(`${fim}T23:59:59.999-03:00`),
-  };
+function fimDaLegislatura(fim: string): Date {
+  return new Date(`${fim}T23:59:59.999-03:00`);
 }

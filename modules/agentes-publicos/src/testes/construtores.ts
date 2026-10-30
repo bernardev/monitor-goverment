@@ -76,7 +76,7 @@ export function umaEntrada(
     nome: 'Ana Exemplo',
     siglaPartido: 'PEX',
     urlDaFoto: 'https://www.camara.leg.br/internet/deputado/bandep/900001.jpg',
-    mandato: { cargo: 'deputado_federal', circunscricao: '35', ...LEGISLATURA_57 },
+    mandatos: [{ cargo: 'deputado_federal', circunscricao: '35', ...LEGISLATURA_57 }],
     origem: umaOrigem(),
     ...sobrescrever,
   };

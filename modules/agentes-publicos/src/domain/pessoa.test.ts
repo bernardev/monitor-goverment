@@ -136,6 +136,91 @@ describe('Pessoa', () => {
       expect(erro(resultado)).toBe('mandato.circunscricao_incompativel');
     });
   });
+
+  describe('períodos de exercício informados pela fonte', () => {
+    const POSSE = new Date('2023-02-01T15:05:00.000Z');
+    const LICENCA = new Date('2026-03-31T21:00:00.000Z');
+    const REASSUNCAO = new Date('2026-07-31T13:30:00.000Z');
+    const exercicios = () => [
+      umMandato({ inicio: REASSUNCAO }),
+      umMandato({ inicio: POSSE, fim: LICENCA }),
+    ];
+
+    it('cada período vira um mandato, em ordem de posse', () => {
+      const pessoa = umaPessoa();
+
+      const ids = valor(pessoa.sincronizarMandatos(exercicios(), AGORA));
+
+      expect(ids).toHaveLength(2);
+      expect(pessoa.mandatos.map((m) => m.periodo.inicio)).toEqual([POSSE, REASSUNCAO]);
+      expect(tipos(pessoa)).toEqual(['MandatoRegistrado', 'MandatoRegistrado']);
+    });
+
+    it('os mesmos períodos de novo não geram evento e devolvem os mesmos ids', () => {
+      const pessoa = umaPessoa();
+      const primeiros = valor(pessoa.sincronizarMandatos(exercicios(), AGORA));
+      pessoa.pullDomainEvents();
+
+      expect(valor(pessoa.sincronizarMandatos(exercicios(), AGORA))).toEqual(primeiros);
+      expect(tipos(pessoa)).toEqual([]);
+    });
+
+    it('o mandato que cobria a legislatura inteira é retificado para o primeiro exercício', () => {
+      const pessoa = umaPessoa();
+      const antigo = valor(pessoa.registrarMandato(umMandato(), AGORA));
+      pessoa.pullDomainEvents();
+
+      const [primeiro, segundo] = valor(pessoa.sincronizarMandatos(exercicios(), AGORA));
+
+      expect(primeiro).toEqual(antigo);
+      expect(segundo?.equals(antigo)).toBe(false);
+      const [retificado, registrado] = pessoa.pullDomainEvents();
+      expect(retificado?.tipo).toBe('PeriodoDoMandatoRetificado');
+      expect(retificado?.dados).toEqual({
+        mandatoId: antigo.valor,
+        inicio: POSSE.toISOString(),
+        fim: LICENCA.toISOString(),
+        inicioAnterior: LEGISLATURA_57.inicio.toISOString(),
+        fimAnterior: LEGISLATURA_57.fim.toISOString(),
+        capturaId: umaCaptura().valor,
+      });
+      expect(registrado?.tipo).toBe('MandatoRegistrado');
+    });
+
+    it('o suplente que sai tem o fim do exercício retificado', () => {
+      const pessoa = umaPessoa();
+      valor(pessoa.sincronizarMandatos([umMandato({ inicio: POSSE })], AGORA));
+      pessoa.pullDomainEvents();
+
+      valor(pessoa.sincronizarMandatos([umMandato({ inicio: POSSE, fim: LICENCA })], AGORA));
+
+      expect(pessoa.mandatos.map((m) => m.periodo.fim)).toEqual([LICENCA]);
+      expect(tipos(pessoa)).toEqual(['PeriodoDoMandatoRetificado']);
+    });
+
+    it.each([
+      [
+        'períodos sobrepostos entre si',
+        () => [umMandato({ inicio: POSSE, fim: REASSUNCAO }), umMandato({ inicio: LICENCA })],
+        [],
+      ],
+      [
+        'período que toca dois mandatos registrados',
+        () => [umMandato({ inicio: POSSE })],
+        [umMandato({ inicio: POSSE, fim: LICENCA }), umMandato({ inicio: REASSUNCAO })],
+      ],
+      [
+        'período em outro ente que toca um mandato registrado',
+        () => [umMandato({ inicio: POSSE, circunscricao: '33' })],
+        [umMandato()],
+      ],
+    ])('recusa %s', (_caso, periodos, registrados) => {
+      const pessoa = umaPessoa();
+      for (const mandato of registrados) valor(pessoa.registrarMandato(mandato, AGORA));
+
+      expect(erro(pessoa.sincronizarMandatos(periodos(), AGORA))).toBe('mandato.sobreposto');
+    });
+  });
 });
 
 describe('cargoPertenceA', () => {

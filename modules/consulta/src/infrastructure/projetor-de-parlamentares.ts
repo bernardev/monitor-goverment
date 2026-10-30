@@ -4,6 +4,7 @@ import type {
   FotoOficialAlterada,
   MandatoRegistrado,
   NomePublicoAlterado,
+  PeriodoDoMandatoRetificado,
   PessoaRegistrada,
 } from '@prometeu/agentes-publicos';
 import type { EnvelopeDeEvento } from '@prometeu/contracts';
@@ -60,6 +61,22 @@ export class ProjetorDeParlamentares {
       case 'MandatoRegistrado': {
         await this.garantirLinha(pessoaId, quando);
         await this.mandato(pessoaId, envelope.dados as Dados<MandatoRegistrado>);
+        return;
+      }
+      case 'PeriodoDoMandatoRetificado': {
+        const dados = envelope.dados as Dados<PeriodoDoMandatoRetificado>;
+        // Só muda o perfil se o mandato retificado for o exibido; o mandato de posse mais recente
+        // continua sendo o exibido.
+        await this.banco.executor
+          .update(parlamentar)
+          .set({
+            mandatoInicio: new Date(dados.inicio),
+            mandatoFim: dados.fim === null ? null : new Date(dados.fim),
+            mandatoCapturaId: dados.capturaId,
+          })
+          .where(
+            and(eq(parlamentar.pessoaId, pessoaId), eq(parlamentar.mandatoId, dados.mandatoId)),
+          );
         return;
       }
       case 'CapturaRegistrada': {
@@ -142,5 +159,6 @@ export const EVENTOS_PROJETADOS = [
   'FiliacaoPartidariaAlterada',
   'FotoOficialAlterada',
   'MandatoRegistrado',
+  'PeriodoDoMandatoRetificado',
   'CapturaRegistrada',
 ] as const;
