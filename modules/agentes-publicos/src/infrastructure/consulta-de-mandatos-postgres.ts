@@ -26,10 +26,16 @@ export interface PessoaNaFonte {
 export interface ConsultaDeMandatos {
   buscar(mandatoId: string): Promise<MandatoPublicado | undefined>;
   /**
-   * Mandato do cargo que a pessoa exercia no instante, achada pelo código na fonte. Este contexto é o
-   * único que traduz códigos das fontes em pessoas (mapa de contextos).
+   * Mandato do cargo que a pessoa exercia em algum instante entre `de` e `ate` (por padrão, só em
+   * `de`), achada pelo código na fonte. Se a pessoa saiu e voltou no intervalo, vale o exercício mais
+   * recente. Este contexto é o único que traduz códigos das fontes em pessoas (mapa de contextos).
    */
-  vigente(pessoa: PessoaNaFonte, cargo: Cargo, em: Date): Promise<MandatoPublicado | undefined>;
+  vigente(
+    pessoa: PessoaNaFonte,
+    cargo: Cargo,
+    de: Date,
+    ate?: Date,
+  ): Promise<MandatoPublicado | undefined>;
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -49,7 +55,8 @@ export class ConsultaDeMandatosPostgres implements ConsultaDeMandatos {
   async vigente(
     pessoa: PessoaNaFonte,
     cargo: Cargo,
-    em: Date,
+    de: Date,
+    ate: Date = de,
   ): Promise<MandatoPublicado | undefined> {
     const [linha] = await this.banco.drizzle
       .select({ mandato })
@@ -60,12 +67,10 @@ export class ConsultaDeMandatosPostgres implements ConsultaDeMandatos {
           eq(identificadorExterno.fonte, pessoa.fonte),
           eq(identificadorExterno.codigo, pessoa.codigo),
           eq(mandato.cargo, cargo),
-          lte(mandato.inicio, em),
-          or(isNull(mandato.fim), gte(mandato.fim, em)),
+          lte(mandato.inicio, ate),
+          or(isNull(mandato.fim), gte(mandato.fim, de)),
         ),
       )
-      // Mandatos do mesmo cargo não se sobrepõem (invariante da Pessoa); a ordem só torna a
-      // consulta determinística.
       .orderBy(desc(mandato.inicio))
       .limit(1);
     return linha && paraPublicado(linha.mandato);

@@ -3,11 +3,14 @@ import type { DomainError, Result } from '@prometeu/shared-kernel';
 import { DiaDeSessao } from '../domain/dia-de-sessao.js';
 import { CapturaId, MandatoId, PessoaId } from '../domain/identificadores.js';
 import { MotivoDaAusencia } from '../domain/motivo-da-ausencia.js';
+import type { MandatoVigente } from '../domain/mandato-vigente.js';
+import { type Apuracao, RegistroDeFrequencia } from '../domain/registro-de-frequencia.js';
 import {
-  type Apuracao,
-  type MandatoVigente,
-  RegistroDeFrequencia,
-} from '../domain/registro-de-frequencia.js';
+  type ApuracaoDaVotacao,
+  VotacaoNominal,
+  type VotoApurado,
+} from '../domain/votacao-nominal.js';
+import type { OpcaoDeVoto } from '../domain/voto.js';
 
 export const AGORA = new Date('2026-10-30T09:00:00.000Z');
 
@@ -19,9 +22,9 @@ export function valor<T>(resultado: Result<T, DomainError>): T {
 export const umaCaptura = (n = 1): CapturaId =>
   valor(CapturaId.de(`0192d5e0-1111-7000-8000-${String(n).padStart(12, '0')}`));
 
-export const umMandato = (): MandatoVigente => ({
-  mandato: valor(MandatoId.de('0192d5e0-2222-7000-8000-000000000001')),
-  pessoa: valor(PessoaId.de('0192d5e0-2222-7000-8000-000000000002')),
+export const umMandato = (n = 1): MandatoVigente => ({
+  mandato: valor(MandatoId.de(`0192d5e0-2222-7000-8000-${String(n).padStart(12, '0')}`)),
+  pessoa: valor(PessoaId.de(`0192d5e0-3333-7000-8000-${String(n).padStart(12, '0')}`)),
   inicio: new Date('2023-02-01T03:00:00.000Z'),
   fim: new Date('2027-02-01T02:59:59.999Z'),
 });
@@ -60,6 +63,54 @@ export function umRegistro(
       mandato: umMandato(),
       apuracao,
       captura: umaCaptura(),
+      agora: AGORA,
+    }),
+  );
+}
+
+const GRAFIA: Readonly<Record<OpcaoDeVoto, string | null>> = {
+  sim: 'Sim',
+  nao: 'Não',
+  abstencao: 'Abstenção',
+  obstrucao: 'Obstrução',
+  presidente_da_sessao: 'Artigo 17',
+  secreto: null,
+};
+
+/** Voto do parlamentar `n` às 19h40 de 14/10/2026 (Brasília). */
+export const umVoto = (n: number, opcao: OpcaoDeVoto = 'sim'): VotoApurado => ({
+  mandato: umMandato(n),
+  opcao,
+  registroNaFonte: GRAFIA[opcao],
+  registradoEm: new Date('2026-10-14T22:40:00.000Z'),
+  siglaPartidoNaFonte: 'PEX',
+});
+
+export const umaApuracaoDeVotacao = (
+  votos: readonly VotoApurado[] = [
+    umVoto(1, 'sim'),
+    umVoto(2, 'nao'),
+    umVoto(3, 'presidente_da_sessao'),
+  ],
+): ApuracaoDaVotacao => ({
+  dia: valor(DiaDeSessao.de('2026-10-14')),
+  registradaEm: new Date('2026-10-14T22:42:50.000Z'),
+  descricao: 'Aprovado o Projeto de Lei nº 900, de 2026.',
+  resultado: 'aprovada',
+  proposicoes: [
+    { codigoNaFonte: '9009001', sigla: 'PL', numero: 900, ano: 2026, ementa: 'Tema fictício.' },
+  ],
+  votos,
+});
+
+export function umaVotacao(apuracao = umaApuracaoDeVotacao()): VotacaoNominal {
+  return valor(
+    VotacaoNominal.registrar({
+      casa: 'camara_dos_deputados',
+      codigoNaFonte: '900100-10',
+      apuracao,
+      captura: umaCaptura(1),
+      capturaDosVotos: umaCaptura(2),
       agora: AGORA,
     }),
   );

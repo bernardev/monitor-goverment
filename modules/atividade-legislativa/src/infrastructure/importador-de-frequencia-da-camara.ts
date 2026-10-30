@@ -8,6 +8,7 @@ import type {
 import type { CategoriaDoMotivo } from '../domain/motivo-da-ausencia.js';
 import type { Situacao } from '../domain/situacao.js';
 import { camaraFrequenciaDia, camaraMatricula } from './prata-da-camara.js';
+import type { FalhaDeImportacao, ResumoDaImportacao } from './resumo-da-importacao.js';
 
 /** Grafias da Câmara (contrato `camara_frequencia_dia`). O "(~)" não tem legenda pública. */
 const SITUACAO: Readonly<Record<string, Situacao>> = {
@@ -25,19 +26,6 @@ const MOTIVOS: readonly (readonly [RegExp, CategoriaDoMotivo])[] = [
   [/missao/, 'missao_autorizada'],
   [/decisao da mesa/, 'decisao_da_mesa'],
 ];
-
-export interface FalhaDeImportacao {
-  readonly codigoNaFonte: string;
-  readonly erro: string;
-  readonly mensagem: string;
-}
-
-export interface ResumoDaImportacao {
-  readonly loteId: string;
-  readonly lidos: number;
-  readonly novos: number;
-  readonly falhas: readonly FalhaDeImportacao[];
-}
 
 /**
  * Camada anticorrupção da Câmara (ADR-0005): traduz a frequência da prata para a linguagem deste
@@ -86,7 +74,7 @@ export class ImportadorDeFrequenciaDaCamara {
         });
       }
     }
-    return { loteId, lidos: linhas.length, novos, falhas };
+    return { loteId, importacao: 'frequencia_da_camara', lidos: linhas.length, novos, falhas };
   }
 }
 

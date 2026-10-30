@@ -24,13 +24,23 @@ export class DiaDeSessao extends ValueObject<{ valor: string }> {
     return this.props.valor;
   }
 
-  /** Meio-dia em Brasília: um instante que com certeza cai dentro do dia. */
-  get meioDia(): Date {
-    return new Date(`${this.props.valor}T12:00:00.000-03:00`);
+  /** Primeiro instante do dia em Brasília. */
+  get inicio(): Date {
+    return new Date(`${this.props.valor}T00:00:00.000-03:00`);
+  }
+
+  /** Último instante do dia em Brasília. */
+  get fim(): Date {
+    return new Date(`${this.props.valor}T23:59:59.999-03:00`);
   }
 
   /** O dia já começou em Brasília? */
   jaComecou(agora: Date): boolean {
-    return new Date(`${this.props.valor}T00:00:00.000-03:00`).getTime() <= agora.getTime();
+    return this.inicio.getTime() <= agora.getTime();
+  }
+
+  /** O período tem algum instante dentro do dia? `null` no fim é período em curso. */
+  tocaNoPeriodo(inicio: Date, fim: Date | null): boolean {
+    return inicio <= this.fim && (fim === null || fim >= this.inicio);
   }
 }

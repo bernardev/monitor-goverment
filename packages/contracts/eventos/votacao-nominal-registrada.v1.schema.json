@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prometeu.org/contratos/eventos/votacao-nominal-registrada.v1.json",
+  "title": "VotacaoNominalRegistrada (v1): dados",
+  "description": "Atividade Legislativa: uma votação nominal do plenário foi registrada, com todos os votos. idDoAgregado é o id da votação.",
+  "type": "object",
+  "required": [
+    "casa",
+    "codigoNaFonte",
+    "dia",
+    "registradaEm",
+    "descricao",
+    "resultado",
+    "secreta",
+    "proposicoes",
+    "votos",
+    "capturaId",
+    "capturaDosVotosId"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "casa": {
+      "enum": ["camara_dos_deputados", "senado_federal"]
+    },
+    "codigoNaFonte": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Como a casa identifica a votação (2635476-36)."
+    },
+    "dia": {
+      "type": "string",
+      "format": "date",
+      "description": "Dia do calendário de Brasília em que a votação aconteceu."
+    },
+    "registradaEm": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "descricao": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Descrição da casa, com o resultado e o placar."
+    },
+    "resultado": {
+      "enum": ["aprovada", "rejeitada", "nao_informado"]
+    },
+    "secreta": {
+      "type": "boolean",
+      "description": "Votação secreta: todos os votos são secreto."
+    },
+    "proposicoes": {
+      "type": "array",
+      "description": "Proposições que a votação afetou, como a casa as identifica.",
+      "items": {
+        "type": "object",
+        "required": ["codigoNaFonte", "sigla", "numero", "ano", "ementa"],
+        "additionalProperties": false,
+        "properties": {
+          "codigoNaFonte": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sigla": {
+            "type": "string",
+            "minLength": 1
+          },
+          "numero": {
+            "type": "integer"
+          },
+          "ano": {
+            "type": "integer"
+          },
+          "ementa": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "votos": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Um por parlamentar com voto registrado; quem faltou à votação não aparece.",
+      "items": {
+        "type": "object",
+        "required": [
+          "pessoaId",
+          "mandatoId",
+          "opcao",
+          "registroNaFonte",
+          "registradoEm",
+          "siglaPartidoNaFonte"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "pessoaId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "mandatoId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Mandato de Agentes Públicos exercido no instante do voto."
+          },
+          "opcao": {
+            "enum": ["sim", "nao", "abstencao", "obstrucao", "presidente_da_sessao", "secreto"]
+          },
+          "registroNaFonte": {
+            "type": ["string", "null"],
+            "description": "Como a casa escreveu o voto; null na votação secreta."
+          },
+          "registradoEm": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "siglaPartidoNaFonte": {
+            "type": ["string", "null"],
+            "description": "Partido do parlamentar no dia, como a casa informou."
+          }
+        }
+      }
+    },
+    "capturaId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Captura do Acervo com o detalhe da votação (ADR-0009)."
+    },
+    "capturaDosVotosId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Captura do Acervo com a lista de votos (ADR-0009)."
+    }
+  }
+}

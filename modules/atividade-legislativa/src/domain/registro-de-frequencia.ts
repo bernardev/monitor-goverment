@@ -9,6 +9,7 @@ import {
   type PessoaId,
   RegistroDeFrequenciaId,
 } from './identificadores.js';
+import type { MandatoVigente } from './mandato-vigente.js';
 import type { MotivoDaAusencia } from './motivo-da-ausencia.js';
 import type { Situacao } from './situacao.js';
 
@@ -24,14 +25,6 @@ export interface Apuracao {
   /** Como a fonte escreveu a situação (`Presença (~)`), para quem quiser conferir. */
   readonly registroNaFonte: string;
   readonly sessoes: readonly SessaoDoDia[];
-}
-
-/** Período do mandato em que a frequência é apurada, informado por Agentes Públicos. */
-export interface MandatoVigente {
-  readonly mandato: MandatoId;
-  readonly pessoa: PessoaId;
-  readonly inicio: Date;
-  readonly fim: Date | null;
 }
 
 export interface DadosDoRegistro {
@@ -73,9 +66,8 @@ export class RegistroDeFrequencia extends AggregateRoot<RegistroDeFrequenciaId> 
     if (!dados.dia.jaComecou(dados.agora)) {
       return falha('frequencia.dia_futuro', `O dia ${dados.dia.valor} ainda não começou.`);
     }
-    const instante = dados.dia.meioDia;
-    const { inicio, fim } = dados.mandato;
-    if (instante < inicio || (fim !== null && instante > fim)) {
+    // O suplente que toma posse à tarde tem frequência no dia da posse: basta o mandato tocar o dia.
+    if (!dados.dia.tocaNoPeriodo(dados.mandato.inicio, dados.mandato.fim)) {
       return falha(
         'frequencia.fora_do_mandato',
         `O dia ${dados.dia.valor} está fora do mandato ${dados.mandato.mandato.valor}.`,

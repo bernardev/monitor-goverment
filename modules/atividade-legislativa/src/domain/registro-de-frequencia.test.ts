@@ -83,6 +83,29 @@ describe('RegistroDeFrequencia', () => {
     expect(codigoDoErro(registrar(presenca(), '2023-01-31'))).toBe('frequencia.fora_do_mandato');
   });
 
+  it('aceita o dia da posse e o da saída, mesmo com o mandato cobrindo só parte do dia', () => {
+    // Suplente empossado às 17h13 de 16/06 e afastado às 18h de 15/10 (Brasília).
+    const mandato = {
+      ...umMandato(),
+      inicio: new Date('2026-06-16T20:13:00.000Z'),
+      fim: new Date('2026-10-15T21:00:00.000Z'),
+    };
+    const registrarNoDia = (dia: string) =>
+      RegistroDeFrequencia.registrar({
+        casa: 'camara_dos_deputados',
+        dia: valor(DiaDeSessao.de(dia)),
+        mandato,
+        apuracao: presenca(),
+        captura: umaCaptura(),
+        agora: AGORA,
+      });
+
+    expect(registrarNoDia('2026-06-16').ok).toBe(true);
+    expect(registrarNoDia('2026-10-15').ok).toBe(true);
+    expect(codigoDoErro(registrarNoDia('2026-06-15'))).toBe('frequencia.fora_do_mandato');
+    expect(codigoDoErro(registrarNoDia('2026-10-16'))).toBe('frequencia.fora_do_mandato');
+  });
+
   it('a justificativa que chega depois vira FrequenciaRetificada, com a nova captura', () => {
     const registro = umRegistro(ausencia());
     registro.pullDomainEvents();

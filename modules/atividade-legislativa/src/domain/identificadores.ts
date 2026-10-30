@@ -43,3 +43,16 @@ export class CapturaId extends Identificador {
     return validado.ok ? Result.ok(new CapturaId(validado.value)) : validado;
   }
 }
+
+export class VotacaoNominalId extends Identificador {
+  declare private readonly marca: 'VotacaoNominalId';
+
+  static gerar(): VotacaoNominalId {
+    return new VotacaoNominalId(gerarUuidV7());
+  }
+
+  static de(valor: string): Result<VotacaoNominalId, DomainError> {
+    const validado = VotacaoNominalId.validar(valor);
+    return validado.ok ? Result.ok(new VotacaoNominalId(validado.value)) : validado;
+  }
+}

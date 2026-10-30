@@ -1,5 +1,4 @@
 import { type BancoDoContexto, gravarNaOutbox } from '@prometeu/infraestrutura';
-import type { DomainError, Result } from '@prometeu/shared-kernel';
 import { and, eq } from 'drizzle-orm';
 
 import type { RegistroDeFrequenciaRepository } from '../application/portas.js';
@@ -15,13 +14,7 @@ import { MotivoDaAusencia } from '../domain/motivo-da-ausencia.js';
 import { RegistroDeFrequencia } from '../domain/registro-de-frequencia.js';
 import { SITUACOES, type Situacao } from '../domain/situacao.js';
 import { outbox, registroDeFrequencia } from './esquema.js';
-
-/** Outra gravação mudou o registro entre a leitura e a escrita; o consumidor tenta de novo. */
-export class ConflitoDeConcorrencia extends Error {
-  constructor(registroId: string) {
-    super(`O registro de frequência ${registroId} foi alterado por outra gravação.`);
-  }
-}
+import { ConflitoDeConcorrencia, confiavel, conhecido } from './persistencia.js';
 
 export class RegistroDeFrequenciaRepositoryPostgres implements RegistroDeFrequenciaRepository {
   /** Versão lida de cada registro carregado por este repositório. */
@@ -83,7 +76,8 @@ export class RegistroDeFrequenciaRepositoryPostgres implements RegistroDeFrequen
             ),
           )
           .returning({ id: registroDeFrequencia.id });
-        if (atualizados.length === 0) throw new ConflitoDeConcorrencia(alvo.id.valor);
+        if (atualizados.length === 0)
+          throw new ConflitoDeConcorrencia(`O registro de frequência ${alvo.id.valor}`);
       }
       this.versoes.set(alvo, (versaoLida ?? 0) + 1);
       await gravarNaOutbox(tx, outbox, alvo.pullDomainEvents());
@@ -111,20 +105,4 @@ function paraRegistro(linha: typeof registroDeFrequencia.$inferSelect): Registro
     },
     captura: confiavel(CapturaId.de(linha.capturaId)),
   });
-}
-
-function conhecido<T extends string>(valores: readonly T[], valor: string, campo: string): T {
-  const encontrado = valores.find((v) => v === valor);
-  if (encontrado === undefined) {
-    throw new Error(`Dado corrompido em atividade_legislativa: ${campo} "${valor}"`);
-  }
-  return encontrado;
-}
-
-/** O banco só guarda o que o domínio validou; um valor inválido aqui é dado corrompido. */
-function confiavel<T>(resultado: Result<T, DomainError>): T {
-  if (!resultado.ok) {
-    throw new Error(`Dado corrompido em atividade_legislativa: ${resultado.error.message}`);
-  }
-  return resultado.value;
 }

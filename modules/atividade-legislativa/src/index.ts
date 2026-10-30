@@ -12,19 +12,21 @@ import {
 
 import type { Relogio } from './application/portas.js';
 import { RegistrarFrequencia } from './application/registrar-frequencia.js';
+import { RegistrarVotacaoNominal } from './application/registrar-votacao-nominal.js';
 import { outbox } from './infrastructure/esquema.js';
-import {
-  ImportadorDeFrequenciaDaCamara,
-  type ResumoDaImportacao,
-} from './infrastructure/importador-de-frequencia-da-camara.js';
+import { ImportadorDeFrequenciaDaCamara } from './infrastructure/importador-de-frequencia-da-camara.js';
+import { ImportadorDeVotacoesDaCamara } from './infrastructure/importador-de-votacoes-da-camara.js';
 import { MandatosEmAgentesPublicos } from './infrastructure/mandatos-em-agentes-publicos.js';
 import { RegistroDeCapturasNoAcervo } from './infrastructure/registro-de-capturas-no-acervo.js';
 import { RegistroDeFrequenciaRepositoryPostgres } from './infrastructure/registro-de-frequencia-repository-postgres.js';
+import type { ResumoDaImportacao } from './infrastructure/resumo-da-importacao.js';
+import { VotacaoNominalRepositoryPostgres } from './infrastructure/votacao-nominal-repository-postgres.js';
 import { assinarConsumidores } from './interface/consumidores.js';
 
 export type { CasaLegislativa } from './domain/casa-legislativa.js';
 export type { CategoriaDoMotivo } from './domain/motivo-da-ausencia.js';
 export type { Situacao } from './domain/situacao.js';
+export type { OpcaoDeVoto, ResultadoDaVotacao } from './domain/voto.js';
 export type * from './domain/eventos.js';
 export type { Relogio } from './application/portas.js';
 export type {
@@ -33,10 +35,15 @@ export type {
   RegistrarFrequenciaOutput,
 } from './application/registrar-frequencia.js';
 export type {
+  RegistrarVotacaoNominal,
+  RegistrarVotacaoNominalInput,
+  RegistrarVotacaoNominalOutput,
+} from './application/registrar-votacao-nominal.js';
+export type {
   FalhaDeImportacao,
   ResumoDaImportacao,
-} from './infrastructure/importador-de-frequencia-da-camara.js';
-export { ConflitoDeConcorrencia } from './infrastructure/registro-de-frequencia-repository-postgres.js';
+} from './infrastructure/resumo-da-importacao.js';
+export { ConflitoDeConcorrencia } from './infrastructure/persistencia.js';
 
 export const SCHEMA_DE_ATIVIDADE_LEGISLATIVA = 'atividade_legislativa';
 export const MIGRACOES_DE_ATIVIDADE_LEGISLATIVA = fileURLToPath(
@@ -54,7 +61,9 @@ export interface DependenciasDeAtividadeLegislativa {
 
 export interface ModuloAtividadeLegislativa {
   readonly registrarFrequencia: RegistrarFrequencia;
+  readonly registrarVotacaoNominal: RegistrarVotacaoNominal;
   importarFrequenciaDaCamara(loteId: string): Promise<ResumoDaImportacao>;
+  importarVotacoesDaCamara(loteId: string): Promise<ResumoDaImportacao>;
   assinarConsumidores(
     barramento: BarramentoDeEventos,
     aoImportar: (resumo: ResumoDaImportacao) => void,
@@ -66,18 +75,32 @@ export function montarAtividadeLegislativa(
   dependencias: DependenciasDeAtividadeLegislativa,
 ): ModuloAtividadeLegislativa {
   const { banco } = dependencias;
+  const mandatos = new MandatosEmAgentesPublicos(dependencias.mandatos);
+  const capturas = new RegistroDeCapturasNoAcervo(dependencias.registrarCaptura);
+  const relogio = dependencias.relogio ?? { agora: () => new Date() };
   const registrarFrequencia = new RegistrarFrequencia(
     new RegistroDeFrequenciaRepositoryPostgres(banco),
-    new MandatosEmAgentesPublicos(dependencias.mandatos),
-    new RegistroDeCapturasNoAcervo(dependencias.registrarCaptura),
-    dependencias.relogio ?? { agora: () => new Date() },
+    mandatos,
+    capturas,
+    relogio,
   );
-  const importador = new ImportadorDeFrequenciaDaCamara(banco, registrarFrequencia);
+  const registrarVotacaoNominal = new RegistrarVotacaoNominal(
+    new VotacaoNominalRepositoryPostgres(banco),
+    mandatos,
+    capturas,
+    relogio,
+  );
+  const importadores = {
+    frequencia: new ImportadorDeFrequenciaDaCamara(banco, registrarFrequencia),
+    votacoes: new ImportadorDeVotacoesDaCamara(banco, registrarVotacaoNominal),
+  };
   return {
     registrarFrequencia,
-    importarFrequenciaDaCamara: (loteId) => importador.importar(loteId),
+    registrarVotacaoNominal,
+    importarFrequenciaDaCamara: (loteId) => importadores.frequencia.importar(loteId),
+    importarVotacoesDaCamara: (loteId) => importadores.votacoes.importar(loteId),
     assinarConsumidores: (barramento, aoImportar) =>
-      assinarConsumidores(barramento, banco, importador, aoImportar),
+      assinarConsumidores(barramento, banco, importadores, aoImportar),
     criarRelay: (barramento) => new RelayDaOutbox(banco, outbox, barramento),
   };
 }
