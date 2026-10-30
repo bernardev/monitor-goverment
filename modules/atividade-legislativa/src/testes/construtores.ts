@@ -7,6 +7,7 @@ import type { MandatoVigente } from '../domain/mandato-vigente.js';
 import { type Apuracao, RegistroDeFrequencia } from '../domain/registro-de-frequencia.js';
 import {
   type ApuracaoDaVotacao,
+  type SemVotoApurado,
   VotacaoNominal,
   type VotoApurado,
 } from '../domain/votacao-nominal.js';
@@ -101,6 +102,8 @@ export const umaApuracaoDeVotacao = (
     { codigoNaFonte: '9009001', sigla: 'PL', numero: 900, ano: 2026, ementa: 'Tema fictício.' },
   ],
   votos,
+  relacaoCompleta: false,
+  semVoto: [],
 });
 
 export function umaVotacao(apuracao = umaApuracaoDeVotacao()): VotacaoNominal {
@@ -115,3 +118,32 @@ export function umaVotacao(apuracao = umaApuracaoDeVotacao()): VotacaoNominal {
     }),
   );
 }
+
+/** Como no Senado: voto sem horário, e a relação traz quem não votou. */
+export const umVotoSemHorario = (n: number, opcao: OpcaoDeVoto = 'sim'): VotoApurado => ({
+  ...umVoto(n, opcao),
+  registradoEm: null,
+});
+
+export const umaLicencaSaude = (n: number): SemVotoApurado => ({
+  mandato: umMandato(n),
+  situacao: 'ausencia_justificada',
+  motivo: valor(MotivoDaAusencia.criar('licenca_saude', 'Licença saúde')),
+  registroNaFonte: 'LS',
+  siglaPartidoNaFonte: 'PEX',
+});
+
+export const umPresenteSemVoto = (n: number): SemVotoApurado => ({
+  mandato: umMandato(n),
+  situacao: 'presente_sem_voto',
+  motivo: undefined,
+  registroNaFonte: 'P-NRV',
+  siglaPartidoNaFonte: 'PEX',
+});
+
+export const umaApuracaoDoSenado = (): ApuracaoDaVotacao => ({
+  ...umaApuracaoDeVotacao([umVotoSemHorario(1, 'sim'), umVotoSemHorario(2, 'nao')]),
+  registradaEm: null,
+  relacaoCompleta: true,
+  semVoto: [umaLicencaSaude(3), umPresenteSemVoto(4)],
+});

@@ -90,7 +90,8 @@ export class Orquestrador implements OnApplicationBootstrap, OnApplicationShutdo
       this.relatar(resumo, `${String(resumo.pessoasNovas)} pessoas novas`);
     });
     await atividadeLegislativa.assinarConsumidores(barramento, (resumo) => {
-      const unidade = resumo.importacao === 'votacoes_da_camara' ? 'votações novas' : 'dias novos';
+      const unidade =
+        resumo.importacao === 'frequencia_da_camara' ? 'dias novos' : 'votações novas';
       this.relatar(resumo, `${String(resumo.novos)} ${unidade}`);
     });
     await consulta.assinarConsumidores(barramento);

@@ -16,6 +16,7 @@ import { RegistrarVotacaoNominal } from './application/registrar-votacao-nominal
 import { outbox } from './infrastructure/esquema.js';
 import { ImportadorDeFrequenciaDaCamara } from './infrastructure/importador-de-frequencia-da-camara.js';
 import { ImportadorDeVotacoesDaCamara } from './infrastructure/importador-de-votacoes-da-camara.js';
+import { ImportadorDeVotacoesDoSenado } from './infrastructure/importador-de-votacoes-do-senado.js';
 import { MandatosEmAgentesPublicos } from './infrastructure/mandatos-em-agentes-publicos.js';
 import { RegistroDeCapturasNoAcervo } from './infrastructure/registro-de-capturas-no-acervo.js';
 import { RegistroDeFrequenciaRepositoryPostgres } from './infrastructure/registro-de-frequencia-repository-postgres.js';
@@ -26,7 +27,7 @@ import { assinarConsumidores } from './interface/consumidores.js';
 export type { CasaLegislativa } from './domain/casa-legislativa.js';
 export type { CategoriaDoMotivo } from './domain/motivo-da-ausencia.js';
 export type { Situacao } from './domain/situacao.js';
-export type { OpcaoDeVoto, ResultadoDaVotacao } from './domain/voto.js';
+export type { OpcaoDeVoto, ResultadoDaVotacao, SituacaoSemVoto } from './domain/voto.js';
 export type * from './domain/eventos.js';
 export type { Relogio } from './application/portas.js';
 export type {
@@ -64,6 +65,7 @@ export interface ModuloAtividadeLegislativa {
   readonly registrarVotacaoNominal: RegistrarVotacaoNominal;
   importarFrequenciaDaCamara(loteId: string): Promise<ResumoDaImportacao>;
   importarVotacoesDaCamara(loteId: string): Promise<ResumoDaImportacao>;
+  importarVotacoesDoSenado(loteId: string): Promise<ResumoDaImportacao>;
   assinarConsumidores(
     barramento: BarramentoDeEventos,
     aoImportar: (resumo: ResumoDaImportacao) => void,
@@ -93,12 +95,14 @@ export function montarAtividadeLegislativa(
   const importadores = {
     frequencia: new ImportadorDeFrequenciaDaCamara(banco, registrarFrequencia),
     votacoes: new ImportadorDeVotacoesDaCamara(banco, registrarVotacaoNominal),
+    votacoesDoSenado: new ImportadorDeVotacoesDoSenado(banco, registrarVotacaoNominal),
   };
   return {
     registrarFrequencia,
     registrarVotacaoNominal,
     importarFrequenciaDaCamara: (loteId) => importadores.frequencia.importar(loteId),
     importarVotacoesDaCamara: (loteId) => importadores.votacoes.importar(loteId),
+    importarVotacoesDoSenado: (loteId) => importadores.votacoesDoSenado.importar(loteId),
     assinarConsumidores: (barramento, aoImportar) =>
       assinarConsumidores(barramento, banco, importadores, aoImportar),
     criarRelay: (barramento) => new RelayDaOutbox(banco, outbox, barramento),

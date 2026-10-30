@@ -10,7 +10,11 @@ import {
   VotacaoNominalId,
 } from './identificadores.js';
 import type { MandatoVigente } from './mandato-vigente.js';
-import type { OpcaoDeVoto, ResultadoDaVotacao } from './voto.js';
+import type { MotivoDaAusencia } from './motivo-da-ausencia.js';
+import type { OpcaoDeVoto, ResultadoDaVotacao, SituacaoSemVoto } from './voto.js';
+
+/** Versão dos eventos da votação: a v2 trouxe quem não votou e o voto sem horário. */
+const VERSAO_DOS_EVENTOS = 2;
 
 /** Proposição que a votação afetou, como a casa a identifica. */
 export interface ProposicaoAfetada {
@@ -22,23 +26,42 @@ export interface ProposicaoAfetada {
 }
 
 export interface VotoApurado {
-  /** Mandato exercido no instante do voto, informado por Agentes Públicos. */
+  /** Mandato exercido quando o voto foi dado, informado por Agentes Públicos. */
   readonly mandato: MandatoVigente;
   readonly opcao: OpcaoDeVoto;
-  /** Como a casa escreveu o voto (`Artigo 17`); `null` na votação secreta. */
+  /** Como a casa escreveu o voto (`Artigo 17`); `null` quando a fonte não traz a grafia. */
   readonly registroNaFonte: string | null;
-  readonly registradoEm: Date;
+  /** `null`: a casa não informa o horário do voto (Senado); vale o dia da votação. */
+  readonly registradoEm: Date | null;
+  readonly siglaPartidoNaFonte: string | null;
+}
+
+/** Parlamentar em exercício que não votou, com a situação que a casa informou. */
+export interface SemVotoApurado {
+  readonly mandato: MandatoVigente;
+  readonly situacao: SituacaoSemVoto;
+  /** Só na ausência justificada. */
+  readonly motivo: MotivoDaAusencia | undefined;
+  /** Como a casa escreveu a situação (`LS`, `P-NRV`). */
+  readonly registroNaFonte: string;
   readonly siglaPartidoNaFonte: string | null;
 }
 
 /** O que a casa informou sobre a votação. Pode ser corrigido depois. */
 export interface ApuracaoDaVotacao {
   readonly dia: DiaDeSessao;
-  readonly registradaEm: Date;
+  /** `null`: a casa não informa o horário (Senado). */
+  readonly registradaEm: Date | null;
   readonly descricao: string;
   readonly resultado: ResultadoDaVotacao;
   readonly proposicoes: readonly ProposicaoAfetada[];
   readonly votos: readonly VotoApurado[];
+  /**
+   * A casa lista todos os parlamentares em exercício, inclusive quem não votou (Senado). Sem a
+   * relação completa (Câmara), quem não aparece não é ausente: a fonte só não diz.
+   */
+  readonly relacaoCompleta: boolean;
+  readonly semVoto: readonly SemVotoApurado[];
 }
 
 export interface Voto {
@@ -46,19 +69,33 @@ export interface Voto {
   readonly mandato: MandatoId;
   readonly opcao: OpcaoDeVoto;
   readonly registroNaFonte: string | null;
-  readonly registradoEm: Date;
+  readonly registradoEm: Date | null;
   readonly siglaPartidoNaFonte: string | null;
 }
 
-export interface EstadoDaVotacao {
-  readonly casa: CasaLegislativa;
-  readonly codigoNaFonte: string;
+export interface SemVoto {
+  readonly pessoa: PessoaId;
+  readonly mandato: MandatoId;
+  readonly situacao: SituacaoSemVoto;
+  readonly motivo: MotivoDaAusencia | undefined;
+  readonly registroNaFonte: string;
+  readonly siglaPartidoNaFonte: string | null;
+}
+
+interface Apurada {
   dia: DiaDeSessao;
-  registradaEm: Date;
+  registradaEm: Date | null;
   descricao: string;
   resultado: ResultadoDaVotacao;
   proposicoes: readonly ProposicaoAfetada[];
+  relacaoCompleta: boolean;
   votos: readonly Voto[];
+  semVoto: readonly SemVoto[];
+}
+
+export interface EstadoDaVotacao extends Apurada {
+  readonly casa: CasaLegislativa;
+  readonly codigoNaFonte: string;
   captura: CapturaId;
   capturaDosVotos: CapturaId;
 }
@@ -73,9 +110,9 @@ export interface DadosDaVotacao {
 }
 
 /**
- * Votação nominal do plenário: a decisão e o voto de cada parlamentar, com as capturas que os provam.
- * Só entra quem tem voto registrado; a casa não diz quem faltou à votação, e este agregado não
- * adivinha (a frequência do dia é outro fato, em `RegistroDeFrequencia`).
+ * Votação nominal do plenário: a decisão, o voto de cada parlamentar e, quando a casa informa, quem
+ * não votou e por quê, com as capturas que os provam. Quando a casa não lista quem não votou, este
+ * agregado não adivinha (a frequência do dia é outro fato, em `RegistroDeFrequencia`).
  *
  * A casa pode corrigir a votação depois: a correção vira `VotacaoNominalRetificada`, e a versão
  * anterior continua nos eventos.
@@ -92,14 +129,13 @@ export class VotacaoNominal extends AggregateRoot<VotacaoNominalId> {
     if (dados.codigoNaFonte.trim().length === 0) {
       return falha('votacao.sem_codigo', 'A votação precisa do código da fonte.');
     }
-    const votos = validar(dados.apuracao, dados.agora);
-    if (!votos.ok) return votos;
+    const apurada = validar(dados.apuracao, dados.agora);
+    if (!apurada.ok) return apurada;
 
     const votacao = new VotacaoNominal(VotacaoNominalId.gerar(), {
       casa: dados.casa,
       codigoNaFonte: dados.codigoNaFonte,
-      ...semVotos(dados.apuracao),
-      votos: votos.value,
+      ...apurada.value,
       captura: dados.captura,
       capturaDosVotos: dados.capturaDosVotos,
     });
@@ -123,7 +159,7 @@ export class VotacaoNominal extends AggregateRoot<VotacaoNominalId> {
     return this.estado.dia;
   }
 
-  get registradaEm(): Date {
+  get registradaEm(): Date | null {
     return this.estado.registradaEm;
   }
 
@@ -139,8 +175,16 @@ export class VotacaoNominal extends AggregateRoot<VotacaoNominalId> {
     return this.estado.proposicoes;
   }
 
+  get relacaoCompleta(): boolean {
+    return this.estado.relacaoCompleta;
+  }
+
   get votos(): readonly Voto[] {
     return this.estado.votos;
+  }
+
+  get semVoto(): readonly SemVoto[] {
+    return this.estado.semVoto;
   }
 
   get captura(): CapturaId {
@@ -151,9 +195,9 @@ export class VotacaoNominal extends AggregateRoot<VotacaoNominalId> {
     return this.estado.capturaDosVotos;
   }
 
-  /** Votação secreta: todos os votos são `secreto` (a casa garante tudo ou nada). */
+  /** Votação secreta: nenhum voto conhecido, só quem votou (e quem presidia). */
   get secreta(): boolean {
-    return this.estado.votos.every((v) => v.opcao === 'secreto');
+    return this.estado.votos.some((v) => v.opcao === 'secreto');
   }
 
   /** Quantos votos em cada opção. */
@@ -180,17 +224,19 @@ export class VotacaoNominal extends AggregateRoot<VotacaoNominalId> {
     capturaDosVotos: CapturaId,
     agora: Date,
   ): Result<void, DomainError> {
-    const votos = validar(apuracao, agora);
-    if (!votos.ok) return votos;
-    const nova = { ...semVotos(apuracao), votos: votos.value };
-    if (mesmaApuracao(this.estado, nova)) return Result.ok(undefined);
+    const apurada = validar(apuracao, agora);
+    if (!apurada.ok) return apurada;
+    if (mesmaApuracao(this.estado, apurada.value)) return Result.ok(undefined);
 
+    const nova = apurada.value;
     this.estado.dia = nova.dia;
     this.estado.registradaEm = nova.registradaEm;
     this.estado.descricao = nova.descricao;
     this.estado.resultado = nova.resultado;
     this.estado.proposicoes = nova.proposicoes;
+    this.estado.relacaoCompleta = nova.relacaoCompleta;
     this.estado.votos = nova.votos;
+    this.estado.semVoto = nova.semVoto;
     this.estado.captura = captura;
     this.estado.capturaDosVotos = capturaDosVotos;
     this.emitir('VotacaoNominalRetificada', this.publicada(), agora);
@@ -203,10 +249,11 @@ export class VotacaoNominal extends AggregateRoot<VotacaoNominalId> {
       casa: e.casa,
       codigoNaFonte: e.codigoNaFonte,
       dia: e.dia.valor,
-      registradaEm: e.registradaEm.toISOString(),
+      registradaEm: e.registradaEm?.toISOString() ?? null,
       descricao: e.descricao,
       resultado: e.resultado,
       secreta: this.secreta,
+      relacaoCompleta: e.relacaoCompleta,
       proposicoes: e.proposicoes.map((p) => ({
         codigoNaFonte: p.codigoNaFonte,
         sigla: p.sigla,
@@ -219,8 +266,18 @@ export class VotacaoNominal extends AggregateRoot<VotacaoNominalId> {
         mandatoId: v.mandato.valor,
         opcao: v.opcao,
         registroNaFonte: v.registroNaFonte,
-        registradoEm: v.registradoEm.toISOString(),
+        registradoEm: v.registradoEm?.toISOString() ?? null,
         siglaPartidoNaFonte: v.siglaPartidoNaFonte,
+      })),
+      semVoto: e.semVoto.map((s) => ({
+        pessoaId: s.pessoa.valor,
+        mandatoId: s.mandato.valor,
+        situacao: s.situacao,
+        motivo: s.motivo
+          ? { categoria: s.motivo.categoria, descricaoNaFonte: s.motivo.descricaoNaFonte }
+          : null,
+        registroNaFonte: s.registroNaFonte,
+        siglaPartidoNaFonte: s.siglaPartidoNaFonte,
       })),
       capturaId: e.captura.valor,
       capturaDosVotosId: e.capturaDosVotos.valor,
@@ -232,16 +289,28 @@ export class VotacaoNominal extends AggregateRoot<VotacaoNominalId> {
     dados: Extract<EventoDeAtividadeLegislativa, { tipo: T }>['dados'],
     ocorridoEm: Date,
   ): void {
-    this.addDomainEvent(criarEvento({ tipo, idDoAgregado: this.id.valor, dados, ocorridoEm }));
+    this.addDomainEvent(
+      criarEvento({
+        tipo,
+        versao: VERSAO_DOS_EVENTOS,
+        idDoAgregado: this.id.valor,
+        dados,
+        ocorridoEm,
+      }),
+    );
   }
 }
 
 /**
  * Invariantes da apuração: a votação já aconteceu, tem descrição e ao menos um voto; cada
- * parlamentar vota uma vez, dentro do mandato; e o sigilo vale para todos os votos ou para nenhum.
+ * parlamentar aparece uma vez, dentro do mandato; votação secreta não tem voto conhecido; só a
+ * ausência justificada tem motivo; e só a casa que lista todos os parlamentares diz quem não votou.
  */
-function validar(apuracao: ApuracaoDaVotacao, agora: Date): Result<Voto[], DomainError> {
-  if (!apuracao.dia.jaComecou(agora) || apuracao.registradaEm > agora) {
+function validar(apuracao: ApuracaoDaVotacao, agora: Date): Result<Apurada, DomainError> {
+  if (
+    !apuracao.dia.jaComecou(agora) ||
+    (apuracao.registradaEm !== null && apuracao.registradaEm > agora)
+  ) {
     return falha('votacao.futura', `A votação de ${apuracao.dia.valor} ainda não aconteceu.`);
   }
   if (apuracao.descricao.trim().length === 0) {
@@ -250,34 +319,33 @@ function validar(apuracao: ApuracaoDaVotacao, agora: Date): Result<Voto[], Domai
   if (apuracao.votos.length === 0) {
     return falha('votacao.sem_votos', 'Votação nominal sem nenhum voto registrado.');
   }
-  const secretos = apuracao.votos.filter((v) => v.opcao === 'secreto').length;
-  if (secretos > 0 && secretos < apuracao.votos.length) {
+  const secreta = apuracao.votos.some((v) => v.opcao === 'secreto');
+  const conhecidos = apuracao.votos.some((v) => VOTOS_CONHECIDOS.has(v.opcao));
+  if (secreta && conhecidos) {
     return falha(
       'votacao.sigilo_parcial',
-      'Numa votação secreta todos os votos são secretos; nesta, só alguns são.',
+      'Numa votação secreta nenhum voto é conhecido; nesta, alguns são.',
+    );
+  }
+  if (!apuracao.relacaoCompleta && apuracao.semVoto.length > 0) {
+    return falha(
+      'votacao.sem_voto_sem_relacao',
+      'Só a casa que lista todos os parlamentares em exercício diz quem não votou.',
     );
   }
 
   const pessoas = new Set<string>();
+  const repetida = (mandato: MandatoVigente): boolean => {
+    if (pessoas.has(mandato.pessoa.valor)) return true;
+    pessoas.add(mandato.pessoa.valor);
+    return false;
+  };
+
   const votos: Voto[] = [];
   for (const voto of apuracao.votos) {
     const { mandato } = voto;
-    if (pessoas.has(mandato.pessoa.valor)) {
-      return falha(
-        'votacao.voto_repetido',
-        `A pessoa ${mandato.pessoa.valor} tem mais de um voto na votação.`,
-      );
-    }
-    pessoas.add(mandato.pessoa.valor);
-    if (
-      voto.registradoEm < mandato.inicio ||
-      (mandato.fim !== null && voto.registradoEm > mandato.fim)
-    ) {
-      return falha(
-        'votacao.voto_fora_do_mandato',
-        `O voto de ${voto.registradoEm.toISOString()} está fora do mandato ${mandato.mandato.valor}.`,
-      );
-    }
+    if (repetida(mandato)) return repetido(mandato);
+    if (!noMandato(mandato, voto.registradoEm, apuracao.dia)) return foraDoMandato(mandato);
     if (voto.opcao !== 'secreto' && !voto.registroNaFonte?.trim()) {
       return falha('votacao.voto_sem_registro', 'Falta a grafia da fonte para o voto.');
     }
@@ -290,39 +358,97 @@ function validar(apuracao: ApuracaoDaVotacao, agora: Date): Result<Voto[], Domai
       siglaPartidoNaFonte: voto.siglaPartidoNaFonte,
     });
   }
-  // A fonte não garante a ordem da lista; a ordem pela pessoa torna a comparação estável.
-  return Result.ok(votos.sort((a, b) => a.pessoa.valor.localeCompare(b.pessoa.valor)));
-}
 
-function semVotos(apuracao: ApuracaoDaVotacao): Omit<ApuracaoDaVotacao, 'votos'> {
-  return {
+  const semVoto: SemVoto[] = [];
+  for (const registro of apuracao.semVoto) {
+    const { mandato } = registro;
+    if (repetida(mandato)) return repetido(mandato);
+    if (!noMandato(mandato, null, apuracao.dia)) return foraDoMandato(mandato);
+    const justificada = registro.situacao === 'ausencia_justificada';
+    if (justificada !== (registro.motivo !== undefined)) {
+      return falha(
+        'votacao.motivo_incoerente',
+        'Só a ausência justificada tem motivo, e ela sempre tem.',
+      );
+    }
+    if (registro.registroNaFonte.trim().length === 0) {
+      return falha('votacao.sem_registro_na_fonte', 'Falta a grafia da fonte para a situação.');
+    }
+    semVoto.push({
+      pessoa: mandato.pessoa,
+      mandato: mandato.mandato,
+      situacao: registro.situacao,
+      motivo: registro.motivo,
+      registroNaFonte: registro.registroNaFonte,
+      siglaPartidoNaFonte: registro.siglaPartidoNaFonte,
+    });
+  }
+
+  // A fonte não garante a ordem das listas; a ordem pela pessoa torna a comparação estável.
+  const pelaPessoa = (a: { pessoa: PessoaId }, b: { pessoa: PessoaId }) =>
+    a.pessoa.valor.localeCompare(b.pessoa.valor);
+  return Result.ok({
     dia: apuracao.dia,
     registradaEm: apuracao.registradaEm,
     descricao: apuracao.descricao,
     resultado: apuracao.resultado,
     proposicoes: apuracao.proposicoes,
-  };
+    relacaoCompleta: apuracao.relacaoCompleta,
+    votos: votos.sort(pelaPessoa),
+    semVoto: semVoto.sort(pelaPessoa),
+  });
 }
 
-function mesmaApuracao(
-  atual: EstadoDaVotacao,
-  nova: Omit<ApuracaoDaVotacao, 'votos'> & { votos: readonly Voto[] },
-): boolean {
-  return (
-    atual.dia.equals(nova.dia) &&
-    atual.registradaEm.getTime() === nova.registradaEm.getTime() &&
-    atual.descricao === nova.descricao &&
-    atual.resultado === nova.resultado &&
-    atual.proposicoes.length === nova.proposicoes.length &&
-    atual.proposicoes.every((p, i) => mesmaProposicao(p, nova.proposicoes[i])) &&
-    atual.votos.length === nova.votos.length &&
-    atual.votos.every((v, i) => mesmoVoto(v, nova.votos[i]))
+const VOTOS_CONHECIDOS: ReadonlySet<OpcaoDeVoto> = new Set([
+  'sim',
+  'nao',
+  'abstencao',
+  'obstrucao',
+]);
+
+/** Com horário, o mandato contém o instante; sem horário, basta tocar o dia da votação. */
+function noMandato(mandato: MandatoVigente, instante: Date | null, dia: DiaDeSessao): boolean {
+  if (instante === null) return dia.tocaNoPeriodo(mandato.inicio, mandato.fim);
+  return instante >= mandato.inicio && (mandato.fim === null || instante <= mandato.fim);
+}
+
+function repetido(mandato: MandatoVigente): Result<never, DomainError> {
+  return falha(
+    'votacao.voto_repetido',
+    `A pessoa ${mandato.pessoa.valor} aparece mais de uma vez na votação.`,
   );
 }
 
-function mesmaProposicao(a: ProposicaoAfetada, b: ProposicaoAfetada | undefined): boolean {
+function foraDoMandato(mandato: MandatoVigente): Result<never, DomainError> {
+  return falha(
+    'votacao.voto_fora_do_mandato',
+    `O registro na votação está fora do mandato ${mandato.mandato.valor}.`,
+  );
+}
+
+function mesmaApuracao(atual: Apurada, nova: Apurada): boolean {
   return (
-    b !== undefined &&
+    atual.dia.equals(nova.dia) &&
+    mesmoInstante(atual.registradaEm, nova.registradaEm) &&
+    atual.descricao === nova.descricao &&
+    atual.resultado === nova.resultado &&
+    atual.relacaoCompleta === nova.relacaoCompleta &&
+    mesmaLista(atual.proposicoes, nova.proposicoes, mesmaProposicao) &&
+    mesmaLista(atual.votos, nova.votos, mesmoVoto) &&
+    mesmaLista(atual.semVoto, nova.semVoto, mesmoSemVoto)
+  );
+}
+
+function mesmaLista<T>(a: readonly T[], b: readonly T[], igual: (x: T, y: T) => boolean): boolean {
+  return a.length === b.length && a.every((x, i) => i < b.length && igual(x, b[i] as T));
+}
+
+function mesmoInstante(a: Date | null, b: Date | null): boolean {
+  return a === null || b === null ? a === b : a.getTime() === b.getTime();
+}
+
+function mesmaProposicao(a: ProposicaoAfetada, b: ProposicaoAfetada): boolean {
+  return (
     a.codigoNaFonte === b.codigoNaFonte &&
     a.sigla === b.sigla &&
     a.numero === b.numero &&
@@ -331,14 +457,28 @@ function mesmaProposicao(a: ProposicaoAfetada, b: ProposicaoAfetada | undefined)
   );
 }
 
-function mesmoVoto(a: Voto, b: Voto | undefined): boolean {
+function mesmoVoto(a: Voto, b: Voto): boolean {
   return (
-    b !== undefined &&
     a.pessoa.equals(b.pessoa) &&
     a.mandato.equals(b.mandato) &&
     a.opcao === b.opcao &&
     a.registroNaFonte === b.registroNaFonte &&
-    a.registradoEm.getTime() === b.registradoEm.getTime() &&
+    mesmoInstante(a.registradoEm, b.registradoEm) &&
+    a.siglaPartidoNaFonte === b.siglaPartidoNaFonte
+  );
+}
+
+function mesmoSemVoto(a: SemVoto, b: SemVoto): boolean {
+  const mesmoMotivo =
+    a.motivo === undefined || b.motivo === undefined
+      ? a.motivo === b.motivo
+      : a.motivo.equals(b.motivo);
+  return (
+    a.pessoa.equals(b.pessoa) &&
+    a.mandato.equals(b.mandato) &&
+    a.situacao === b.situacao &&
+    mesmoMotivo &&
+    a.registroNaFonte === b.registroNaFonte &&
     a.siglaPartidoNaFonte === b.siglaPartidoNaFonte
   );
 }

@@ -106,6 +106,9 @@ function paraEntrada(
       ementa: p.ementa,
     })),
     votos: traduzidos.flatMap(({ opcao, ...voto }) => (opcao ? [{ ...voto, opcao }] : [])),
+    // A Câmara só lista quem votou: quem não aparece não é ausente, a fonte só não diz.
+    relacaoCompleta: false,
+    semVoto: [],
     origem: origem(votacao),
     origemDosVotos: origem(votos),
   };

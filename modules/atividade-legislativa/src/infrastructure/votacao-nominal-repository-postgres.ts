@@ -4,9 +4,10 @@ import { and, eq } from 'drizzle-orm';
 import type { VotacaoNominalRepository } from '../application/portas.js';
 import { CASAS_LEGISLATIVAS, type CasaLegislativa } from '../domain/casa-legislativa.js';
 import { DiaDeSessao } from '../domain/dia-de-sessao.js';
+import { MotivoDaAusencia } from '../domain/motivo-da-ausencia.js';
 import { CapturaId, MandatoId, PessoaId, VotacaoNominalId } from '../domain/identificadores.js';
 import { VotacaoNominal } from '../domain/votacao-nominal.js';
-import { OPCOES_DE_VOTO, RESULTADOS_DA_VOTACAO } from '../domain/voto.js';
+import { OPCOES_DE_VOTO, RESULTADOS_DA_VOTACAO, SITUACOES_SEM_VOTO } from '../domain/voto.js';
 import { outbox, votacaoNominal } from './esquema.js';
 import { ConflitoDeConcorrencia, confiavel, conhecido } from './persistencia.js';
 
@@ -41,8 +42,18 @@ export class VotacaoNominalRepositoryPostgres implements VotacaoNominalRepositor
           mandatoId: v.mandato.valor,
           opcao: v.opcao,
           registroNaFonte: v.registroNaFonte,
-          registradoEm: v.registradoEm.toISOString(),
+          registradoEm: v.registradoEm?.toISOString() ?? null,
           siglaPartidoNaFonte: v.siglaPartidoNaFonte,
+        })),
+        relacaoCompleta: alvo.relacaoCompleta,
+        semVoto: alvo.semVoto.map((s) => ({
+          pessoaId: s.pessoa.valor,
+          mandatoId: s.mandato.valor,
+          situacao: s.situacao,
+          motivoCategoria: s.motivo?.categoria ?? null,
+          motivoDescricao: s.motivo?.descricaoNaFonte ?? null,
+          registroNaFonte: s.registroNaFonte,
+          siglaPartidoNaFonte: s.siglaPartidoNaFonte,
         })),
         capturaId: alvo.captura.valor,
         capturaDosVotosId: alvo.capturaDosVotos.valor,
@@ -85,8 +96,20 @@ function paraVotacao(linha: typeof votacaoNominal.$inferSelect): VotacaoNominal 
       mandato: confiavel(MandatoId.de(v.mandatoId)),
       opcao: conhecido(OPCOES_DE_VOTO, v.opcao, 'opção de voto'),
       registroNaFonte: v.registroNaFonte,
-      registradoEm: new Date(v.registradoEm),
+      registradoEm: v.registradoEm === null ? null : new Date(v.registradoEm),
       siglaPartidoNaFonte: v.siglaPartidoNaFonte,
+    })),
+    relacaoCompleta: linha.relacaoCompleta,
+    semVoto: linha.semVoto.map((s) => ({
+      pessoa: confiavel(PessoaId.de(s.pessoaId)),
+      mandato: confiavel(MandatoId.de(s.mandatoId)),
+      situacao: conhecido(SITUACOES_SEM_VOTO, s.situacao, 'situação sem voto'),
+      motivo:
+        s.motivoCategoria === null
+          ? undefined
+          : confiavel(MotivoDaAusencia.criar(s.motivoCategoria, s.motivoDescricao ?? '')),
+      registroNaFonte: s.registroNaFonte,
+      siglaPartidoNaFonte: s.siglaPartidoNaFonte,
     })),
     captura: confiavel(CapturaId.de(linha.capturaId)),
     capturaDosVotos: confiavel(CapturaId.de(linha.capturaDosVotosId)),

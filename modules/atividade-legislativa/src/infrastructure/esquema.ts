@@ -1,5 +1,6 @@
 import { definirInbox, definirOutbox } from '@prometeu/infraestrutura';
 import {
+  boolean,
   date,
   index,
   integer,
@@ -42,7 +43,18 @@ export interface VotoGravado {
   mandatoId: string;
   opcao: string;
   registroNaFonte: string | null;
-  registradoEm: string;
+  registradoEm: string | null;
+  siglaPartidoNaFonte: string | null;
+}
+
+/** Parlamentar em exercício que não votou, com a situação informada pela casa. */
+export interface SemVotoGravado {
+  pessoaId: string;
+  mandatoId: string;
+  situacao: string;
+  motivoCategoria: string | null;
+  motivoDescricao: string | null;
+  registroNaFonte: string;
   siglaPartidoNaFonte: string | null;
 }
 
@@ -61,11 +73,13 @@ export const votacaoNominal = schemaDeAtividadeLegislativa.table(
     casa: text('casa').notNull(),
     codigoNaFonte: text('codigo_na_fonte').notNull(),
     dia: date('dia', { mode: 'string' }).notNull(),
-    registradaEm: timestamp('registrada_em', { withTimezone: true, mode: 'date' }).notNull(),
+    registradaEm: timestamp('registrada_em', { withTimezone: true, mode: 'date' }),
     descricao: text('descricao').notNull(),
     resultado: text('resultado').notNull(),
     proposicoes: jsonb('proposicoes').$type<ProposicaoGravada[]>().notNull(),
     votos: jsonb('votos').$type<VotoGravado[]>().notNull(),
+    relacaoCompleta: boolean('relacao_completa').notNull().default(false),
+    semVoto: jsonb('sem_voto').$type<SemVotoGravado[]>().notNull().default([]),
     capturaId: uuid('captura_id').notNull(),
     capturaDosVotosId: uuid('captura_dos_votos_id').notNull(),
     /** Controle de concorrência otimista: duas gravações sobre a mesma versão não passam as duas. */

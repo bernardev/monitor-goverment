@@ -4,10 +4,14 @@ import { describe, expect, it } from 'vitest';
 import {
   AGORA,
   umaApuracaoDeVotacao,
+  umaApuracaoDoSenado,
   umaCaptura,
+  umaLicencaSaude,
   umaVotacao,
   umMandato,
+  umPresenteSemVoto,
   umVoto,
+  umVotoSemHorario,
   valor,
 } from '../testes/construtores.js';
 import { DiaDeSessao } from './dia-de-sessao.js';
@@ -155,6 +159,100 @@ describe('VotacaoNominal', () => {
   });
 });
 
+describe('VotacaoNominal com a relação completa (Senado)', () => {
+  it('registra quem não votou, com a situação e o motivo informados pela casa', () => {
+    const votacao = umaVotacao(umaApuracaoDoSenado());
+
+    expect(votacao.relacaoCompleta).toBe(true);
+    expect(votacao.semVoto.map((s) => [s.pessoa.valor, s.situacao, s.motivo?.categoria])).toEqual([
+      [umMandato(3).pessoa.valor, 'ausencia_justificada', 'licenca_saude'],
+      [umMandato(4).pessoa.valor, 'presente_sem_voto', undefined],
+    ]);
+    expect(votacao.pullDomainEvents()[0]?.dados).toMatchObject({
+      registradaEm: null,
+      relacaoCompleta: true,
+      semVoto: [
+        { situacao: 'ausencia_justificada', registroNaFonte: 'LS' },
+        { situacao: 'presente_sem_voto', motivo: null },
+      ],
+    });
+    expect(votacao.placar()).toMatchObject({ sim: 1, nao: 1 });
+  });
+
+  it('sem horário, basta o mandato tocar o dia da votação', () => {
+    // Suplente que assumiu às 17h do dia 14 (Brasília): sem horário, o voto do dia é dele.
+    const mandato = { ...umMandato(1), inicio: new Date('2026-10-14T20:00:00.000Z') };
+
+    const resultado = VotacaoNominal.registrar({
+      casa: 'senado_federal',
+      codigoNaFonte: '9101',
+      apuracao: { ...umaApuracaoDoSenado(), votos: [{ ...umVotoSemHorario(1), mandato }] },
+      captura: umaCaptura(1),
+      capturaDosVotos: umaCaptura(1),
+      agora: AGORA,
+    });
+
+    expect(resultado.ok).toBe(true);
+  });
+
+  it('votação secreta pode ter quem presidia, mas nenhum voto conhecido', () => {
+    const secreta = umaVotacao({
+      ...umaApuracaoDoSenado(),
+      votos: [umVotoSemHorario(1, 'secreto'), umVotoSemHorario(2, 'presidente_da_sessao')],
+    });
+
+    expect(secreta.secreta).toBe(true);
+  });
+
+  it.each([
+    ['votacao.sem_voto_sem_relacao', () => ({ ...umaApuracaoDoSenado(), relacaoCompleta: false })],
+    ['votacao.voto_repetido', () => ({ ...umaApuracaoDoSenado(), semVoto: [umaLicencaSaude(1)] })],
+    [
+      'votacao.motivo_incoerente',
+      () => ({
+        ...umaApuracaoDoSenado(),
+        semVoto: [{ ...umaLicencaSaude(3), motivo: undefined }],
+      }),
+    ],
+    [
+      'votacao.motivo_incoerente',
+      () => ({
+        ...umaApuracaoDoSenado(),
+        semVoto: [{ ...umPresenteSemVoto(4), motivo: umaLicencaSaude(3).motivo }],
+      }),
+    ],
+    [
+      'votacao.voto_fora_do_mandato',
+      () => ({
+        ...umaApuracaoDoSenado(),
+        semVoto: [
+          { ...umaLicencaSaude(3), mandato: { ...umMandato(3), fim: new Date('2026-10-01') } },
+        ],
+      }),
+    ],
+  ])('recusa %s', (codigo, apuracao) => {
+    expect(codigoDoErro(registrar(apuracao()))).toBe(codigo);
+  });
+
+  it('a mesma relação de novo não vira evento; uma licença nova vira retificação', () => {
+    const votacao = umaVotacao(umaApuracaoDoSenado());
+    votacao.pullDomainEvents();
+
+    valor(votacao.retificar(umaApuracaoDoSenado(), umaCaptura(3), umaCaptura(3), AGORA));
+    expect(votacao.pullDomainEvents()).toEqual([]);
+
+    valor(
+      votacao.retificar(
+        { ...umaApuracaoDoSenado(), semVoto: [umaLicencaSaude(3), umaLicencaSaude(4)] },
+        umaCaptura(3),
+        umaCaptura(3),
+        AGORA,
+      ),
+    );
+    expect(votacao.pullDomainEvents().map((e) => e.tipo)).toEqual(['VotacaoNominalRetificada']);
+  });
+});
+
 describe('eventos da votação nominal respeitam os contratos publicados', () => {
   it('registrada e retificada (packages/contracts/eventos)', () => {
     const votacao = umaVotacao();
@@ -167,10 +265,13 @@ describe('eventos da votação nominal respeitam os contratos publicados', () =>
       ),
     );
 
-    const eventos = votacao.pullDomainEvents();
-    expect(eventos.map((e) => e.tipo)).toEqual([
-      'VotacaoNominalRegistrada',
-      'VotacaoNominalRetificada',
+    const doSenado = umaVotacao(umaApuracaoDoSenado());
+
+    const eventos = [...votacao.pullDomainEvents(), ...doSenado.pullDomainEvents()];
+    expect(eventos.map((e) => [e.tipo, e.versao])).toEqual([
+      ['VotacaoNominalRegistrada', 2],
+      ['VotacaoNominalRetificada', 2],
+      ['VotacaoNominalRegistrada', 2],
     ]);
     for (const evento of eventos) {
       expect(violacoesDoContrato(evento.tipo, evento.versao, evento.dados), evento.tipo).toEqual(

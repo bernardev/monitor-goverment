@@ -1,0 +1,364 @@
+{
+  "id": "3a246a53-2f74-40ec-9af4-2b5793ba419b",
+  "prevId": "94304c51-92e6-4961-bd7e-fc202bd9483c",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "atividade_legislativa.inbox": {
+      "name": "inbox",
+      "schema": "atividade_legislativa",
+      "columns": {
+        "id_do_evento": {
+          "name": "id_do_evento",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "consumidor": {
+          "name": "consumidor",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "processado_em": {
+          "name": "processado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "inbox_id_do_evento_consumidor_pk": {
+          "name": "inbox_id_do_evento_consumidor_pk",
+          "columns": [
+            "id_do_evento",
+            "consumidor"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "atividade_legislativa.outbox": {
+      "name": "outbox",
+      "schema": "atividade_legislativa",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "versao": {
+          "name": "versao",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ocorrido_em": {
+          "name": "ocorrido_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id_do_agregado": {
+          "name": "id_do_agregado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id_de_correlacao": {
+          "name": "id_de_correlacao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dados": {
+          "name": "dados",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "publicado_em": {
+          "name": "publicado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "outbox_pendentes": {
+          "name": "outbox_pendentes",
+          "columns": [
+            {
+              "expression": "ocorrido_em",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"atividade_legislativa\".\"outbox\".\"publicado_em\" IS NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "atividade_legislativa.registro_de_frequencia": {
+      "name": "registro_de_frequencia",
+      "schema": "atividade_legislativa",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "casa": {
+          "name": "casa",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dia": {
+          "name": "dia",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pessoa_id": {
+          "name": "pessoa_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mandato_id": {
+          "name": "mandato_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "situacao": {
+          "name": "situacao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "motivo_categoria": {
+          "name": "motivo_categoria",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "motivo_descricao": {
+          "name": "motivo_descricao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "registro_na_fonte": {
+          "name": "registro_na_fonte",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sessoes": {
+          "name": "sessoes",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "captura_id": {
+          "name": "captura_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "versao": {
+          "name": "versao",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "frequencia_por_mandato": {
+          "name": "frequencia_por_mandato",
+          "columns": [
+            {
+              "expression": "mandato_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "dia",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "frequencia_por_dia": {
+          "name": "frequencia_por_dia",
+          "nullsNotDistinct": false,
+          "columns": [
+            "casa",
+            "pessoa_id",
+            "dia"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "atividade_legislativa.votacao_nominal": {
+      "name": "votacao_nominal",
+      "schema": "atividade_legislativa",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "casa": {
+          "name": "casa",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "codigo_na_fonte": {
+          "name": "codigo_na_fonte",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dia": {
+          "name": "dia",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "registrada_em": {
+          "name": "registrada_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "descricao": {
+          "name": "descricao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "resultado": {
+          "name": "resultado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "proposicoes": {
+          "name": "proposicoes",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "votos": {
+          "name": "votos",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "relacao_completa": {
+          "name": "relacao_completa",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "sem_voto": {
+          "name": "sem_voto",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        "captura_id": {
+          "name": "captura_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "captura_dos_votos_id": {
+          "name": "captura_dos_votos_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "versao": {
+          "name": "versao",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "votacao_por_codigo": {
+          "name": "votacao_por_codigo",
+          "nullsNotDistinct": false,
+          "columns": [
+            "casa",
+            "codigo_na_fonte"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {
+    "atividade_legislativa": "atividade_legislativa"
+  },
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

@@ -3,7 +3,7 @@ import type { DomainEvent } from '@prometeu/shared-kernel';
 import type { CasaLegislativa } from './casa-legislativa.js';
 import type { CategoriaDoMotivo } from './motivo-da-ausencia.js';
 import type { Situacao } from './situacao.js';
-import type { OpcaoDeVoto, ResultadoDaVotacao } from './voto.js';
+import type { OpcaoDeVoto, ResultadoDaVotacao, SituacaoSemVoto } from './voto.js';
 
 // Dados só com primitivos serializáveis: vão para a outbox em JSON (ADR-0007) e são a linguagem
 // publicada deste contexto para os outros (packages/contracts/eventos). Ausência é `null`.
@@ -32,17 +32,23 @@ export type FrequenciaRetificada = DomainEvent<
   FrequenciaPublicada & { situacaoAnterior: Situacao }
 >;
 
-/** Estado completo da votação nominal, com todos os votos registrados. */
+/**
+ * Estado completo da votação nominal (contrato v2): todos os votos e, quando a casa lista todos os
+ * parlamentares em exercício, quem não votou e por quê.
+ */
 export interface VotacaoNominalPublicada {
   casa: CasaLegislativa;
   /** Como a casa identifica a votação (`2635476-36`). */
   codigoNaFonte: string;
   /** Dia do calendário de Brasília, `aaaa-mm-dd`. */
   dia: string;
-  registradaEm: string;
+  /** `null`: a casa não informa o horário (Senado). */
+  registradaEm: string | null;
   descricao: string;
   resultado: ResultadoDaVotacao;
   secreta: boolean;
+  /** A casa listou todos os parlamentares em exercício, inclusive quem não votou. */
+  relacaoCompleta: boolean;
   proposicoes: {
     codigoNaFonte: string;
     sigla: string;
@@ -56,8 +62,18 @@ export interface VotacaoNominalPublicada {
     opcao: OpcaoDeVoto;
     /** Como a casa escreveu o voto (`Artigo 17`); `null` na votação secreta. */
     registroNaFonte: string | null;
-    registradoEm: string;
+    /** `null`: a casa não informa o horário do voto. */
+    registradoEm: string | null;
     /** Partido do parlamentar no dia, como a casa informou. */
+    siglaPartidoNaFonte: string | null;
+  }[];
+  /** Vazio quando a casa não lista quem não votou (`relacaoCompleta` falso). */
+  semVoto: {
+    pessoaId: string;
+    mandatoId: string;
+    situacao: SituacaoSemVoto;
+    motivo: { categoria: CategoriaDoMotivo; descricaoNaFonte: string } | null;
+    registroNaFonte: string;
     siglaPartidoNaFonte: string | null;
   }[];
   /** Captura do detalhe da votação. */
