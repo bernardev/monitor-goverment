@@ -1,0 +1,38 @@
+{
+  "name": "@prometeu/infraestrutura",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Adaptadores comuns aos contextos: transação, outbox, inbox, relay e barramento (ADR-0015).",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "@prometeu/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./testes": {
+      "@prometeu/source": "./src/testes/index.ts",
+      "types": "./dist/testes/index.d.ts",
+      "default": "./dist/testes/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@prometeu/contracts": "workspace:*",
+    "@prometeu/shared-kernel": "workspace:*",
+    "drizzle-orm": "^0.45.4",
+    "pg": "^8.23.1",
+    "pg-boss": "^12.38.0"
+  },
+  "devDependencies": {
+    "@testcontainers/postgresql": "^12.2.1",
+    "@types/pg": "^8.23.1"
+  }
+}

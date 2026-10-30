@@ -1,5 +1,4 @@
--- Um schema por contexto, cada um com um usuário que só escreve nele (ADR-0006). O schema `barramento`
--- é do pg-boss, a fila de eventos entre contextos (ADR-0015).
+-- Um schema por contexto, cada um com um usuário que só escreve nele (ADR-0006).
 -- Senhas fixas valem apenas para o ambiente local.
 
 CREATE EXTENSION IF NOT EXISTS vector;
@@ -11,7 +10,7 @@ DECLARE
 BEGIN
   FOREACH contexto IN ARRAY ARRAY[
     'agentes_publicos', 'compromissos', 'atividade_legislativa', 'financas_publicas', 'obras',
-    'acervo', 'editorial', 'engajamento', 'consulta', 'ingestao', 'barramento'
+    'acervo', 'editorial', 'engajamento', 'consulta', 'ingestao'
   ]
   LOOP
     EXECUTE format('CREATE ROLE %I LOGIN PASSWORD %L', 'ctx_' || contexto, 'desenvolvimento');
@@ -36,5 +35,14 @@ BEGIN
       leitor
     );
   END LOOP;
+END
+$$;
+
+-- O barramento de eventos (pg-boss, ADR-0015) cria e migra o próprio schema `barramento` ao iniciar.
+-- O usuário dele pode criar schemas, mas não lê nem escreve nos schemas dos contextos.
+DO $$
+BEGIN
+  CREATE ROLE ctx_barramento LOGIN PASSWORD 'desenvolvimento';
+  EXECUTE format('GRANT CREATE ON DATABASE %I TO ctx_barramento', current_database());
 END
 $$;

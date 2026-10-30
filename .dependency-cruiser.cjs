@@ -52,6 +52,21 @@ module.exports = {
       to: { path: '^modules/$1/src/(infrastructure|interface)/' },
     },
     {
+      name: 'nucleo-sem-infraestrutura-compartilhada',
+      comment:
+        'ADR-0015: transação, outbox e barramento são adaptadores; domínio e aplicação não os veem.',
+      severity: 'error',
+      from: { path: '^modules/[^/]+/src/(domain|application)/' },
+      to: { path: '^packages/infraestrutura/' },
+    },
+    {
+      name: 'apoio-de-teste-so-em-teste',
+      comment: 'Contêineres e fakes de teste nunca entram em código de produção.',
+      severity: 'error',
+      from: { path: '^(apps|modules|packages)/', pathNot: ['\.test\.ts$', '/src/testes/'] },
+      to: { path: '^(packages/infraestrutura/src/testes/|modules/[^/]+/src/testes/)' },
+    },
+    {
       name: 'infraestrutura-nao-conhece-entradas',
       severity: 'error',
       from: { path: '^modules/([^/]+)/src/infrastructure/' },

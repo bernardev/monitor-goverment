@@ -4,3 +4,4 @@ dist
 coverage
 data-platform
 docs/pesquisa
+**/drizzle/meta/
