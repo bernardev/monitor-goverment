@@ -19,6 +19,7 @@
     "@prometeu/atividade-legislativa": "workspace:*",
     "@prometeu/compromissos": "workspace:*",
     "@prometeu/consulta": "workspace:*",
+    "@prometeu/financas-publicas": "workspace:*",
     "@prometeu/infraestrutura": "workspace:*",
     "@prometeu/shared-kernel": "workspace:*",
     "reflect-metadata": "^0.2.2",

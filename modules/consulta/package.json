@@ -25,6 +25,7 @@
     "@prometeu/agentes-publicos": "workspace:*",
     "@prometeu/atividade-legislativa": "workspace:*",
     "@prometeu/contracts": "workspace:*",
+    "@prometeu/financas-publicas": "workspace:*",
     "@prometeu/infraestrutura": "workspace:*",
     "@prometeu/shared-kernel": "workspace:*",
     "drizzle-orm": "^0.45.4"

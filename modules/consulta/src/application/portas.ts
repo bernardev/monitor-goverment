@@ -1,11 +1,15 @@
 import type {
   AutoriaDoParlamentar,
+  EmendaDetalhada,
+  EmendaResumo,
+  EmendasDoParlamentar,
   FrequenciaDoParlamentar,
   Pagina,
   ParlamentarResumo,
   PerfilDeParlamentar,
   ProposicaoDetalhada,
   ProposicaoResumo,
+  TipoDeEmenda,
   TipoDeProposicao,
   VotacaoNominalDetalhada,
   VotacaoNominalResumo,
@@ -45,6 +49,22 @@ export interface ConsultaDeProposicoes {
   buscar(proposicaoId: string): Promise<ProposicaoDetalhada | undefined>;
   /** As proposições de que o parlamentar é autor ou coautor. */
   doParlamentar(pessoaId: string, paginacao: Paginacao): Promise<Pagina<AutoriaDoParlamentar>>;
+}
+
+export interface FiltroDeEmendas extends Paginacao {
+  /** Ano do orçamento. */
+  readonly ano?: number | undefined;
+  readonly tipo?: TipoDeEmenda | undefined;
+  /** Sigla da UF de destino (`SP`). */
+  readonly uf?: string | undefined;
+}
+
+export interface ConsultaDeEmendas {
+  /** Orçamento mais recente primeiro; no mesmo ano, a de maior empenho. */
+  listar(filtro: FiltroDeEmendas): Promise<Pagina<EmendaResumo>>;
+  buscar(emendaId: string): Promise<EmendaDetalhada | undefined>;
+  /** As emendas de que o parlamentar é autor, com a execução somada de todas. */
+  doParlamentar(pessoaId: string, paginacao: Paginacao): Promise<EmendasDoParlamentar>;
 }
 
 export interface ConsultaDeVotacoes {

@@ -185,6 +185,9 @@ importers:
       '@prometeu/consulta':
         specifier: workspace:*
         version: link:../../modules/consulta
+      '@prometeu/financas-publicas':
+        specifier: workspace:*
+        version: link:../../modules/financas-publicas
       '@prometeu/infraestrutura':
         specifier: workspace:*
         version: link:../../packages/infraestrutura
@@ -331,6 +334,9 @@ importers:
       '@prometeu/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@prometeu/financas-publicas':
+        specifier: workspace:*
+        version: link:../financas-publicas
       '@prometeu/infraestrutura':
         specifier: workspace:*
         version: link:../../packages/infraestrutura

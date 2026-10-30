@@ -5,16 +5,19 @@ import { fileURLToPath } from 'node:url';
 import type { BancoDoContexto, BarramentoDeEventos } from '@prometeu/infraestrutura';
 
 import type {
+  ConsultaDeEmendas,
   ConsultaDeFrequencia,
   ConsultaDeParlamentares,
   ConsultaDeProposicoes,
   ConsultaDeVotacoes,
   Relogio,
 } from './application/portas.js';
+import { ConsultaDeEmendasPostgres } from './infrastructure/consulta-de-emendas-postgres.js';
 import { ConsultaDeFrequenciaPostgres } from './infrastructure/consulta-de-frequencia-postgres.js';
 import { ConsultaDeParlamentaresPostgres } from './infrastructure/consulta-de-parlamentares-postgres.js';
 import { ConsultaDeProposicoesPostgres } from './infrastructure/consulta-de-proposicoes-postgres.js';
 import { ConsultaDeVotacoesPostgres } from './infrastructure/consulta-de-votacoes-postgres.js';
+import { ProjetorDeEmendas } from './infrastructure/projetor-de-emendas.js';
 import { ProjetorDeFrequencia } from './infrastructure/projetor-de-frequencia.js';
 import { ProjetorDeParlamentares } from './infrastructure/projetor-de-parlamentares.js';
 import { ProjetorDeProposicoes } from './infrastructure/projetor-de-proposicoes.js';
@@ -22,10 +25,12 @@ import { ProjetorDeVotacoes } from './infrastructure/projetor-de-votacoes.js';
 import { assinarConsumidores } from './interface/consumidores.js';
 
 export type {
+  ConsultaDeEmendas,
   ConsultaDeFrequencia,
   ConsultaDeParlamentares,
   ConsultaDeProposicoes,
   ConsultaDeVotacoes,
+  FiltroDeEmendas,
   FiltroDeParlamentares,
   FiltroDeProposicoes,
   FiltroDeVotacoes,
@@ -42,6 +47,7 @@ export interface ModuloConsulta {
   readonly frequencia: ConsultaDeFrequencia;
   readonly votacoes: ConsultaDeVotacoes;
   readonly proposicoes: ConsultaDeProposicoes;
+  readonly emendas: ConsultaDeEmendas;
   assinarConsumidores(barramento: BarramentoDeEventos): Promise<void>;
 }
 
@@ -57,12 +63,14 @@ export function montarConsulta(
     frequencia: new ConsultaDeFrequenciaPostgres(banco),
     votacoes,
     proposicoes: new ConsultaDeProposicoesPostgres(banco, votacoes),
+    emendas: new ConsultaDeEmendasPostgres(banco),
     assinarConsumidores: (barramento) =>
       assinarConsumidores(barramento, banco, {
         parlamentares: new ProjetorDeParlamentares(banco),
         frequencia: new ProjetorDeFrequencia(banco),
         votacoes: new ProjetorDeVotacoes(banco),
         proposicoes: new ProjetorDeProposicoes(banco),
+        emendas: new ProjetorDeEmendas(banco),
       }),
   };
 }

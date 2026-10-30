@@ -36,6 +36,13 @@
       "when": 1793397101205,
       "tag": "0004_proposicao",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793399969321,
+      "tag": "0005_emenda",
+      "breakpoints": true
     }
   ]
 }

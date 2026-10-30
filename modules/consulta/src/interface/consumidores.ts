@@ -7,6 +7,10 @@ import {
 
 import { inbox } from '../infrastructure/esquema.js';
 import {
+  EVENTOS_DE_EMENDA,
+  type ProjetorDeEmendas,
+} from '../infrastructure/projetor-de-emendas.js';
+import {
   EVENTOS_DE_FREQUENCIA,
   type ProjetorDeFrequencia,
 } from '../infrastructure/projetor-de-frequencia.js';
@@ -27,12 +31,14 @@ export const CONSUMIDOR_DE_PARLAMENTARES = 'consulta.projetar_parlamentares';
 export const CONSUMIDOR_DE_FREQUENCIA = 'consulta.projetar_frequencia';
 export const CONSUMIDOR_DE_VOTACOES = 'consulta.projetar_votacoes';
 export const CONSUMIDOR_DE_PROPOSICOES = 'consulta.projetar_proposicoes';
+export const CONSUMIDOR_DE_EMENDAS = 'consulta.projetar_emendas';
 
 export interface Projetores {
   readonly parlamentares: ProjetorDeParlamentares;
   readonly frequencia: ProjetorDeFrequencia;
   readonly votacoes: ProjetorDeVotacoes;
   readonly proposicoes: ProjetorDeProposicoes;
+  readonly emendas: ProjetorDeEmendas;
 }
 
 interface Projetor {
@@ -50,6 +56,7 @@ export async function assinarConsumidores(
     [CONSUMIDOR_DE_FREQUENCIA, EVENTOS_DE_FREQUENCIA, projetores.frequencia],
     [CONSUMIDOR_DE_VOTACOES, EVENTOS_DE_VOTACAO, projetores.votacoes],
     [CONSUMIDOR_DE_PROPOSICOES, EVENTOS_DE_PROPOSICAO, projetores.proposicoes],
+    [CONSUMIDOR_DE_EMENDAS, EVENTOS_DE_EMENDA, projetores.emendas],
   ];
   for (const [consumidor, eventos, projetor] of assinaturas) {
     const consumir = consumidorIdempotente(banco, inbox, consumidor, (envelope) =>

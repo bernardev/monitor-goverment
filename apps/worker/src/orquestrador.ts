@@ -24,6 +24,12 @@ import {
 } from '@prometeu/compromissos';
 import { MIGRACOES_DA_CONSULTA, montarConsulta, SCHEMA_DA_CONSULTA } from '@prometeu/consulta';
 import {
+  MIGRACOES_DE_FINANCAS_PUBLICAS,
+  montarFinancasPublicas,
+  type ResumoDaImportacao as ResumoDeFinancasPublicas,
+  SCHEMA_DE_FINANCAS_PUBLICAS,
+} from '@prometeu/financas-publicas';
+import {
   BancoDoContexto,
   BarramentoPgBoss,
   migrar,
@@ -63,6 +69,10 @@ export class Orquestrador implements OnApplicationBootstrap, OnApplicationShutdo
       urlDoBanco(SCHEMA_DE_COMPROMISSOS),
     ),
     consulta: BancoDoContexto.conectar(SCHEMA_DA_CONSULTA, urlDoBanco(SCHEMA_DA_CONSULTA)),
+    financasPublicas: BancoDoContexto.conectar(
+      SCHEMA_DE_FINANCAS_PUBLICAS,
+      urlDoBanco(SCHEMA_DE_FINANCAS_PUBLICAS),
+    ),
     ingestao: BancoDoContexto.conectar('ingestao', urlDoBanco('ingestao')),
   };
   private barramento: BarramentoPgBoss | undefined;
@@ -74,6 +84,7 @@ export class Orquestrador implements OnApplicationBootstrap, OnApplicationShutdo
     await migrar(this.bancos.atividadeLegislativa, MIGRACOES_DE_ATIVIDADE_LEGISLATIVA);
     await migrar(this.bancos.compromissos, MIGRACOES_DE_COMPROMISSOS);
     await migrar(this.bancos.consulta, MIGRACOES_DA_CONSULTA);
+    await migrar(this.bancos.financasPublicas, MIGRACOES_DE_FINANCAS_PUBLICAS);
     this.logger.log('Migrações aplicadas.');
 
     const barramento = await BarramentoPgBoss.iniciar(urlDoBanco('barramento'));
@@ -90,6 +101,11 @@ export class Orquestrador implements OnApplicationBootstrap, OnApplicationShutdo
       mandatos: agentesPublicos.mandatos,
       pessoas: agentesPublicos.pessoas,
     });
+    const financasPublicas = montarFinancasPublicas({
+      banco: this.bancos.financasPublicas,
+      registrarCaptura: acervo.registrarCaptura,
+      pessoas: agentesPublicos.pessoas,
+    });
     const consulta = montarConsulta(this.bancos.consulta);
     const compromissos = montarCompromissos({
       banco: this.bancos.compromissos,
@@ -103,6 +119,9 @@ export class Orquestrador implements OnApplicationBootstrap, OnApplicationShutdo
       const unidade = UNIDADES[resumo.importacao];
       this.relatar(resumo, `${String(resumo.novos)} ${unidade}`);
     });
+    await financasPublicas.assinarConsumidores(barramento, (resumo) => {
+      this.relatar(resumo, `${String(resumo.novos)} emendas novas`);
+    });
     await consulta.assinarConsumidores(barramento);
 
     this.relays.push(
@@ -111,6 +130,7 @@ export class Orquestrador implements OnApplicationBootstrap, OnApplicationShutdo
       agentesPublicos.criarRelay(barramento),
       atividadeLegislativa.criarRelay(barramento),
       compromissos.criarRelay(barramento),
+      financasPublicas.criarRelay(barramento),
     );
     for (const relay of this.relays) {
       relay.iniciar(1000, (erro) => {
@@ -127,7 +147,7 @@ export class Orquestrador implements OnApplicationBootstrap, OnApplicationShutdo
   }
 
   private relatar(
-    resumo: ResumoDeDeputados | ResumoDeAtividadeLegislativa,
+    resumo: ResumoDeDeputados | ResumoDeAtividadeLegislativa | ResumoDeFinancasPublicas,
     novidades: string,
   ): void {
     this.logger.log(

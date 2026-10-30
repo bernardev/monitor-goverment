@@ -1,5 +1,6 @@
 import { definirInbox } from '@prometeu/infraestrutura';
 import {
+  bigint,
   boolean,
   char,
   date,
@@ -193,6 +194,67 @@ export const autoria = schemaDaConsulta.table(
   (t) => [
     primaryKey({ columns: [t.proposicaoId, t.pessoaId] }),
     index('autoria_por_pessoa').on(t.pessoaId),
+  ],
+);
+
+/** Execução de uma destinação, em centavos como texto (JSON não tem inteiro de 64 bits). */
+export interface ExecucaoProjetada {
+  empenhadoCentavos: string;
+  liquidadoCentavos: string;
+  pagoCentavos: string;
+  restosInscritosCentavos: string;
+  restosCanceladosCentavos: string;
+  restosPagosCentavos: string;
+}
+
+interface ClassificacaoProjetada {
+  codigo: string;
+  nome: string;
+}
+
+export interface DestinacaoProjetada extends ExecucaoProjetada {
+  localidade: string;
+  municipioIbge: string | null;
+  ufIbge: string | null;
+  funcao: ClassificacaoProjetada;
+  subfuncao: ClassificacaoProjetada;
+  programa: ClassificacaoProjetada;
+  acao: ClassificacaoProjetada;
+  planoOrcamentario: ClassificacaoProjetada;
+}
+
+const centavos = (nome: string) => bigint(nome, { mode: 'bigint' }).notNull();
+
+/**
+ * Emendas parlamentares com a execução já somada, para listar e ordenar sem abrir as destinações.
+ * `ufs` são as siglas das UFs de destino, para o filtro por estado.
+ */
+export const emenda = schemaDaConsulta.table(
+  'emenda',
+  {
+    emendaId: uuid('emenda_id').primaryKey(),
+    codigoNaFonte: text('codigo_na_fonte').notNull(),
+    ano: integer('ano').notNull(),
+    tipo: text('tipo').notNull(),
+    numero: text('numero').notNull(),
+    autorPessoaId: uuid('autor_pessoa_id'),
+    autorNome: text('autor_nome').notNull(),
+    ufs: text('ufs').array().notNull(),
+    destinacoes: jsonb('destinacoes').$type<DestinacaoProjetada[]>().notNull(),
+    empenhado: centavos('empenhado_centavos'),
+    liquidado: centavos('liquidado_centavos'),
+    pago: centavos('pago_centavos'),
+    restosInscritos: centavos('restos_inscritos_centavos'),
+    restosCancelados: centavos('restos_cancelados_centavos'),
+    restosPagos: centavos('restos_pagos_centavos'),
+    capturaId: uuid('captura_id').notNull(),
+    ocorridoEm: instante('ocorrido_em').notNull(),
+  },
+  (t) => [
+    uniqueIndex('emenda_por_codigo').on(t.codigoNaFonte),
+    index('emenda_por_ano').on(t.ano),
+    index('emenda_por_autor').on(t.autorPessoaId),
+    index('emenda_por_uf').using('gin', t.ufs),
   ],
 );
 

@@ -267,3 +267,85 @@ export interface Pagina<T> {
   readonly itensPorPagina: number;
   readonly total: number;
 }
+
+/** Como a fonte classifica a emenda. As duas primeiras têm um parlamentar como autor. */
+export type TipoDeEmenda =
+  | 'individual'
+  | 'transferencia_especial'
+  | 'bancada'
+  | 'comissao'
+  | 'relator';
+
+/**
+ * Fases da despesa, acumuladas até a coleta. Valores em centavos, como texto decimal
+ * (`"150000000"` é R$ 1.500.000,00): JSON não tem inteiro de 64 bits.
+ */
+export interface ExecucaoDaEmenda {
+  readonly empenhadoCentavos: string;
+  readonly liquidadoCentavos: string;
+  /** Pago no ano do orçamento. */
+  readonly pagoCentavos: string;
+  /** Empenho que passou para os anos seguintes como dívida. */
+  readonly restosInscritosCentavos: string;
+  /** Restos a pagar cancelados; estorno vem negativo. */
+  readonly restosCanceladosCentavos: string;
+  /** Pago nos anos seguintes, por conta dos restos a pagar. */
+  readonly restosPagosCentavos: string;
+}
+
+export interface AutorDaEmenda {
+  /**
+   * O parlamentar, identificado pelo nome que a fonte informa: o Portal não traz outro identificador.
+   * `null`: autor coletivo (bancada, comissão, relator) ou nome sem correspondência única.
+   */
+  readonly pessoaId: string | null;
+  /** Como a fonte nomeia o autor (`BANCADA DA BAHIA`). */
+  readonly nome: string;
+}
+
+export interface EmendaResumo {
+  readonly emendaId: string;
+  /** Código da emenda no Portal da Transparência. */
+  readonly codigoNaFonte: string;
+  /** Ano do orçamento. */
+  readonly ano: number;
+  readonly tipo: TipoDeEmenda;
+  readonly numero: string;
+  readonly autor: AutorDaEmenda;
+  /** Siglas das UFs de destino; vazio quando o destino é nacional, múltiplo ou não informado. */
+  readonly ufs: readonly string[];
+  /** Destinos como a fonte os descreve (`SÃO PAULO - SP`, `MÚLTIPLO`, `Nacional`). */
+  readonly localidades: readonly string[];
+  /** A soma das destinações. */
+  readonly execucao: ExecucaoDaEmenda;
+  readonly fonte: FonteDoDado;
+}
+
+export interface ClassificacaoOrcamentaria {
+  readonly codigo: string;
+  readonly nome: string;
+}
+
+/** Para onde vai o dinheiro: uma ação orçamentária numa localidade. */
+export interface DestinacaoDaEmenda {
+  readonly localidade: string;
+  /** Código IBGE do município, quando o destino é um município. */
+  readonly municipioIbge: string | null;
+  readonly uf: string | null;
+  readonly funcao: ClassificacaoOrcamentaria;
+  readonly subfuncao: ClassificacaoOrcamentaria;
+  readonly programa: ClassificacaoOrcamentaria;
+  readonly acao: ClassificacaoOrcamentaria;
+  readonly planoOrcamentario: ClassificacaoOrcamentaria;
+  readonly execucao: ExecucaoDaEmenda;
+}
+
+export interface EmendaDetalhada extends EmendaResumo {
+  readonly destinacoes: readonly DestinacaoDaEmenda[];
+}
+
+/** Emendas de que o parlamentar é autor, da mais recente para a mais antiga. */
+export interface EmendasDoParlamentar extends Pagina<EmendaResumo> {
+  /** A execução somada de todas as emendas dele, não só as da página. */
+  readonly soma: ExecucaoDaEmenda;
+}
