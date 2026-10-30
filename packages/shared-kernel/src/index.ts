@@ -1,0 +1,10 @@
+export { AggregateRoot } from './aggregate-root.js';
+export { CodigoIbge, type Esfera, type SiglaUf } from './codigo-ibge.js';
+export { Dinheiro, type Moeda } from './dinheiro.js';
+export { DomainError } from './domain-error.js';
+export { criarEvento, type DomainEvent, type NovoEvento } from './domain-event.js';
+export { Entity } from './entity.js';
+export { Identificador, gerarUuidV7 } from './identificador.js';
+export { Periodo } from './periodo.js';
+export { Result, type Fail, type Ok } from './result.js';
+export { ValueObject } from './value-object.js';

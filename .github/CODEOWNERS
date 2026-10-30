@@ -1,0 +1,5 @@
+# Responsáveis por revisar as áreas sensíveis (ver docs/engenharia/convencoes.md).
+# Substitua pelo usuário ou time do GitHub quando o repositório for publicado.
+# /docs/adr/                         @usuario
+# /packages/contracts/               @usuario
+# /modules/compromissos/src/domain/  @usuario

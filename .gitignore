@@ -1,0 +1,23 @@
+node_modules/
+dist/
+.next/
+.turbo/
+coverage/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.dagster/
+
+# Sistema
+.DS_Store
+Thumbs.db
+next-env.d.ts

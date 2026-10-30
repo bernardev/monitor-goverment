@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prometeu.org/contratos/eventos/lote-ingerido.v1.json",
+  "title": "LoteIngerido (v1): dados",
+  "description": "Publicado pela plataforma de dados quando um lote chega à camada prata (ADR-0005).",
+  "type": "object",
+  "required": ["fonte", "tabela", "versaoDoContrato", "coletadoDe", "coletadoAte", "registros"],
+  "additionalProperties": false,
+  "properties": {
+    "fonte": { "type": "string", "examples": ["camara", "senado", "tse", "portal_transparencia"] },
+    "tabela": {
+      "type": "string",
+      "description": "Tabela prata no schema ingestao.",
+      "examples": ["camara_presenca"]
+    },
+    "versaoDoContrato": { "type": "string", "pattern": "^\d+\.\d+\.\d+$" },
+    "coletadoDe": { "type": "string", "format": "date-time" },
+    "coletadoAte": { "type": "string", "format": "date-time" },
+    "registros": { "type": "integer", "minimum": 0 }
+  }
+}

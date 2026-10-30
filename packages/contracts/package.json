@@ -1,0 +1,22 @@
+{
+  "name": "@prometeu/contracts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Contratos versionados: eventos de integração, tabelas da camada prata e API.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "@prometeu/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vitest run --passWithNoTests"
+  }
+}

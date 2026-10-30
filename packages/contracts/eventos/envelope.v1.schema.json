@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prometeu.org/contratos/eventos/envelope.v1.json",
+  "title": "Envelope de evento de integração (v1)",
+  "description": "Formato comum a todo evento publicado no barramento (ADR-0007).",
+  "type": "object",
+  "required": ["id", "tipo", "versao", "ocorridoEm", "idDoAgregado", "idDeCorrelacao", "dados"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUIDv7 do evento; usado para idempotência."
+    },
+    "tipo": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Za-z]+$",
+      "description": "Nome no passado, em português."
+    },
+    "versao": { "type": "integer", "minimum": 1 },
+    "ocorridoEm": { "type": "string", "format": "date-time" },
+    "idDoAgregado": { "type": "string" },
+    "idDeCorrelacao": {
+      "type": "string",
+      "description": "Rastreia a cadeia de causas entre API, eventos e pipelines."
+    },
+    "dados": { "type": "object" }
+  }
+}

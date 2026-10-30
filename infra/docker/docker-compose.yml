@@ -1,0 +1,37 @@
+# Ambiente local completo (ADR-0013). Uso: docker compose -f infra/docker/docker-compose.yml up -d
+name: prometeu
+
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.7-pg18-trixie
+    environment:
+      POSTGRES_DB: prometeu
+      POSTGRES_USER: prometeu_admin
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-desenvolvimento}
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres:/var/lib/postgresql
+      - ./postgres:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U prometeu_admin -d prometeu']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # Armazenamento de objetos S3-compatível para bronze, capturas e vídeos (ADR-0005, ADR-0009).
+  objetos:
+    image: rustfs/rustfs:1.0.3
+    environment:
+      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY:-prometeu}
+      RUSTFS_SECRET_KEY: ${S3_SECRET_KEY:-desenvolvimento}
+      RUSTFS_CONSOLE_ENABLE: 'true'
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - objetos:/data
+
+volumes:
+  postgres:
+  objetos:
