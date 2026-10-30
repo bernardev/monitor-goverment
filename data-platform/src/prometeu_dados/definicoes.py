@@ -31,6 +31,7 @@ from prometeu_dados.conectores.camara import (
     ConectorProposicoesDaCamara,
     ConectorVotacoesDaCamara,
 )
+from prometeu_dados.conectores.portal_transparencia import ConectorEmendasDoPortal
 from prometeu_dados.conectores.senado import (
     ConectorProposicoesDoSenado,
     ConectorSenadoresDoSenado,
@@ -189,6 +190,18 @@ def senado_proposicoes(context: AssetExecutionContext) -> MaterializeResult[None
     return _executar(context, ConectorProposicoesDoSenado, janela)
 
 
+@asset(
+    group_name="portal_transparencia",
+    description=(
+        "Emendas parlamentares aos orçamentos desde 2023: autor, destino, ação orçamentária e "
+        "execução (prata: transparencia_emenda)."
+    ),
+)
+def transparencia_emendas(context: AssetExecutionContext) -> MaterializeResult[None]:
+    agora = datetime.now(UTC)
+    return _executar(context, ConectorEmendasDoPortal, JanelaDeColeta(inicio=agora, fim=agora))
+
+
 def _diaria(grupo: str) -> ScheduleDefinition:
     return ScheduleDefinition(
         job=define_asset_job(f"{grupo}_job", selection=AssetSelection.groups(grupo)),
@@ -206,6 +219,7 @@ defs = Definitions(
         senado_senadores,
         senado_votacoes,
         senado_proposicoes,
+        transparencia_emendas,
     ],
-    schedules=[_diaria("camara"), _diaria("senado")],
+    schedules=[_diaria("camara"), _diaria("senado"), _diaria("portal_transparencia")],
 )
