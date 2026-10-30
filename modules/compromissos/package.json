@@ -21,6 +21,7 @@
     "db:gerar": "drizzle-kit generate"
   },
   "dependencies": {
+    "@prometeu/agentes-publicos": "workspace:*",
     "@prometeu/infraestrutura": "workspace:*",
     "@prometeu/shared-kernel": "workspace:*",
     "drizzle-orm": "^0.45.4"

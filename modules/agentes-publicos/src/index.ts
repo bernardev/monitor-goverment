@@ -11,6 +11,10 @@ import {
 
 import type { Relogio } from './application/portas.js';
 import { SincronizarAgentePublico } from './application/sincronizar-agente-publico.js';
+import {
+  type ConsultaDeMandatos,
+  ConsultaDeMandatosPostgres,
+} from './infrastructure/consulta-de-mandatos-postgres.js';
 import { outbox } from './infrastructure/esquema.js';
 import {
   ImportadorDeDeputadosDaCamara,
@@ -28,6 +32,10 @@ export type {
   SincronizarAgentePublicoOutput,
 } from './application/sincronizar-agente-publico.js';
 export type {
+  ConsultaDeMandatos,
+  MandatoPublicado,
+} from './infrastructure/consulta-de-mandatos-postgres.js';
+export type {
   FalhaDeImportacao,
   ResumoDaImportacao,
 } from './infrastructure/importador-de-deputados-da-camara.js';
@@ -44,6 +52,8 @@ export interface DependenciasDeAgentesPublicos {
 
 export interface ModuloAgentesPublicos {
   readonly sincronizar: SincronizarAgentePublico;
+  /** Serviço de host aberto: outros contextos consultam mandatos por id. */
+  readonly mandatos: ConsultaDeMandatos;
   importarDeputadosDaCamara(loteId: string): Promise<ResumoDaImportacao>;
   assinarConsumidores(
     barramento: BarramentoDeEventos,
@@ -64,6 +74,7 @@ export function montarAgentesPublicos(
   const importador = new ImportadorDeDeputadosDaCamara(banco, sincronizar);
   return {
     sincronizar,
+    mandatos: new ConsultaDeMandatosPostgres(banco),
     importarDeputadosDaCamara: (loteId) => importador.importar(loteId),
     assinarConsumidores: (barramento, aoImportar) =>
       assinarConsumidores(barramento, banco, importador, aoImportar),

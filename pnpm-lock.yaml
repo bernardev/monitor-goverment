@@ -233,6 +233,9 @@ importers:
 
   modules/compromissos:
     dependencies:
+      '@prometeu/agentes-publicos':
+        specifier: workspace:*
+        version: link:../agentes-publicos
       '@prometeu/infraestrutura':
         specifier: workspace:*
         version: link:../../packages/infraestrutura

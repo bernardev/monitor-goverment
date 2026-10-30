@@ -11,6 +11,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import {
   MIGRACOES_DE_AGENTES_PUBLICOS,
+  type ModuloAgentesPublicos,
   montarAgentesPublicos,
   type ResumoDaImportacao,
   SCHEMA_DE_AGENTES_PUBLICOS,
@@ -83,6 +84,7 @@ describe('importação de deputados da Câmara (prata → Agentes Públicos)', (
   let ingestao: BancoDoContexto;
   const barramento = new BarramentoEmMemoria();
   const resumos: ResumoDaImportacao[] = [];
+  let modulo: ModuloAgentesPublicos;
 
   beforeAll(async () => {
     postgres = await iniciarPostgresDeTeste();
@@ -101,7 +103,7 @@ describe('importação de deputados da Câmara (prata → Agentes Públicos)', (
     await ingestao.drizzle.execute(LEGISLATURA_57);
 
     const relogio = new RelogioFixo(AGORA);
-    const modulo = montarAgentesPublicos({
+    modulo = montarAgentesPublicos({
       banco,
       registrarCaptura: montarAcervo(bancoDoAcervo, relogio).registrarCaptura,
       relogio,
@@ -148,6 +150,22 @@ describe('importação de deputados da Câmara (prata → Agentes Públicos)', (
       sql`SELECT count(*)::int AS n FROM acervo.captura`,
     );
     expect(capturas.rows).toEqual([{ n: 1 }]);
+  });
+
+  it('outros contextos consultam o mandato importado pelo id', async () => {
+    const [registrado] = await banco.drizzle
+      .select()
+      .from(mandato)
+      .where(sql`circunscricao = '35'`);
+    if (!registrado) throw new Error('Mandato não importado.');
+
+    expect(await modulo.mandatos.buscar(registrado.id)).toMatchObject({
+      cargo: 'deputado_federal',
+      circunscricao: '35',
+      fim: new Date('2027-02-01T02:59:59.999Z'),
+    });
+    expect(await modulo.mandatos.buscar('0192d5e0-9999-7000-8000-000000000000')).toBeUndefined();
+    expect(await modulo.mandatos.buscar('nao-e-uuid')).toBeUndefined();
   });
 
   it('o mesmo evento entregue de novo não produz efeito', async () => {
