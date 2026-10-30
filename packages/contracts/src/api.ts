@@ -66,7 +66,8 @@ export interface DiaDeFrequencia {
 
 /**
  * Frequência no plenário num período. Conta dias com sessão, não sessões: é como as casas apuram.
- * Dia sem registro na fonte não entra em nenhuma conta (falta de dado não é falta do parlamentar).
+ * Dia sem registro na fonte não entra em nenhuma conta (falta de dado não é falta do parlamentar), e
+ * as contas cobrem só os dias já coletados: não são o total de sessões do período.
  */
 export interface FrequenciaDoParlamentar {
   readonly pessoaId: string;

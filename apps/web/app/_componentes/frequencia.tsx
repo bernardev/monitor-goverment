@@ -12,12 +12,21 @@ export function Frequencia({ frequencia }: { frequencia: FrequenciaDoParlamentar
   const { resumo } = frequencia;
   const ausencias = frequencia.dias.filter((d) => d.situacao !== 'presente');
   const periodo = `de ${dia(frequencia.de)} a ${dia(frequencia.ate)}`;
+  // A contagem é do que já foi coletado, não de todas as sessões do período: dizer "houve sessão em N
+  // dias" seria falso enquanto a coleta não cobrir o período inteiro.
+  const cobertura = (
+    <p className="fonte">
+      Só entram os dias de sessão já coletados da fonte oficial; dias anteriores ao início da coleta
+      não aparecem aqui.
+    </p>
+  );
 
   if (resumo.diasComSessao === 0) {
     return (
       <section>
         <h2>Presença no plenário</h2>
-        <p>Nenhum dia com sessão registrado {periodo}.</p>
+        <p>Nenhum dia com sessão coletado {periodo}.</p>
+        {cobertura}
       </section>
     );
   }
@@ -25,9 +34,9 @@ export function Frequencia({ frequencia }: { frequencia: FrequenciaDoParlamentar
     <section>
       <h2>Presença no plenário</h2>
       <p>
-        {periodo}, houve sessão em {resumo.diasComSessao}{' '}
-        {resumo.diasComSessao === 1 ? 'dia' : 'dias'}.
+        Dias com sessão coletados {periodo}: {resumo.diasComSessao}.
       </p>
+      {cobertura}
       <dl className="resumo">
         <dt>Presente</dt>
         <dd>{resumo.presencas}</dd>
