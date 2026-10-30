@@ -53,7 +53,7 @@ def _agora() -> datetime:
 
 class ConectorVotacoesDoSenado:
     nome = "senado"
-    versao_do_contrato = "1.0.0"
+    versao_do_contrato = "1.1.0"
 
     def __init__(self, cliente: ClienteHttp, relogio: Callable[[], datetime] = _agora) -> None:
         self._cliente = cliente
@@ -123,6 +123,7 @@ def _votacao(item: Any, url: str) -> dict[str, Any]:
         "codigo_materia": item.get("codigoMateria")
         if isinstance(item.get("codigoMateria"), int)
         else None,
+        "id_processo": item.get("idProcesso") if isinstance(item.get("idProcesso"), int) else None,
         "sigla_materia": j.texto_opcional(item, "sigla"),
         "numero_materia": j.texto_opcional(item, "numero"),
         "ano_materia": item.get("ano") if isinstance(item.get("ano"), int) else None,

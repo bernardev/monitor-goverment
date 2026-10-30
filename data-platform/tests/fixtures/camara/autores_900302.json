@@ -1,0 +1,13 @@
+{
+  "dados": [
+    {
+      "uri": "",
+      "nome": "Poder Executivo",
+      "codTipo": 20000,
+      "tipo": "Órgão do Poder Executivo",
+      "ordemAssinatura": 1,
+      "proponente": 1
+    }
+  ],
+  "links": []
+}

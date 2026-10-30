@@ -1,0 +1,73 @@
+{
+  "id": 900401,
+  "codigoMateria": 9000401,
+  "identificacao": "PL 903/2026",
+  "sigla": "PL",
+  "descricaoSigla": "Projeto de Lei",
+  "numero": "903",
+  "ano": 2026,
+  "objetivo": "Iniciadora",
+  "casaIdentificadora": "SF",
+  "conteudo": {
+    "id": 1,
+    "ementa": "Altera  uma lei fictícia."
+  },
+  "documento": {
+    "id": 2,
+    "dataApresentacao": "2026-04-01",
+    "url": "https://legis.senado.leg.br/dadosabertos/documento/abc"
+  },
+  "tramitando": "Sim",
+  "situacaoAtual": "AGUARDANDO DESIGNAÇÃO DO RELATOR",
+  "siglaSituacaoAtual": "AGDREL",
+  "dataSituacaoAtual": "2026-10-20",
+  "autoriaIniciativa": [
+    {
+      "autor": "Ana Senadora",
+      "siglaTipo": "SENADOR",
+      "ordem": 1,
+      "codigoParlamentar": 900101,
+      "uf": "SP",
+      "siglaPartido": "PEX"
+    },
+    {
+      "autor": "Bruno Deputado",
+      "siglaTipo": "DEPUTADO",
+      "ordem": 2,
+      "codigoParlamentar": 5294,
+      "uf": "BA",
+      "siglaPartido": "PMO"
+    }
+  ],
+  "siglaCasaIniciadora": "SF",
+  "autuacoes": [
+    {
+      "numero": 1,
+      "descricao": "Autuação Principal",
+      "situacoes": [
+        {
+          "sigla": "AGDREL",
+          "descricao": "AGUARDANDO DESIGNAÇÃO DO RELATOR",
+          "inicio": "2026-10-20",
+          "colegiado": {
+            "sigla": "CCJ"
+          }
+        },
+        {
+          "sigla": "PRONTPLEN",
+          "descricao": "PRONTA PARA A PAUTA NO PLENÁRIO",
+          "inicio": "2026-04-01",
+          "fim": "2026-10-20",
+          "colegiado": {}
+        }
+      ]
+    },
+    {
+      "numero": 2,
+      "descricao": "Outra",
+      "situacoes": []
+    }
+  ],
+  "normaGerada": {},
+  "deliberacao": {}
+}

@@ -1,0 +1,21 @@
+{
+  "dados": [
+    {
+      "uri": "https://dadosabertos.camara.leg.br/api/v2/deputados/900001",
+      "nome": "Ana Exemplo",
+      "codTipo": 10000,
+      "tipo": "Deputado(a)",
+      "ordemAssinatura": 1,
+      "proponente": 1
+    },
+    {
+      "uri": "https://dadosabertos.camara.leg.br/api/v2/orgaos/78",
+      "nome": "Comissão  de Exemplo",
+      "codTipo": 40000,
+      "tipo": "Órgão do Poder Legislativo",
+      "ordemAssinatura": 2,
+      "proponente": 0
+    }
+  ],
+  "links": []
+}

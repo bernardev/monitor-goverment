@@ -7,7 +7,7 @@ from prometeu_dados.rede import FonteIndisponivelError
 URL = "https://fonte.gov.br/dados"
 
 
-def cliente(*respostas: int | Exception) -> tuple[ClienteHttpx, list[float]]:
+def cliente(*respostas: int | Exception | httpx.Response) -> tuple[ClienteHttpx, list[float]]:
     fila = list(respostas)
     esperas: list[float] = []
 
@@ -15,6 +15,8 @@ def cliente(*respostas: int | Exception) -> tuple[ClienteHttpx, list[float]]:
         proxima = fila.pop(0)
         if isinstance(proxima, Exception):
             raise proxima
+        if isinstance(proxima, httpx.Response):
+            return proxima
         return httpx.Response(proxima, content=b"{}", headers={"content-type": "application/json"})
 
     return (
@@ -42,6 +44,13 @@ def test_desiste_depois_das_tentativas() -> None:
     http, _ = cliente(503, 503, 503)
     with pytest.raises(FonteIndisponivelError, match="3 vezes"):
         http.obter(URL)
+
+
+def test_limite_de_ritmo_espera_o_que_a_fonte_pede() -> None:
+    http, esperas = cliente(httpx.Response(429, headers={"retry-after": "7"}), 429, 200)
+
+    assert http.obter(URL).status == 200
+    assert esperas == [7, 2]
 
 
 def test_erro_do_cliente_nao_e_repetido() -> None:

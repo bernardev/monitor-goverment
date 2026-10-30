@@ -1,4 +1,4 @@
-# `ingestao.senado_votacao` v1.0.0
+# `ingestao.senado_votacao` v1.1.0
 
 Votações nominais do plenário do Senado, com a situação de cada senador em exercício. Fonte:
 `GET /votacao?dataInicio=&dataFim=` nos [Dados Abertos do Senado](https://legis.senado.leg.br/dadosabertos/docs/).
@@ -17,6 +17,7 @@ Votações nominais do plenário do Senado, com a situação de cada senador em 
 | `descricao`             | `text`    | não  | `descricaoVotacao`, com espaços repetidos colapsados.                   |
 | `identificacao`         | `text`    | sim  | `identificacao` da matéria (`PLP 124/2022`).                            |
 | `codigo_materia`        | `integer` | sim  | `codigoMateria`.                                                        |
+| `id_processo`           | `integer` | sim  | `idProcesso`: o mesmo id de `senado_processo`. Novo na v1.1.0.          |
 | `sigla_materia`         | `text`    | sim  | `sigla` da matéria.                                                     |
 | `numero_materia`        | `text`    | sim  | `numero` da matéria, como texto.                                        |
 | `ano_materia`           | `integer` | sim  | `ano` da matéria.                                                       |

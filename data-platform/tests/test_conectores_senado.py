@@ -197,6 +197,7 @@ class TestVotacoes:
             "descricao": "Votação nominal do Projeto de Lei Complementar nº 901, de 2026.",
             "identificacao": "PLP 901/2026",
             "codigo_materia": 9000001,
+            "id_processo": 9000001,
             "sigla_materia": "PLP",
             "numero_materia": "901",
             "ano_materia": 2026,

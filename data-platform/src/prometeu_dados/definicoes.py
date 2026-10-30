@@ -28,9 +28,14 @@ from prometeu_dados.conectores import Conector, JanelaDeColeta
 from prometeu_dados.conectores.camara import (
     ConectorDeputadosDaCamara,
     ConectorFrequenciaDaCamara,
+    ConectorProposicoesDaCamara,
     ConectorVotacoesDaCamara,
 )
-from prometeu_dados.conectores.senado import ConectorSenadoresDoSenado, ConectorVotacoesDoSenado
+from prometeu_dados.conectores.senado import (
+    ConectorProposicoesDoSenado,
+    ConectorSenadoresDoSenado,
+    ConectorVotacoesDoSenado,
+)
 from prometeu_dados.ingestao import ingerir
 
 
@@ -58,6 +63,9 @@ JANELA_DA_FREQUENCIA = timedelta(days=30)
 
 JANELA_DAS_VOTACOES = timedelta(days=30)
 """Revisitar o mês pega correções que a Câmara faça numa votação já publicada."""
+
+JANELA_DAS_PROPOSICOES = timedelta(days=3)
+"""Tramitação não muda depois de registrada: três dias cobrem um fim de semana sem execução."""
 
 
 def _executar(
@@ -152,6 +160,35 @@ def senado_votacoes(context: AssetExecutionContext) -> MaterializeResult[None]:
     return _executar(context, ConectorVotacoesDoSenado, janela)
 
 
+@asset(
+    group_name="camara",
+    deps=[camara_deputados],
+    description=(
+        "Proposições normativas (PEC, PLP, PL, MPV, PDL) com tramitação nos últimos 3 dias: dados, "
+        "autores e tramitação (prata: camara_proposicao, camara_proposicao_autores, "
+        "camara_proposicao_tramitacoes)."
+    ),
+)
+def camara_proposicoes(context: AssetExecutionContext) -> MaterializeResult[None]:
+    agora = datetime.now(UTC)
+    janela = JanelaDeColeta(inicio=agora - JANELA_DAS_PROPOSICOES, fim=agora)
+    return _executar(context, ConectorProposicoesDaCamara, janela)
+
+
+@asset(
+    group_name="senado",
+    deps=[senado_senadores],
+    description=(
+        "Proposições normativas (PEC, PLP, PL, MPV, PDL) atualizadas nos últimos 3 dias: dados, "
+        "autoria e situações (prata: senado_processo)."
+    ),
+)
+def senado_proposicoes(context: AssetExecutionContext) -> MaterializeResult[None]:
+    agora = datetime.now(UTC)
+    janela = JanelaDeColeta(inicio=agora - JANELA_DAS_PROPOSICOES, fim=agora)
+    return _executar(context, ConectorProposicoesDoSenado, janela)
+
+
 def _diaria(grupo: str) -> ScheduleDefinition:
     return ScheduleDefinition(
         job=define_asset_job(f"{grupo}_job", selection=AssetSelection.groups(grupo)),
@@ -165,8 +202,10 @@ defs = Definitions(
         camara_deputados,
         camara_frequencia,
         camara_votacoes,
+        camara_proposicoes,
         senado_senadores,
         senado_votacoes,
+        senado_proposicoes,
     ],
     schedules=[_diaria("camara"), _diaria("senado")],
 )

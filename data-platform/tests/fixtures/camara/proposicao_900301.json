@@ -1,0 +1,35 @@
+{
+  "dados": {
+    "id": 900301,
+    "uri": "https://dadosabertos.camara.leg.br/api/v2/proposicoes/900301",
+    "siglaTipo": "PL",
+    "codTipo": 139,
+    "numero": 901,
+    "ano": 2026,
+    "ementa": "Dispõe sobre  um tema fictício.",
+    "dataApresentacao": "2026-03-02T10:00",
+    "uriOrgaoNumerador": null,
+    "statusProposicao": {
+      "dataHora": "2026-10-28T15:00",
+      "sequencia": 3,
+      "siglaOrgao": "CCJC",
+      "uriOrgao": "https://dadosabertos.camara.leg.br/api/v2/orgaos/1",
+      "uriUltimoRelator": null,
+      "regime": "Ordinário (Art. 151, III, RICD)",
+      "descricaoTramitacao": "Parecer do Relator",
+      "codTipoTramitacao": "100",
+      "descricaoSituacao": "Aguardando Parecer",
+      "codSituacao": 924,
+      "despacho": "Parecer pela aprovação.",
+      "url": null,
+      "ambito": "Regimental",
+      "apreciacao": "Proposição Sujeita à Apreciação do Plenário"
+    },
+    "uriAutores": "https://dadosabertos.camara.leg.br/api/v2/proposicoes/900301/autores",
+    "descricaoTipo": "Projeto de Lei",
+    "ementaDetalhada": "",
+    "keywords": "",
+    "urlInteiroTeor": "https://www.camara.leg.br/proposicoesWeb/prop_mostrarintegra?codteor=900301"
+  },
+  "links": []
+}

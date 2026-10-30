@@ -1,0 +1,20 @@
+{
+  "dados": {
+    "id": 900302,
+    "uri": "https://dadosabertos.camara.leg.br/api/v2/proposicoes/900302",
+    "siglaTipo": "MPV",
+    "codTipo": 139,
+    "numero": 902,
+    "ano": 2026,
+    "ementa": "Abre crédito fictício.",
+    "dataApresentacao": "2026-03-02T10:00",
+    "uriOrgaoNumerador": null,
+    "statusProposicao": null,
+    "uriAutores": "https://dadosabertos.camara.leg.br/api/v2/proposicoes/900302/autores",
+    "descricaoTipo": "Projeto de Lei",
+    "ementaDetalhada": "",
+    "keywords": "",
+    "urlInteiroTeor": "https://www.camara.leg.br/proposicoesWeb/prop_mostrarintegra?codteor=900302"
+  },
+  "links": []
+}

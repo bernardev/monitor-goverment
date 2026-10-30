@@ -1,0 +1,37 @@
+{
+  "dados": [
+    {
+      "dataHora": "2026-10-28T15:00",
+      "sequencia": 3,
+      "siglaOrgao": "CCJC",
+      "uriOrgao": "https://dadosabertos.camara.leg.br/api/v2/orgaos/1",
+      "uriUltimoRelator": null,
+      "regime": "Ordinário (Art. 151, III, RICD)",
+      "descricaoTramitacao": "Parecer do Relator",
+      "codTipoTramitacao": "100",
+      "descricaoSituacao": "Aguardando Parecer",
+      "codSituacao": 924,
+      "despacho": "Parecer pela aprovação.",
+      "url": null,
+      "ambito": "Regimental",
+      "apreciacao": "Proposição Sujeita à Apreciação do Plenário"
+    },
+    {
+      "dataHora": "2026-03-02T10:00",
+      "sequencia": 1,
+      "siglaOrgao": "PLEN",
+      "uriOrgao": "https://dadosabertos.camara.leg.br/api/v2/orgaos/1",
+      "uriUltimoRelator": null,
+      "regime": "Ordinário (Art. 151, III, RICD)",
+      "descricaoTramitacao": "Apresentação de Proposição",
+      "codTipoTramitacao": "100",
+      "descricaoSituacao": null,
+      "codSituacao": 924,
+      "despacho": "Apresentação do PL 901/2026.",
+      "url": null,
+      "ambito": "Regimental",
+      "apreciacao": "Proposição Sujeita à Apreciação do Plenário"
+    }
+  ],
+  "links": []
+}
