@@ -12,9 +12,11 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@prometeu/contracts": "workspace:*",
     "next": "^16.4.3",
     "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+    "react-dom": "^19.3.1",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@types/react": "^19.3.0",
