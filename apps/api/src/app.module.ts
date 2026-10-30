@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { ParlamentaresModule } from './parlamentares/parlamentares.module.js';
 import { SaudeController } from './saude/saude.controller.js';
 
 /**
@@ -7,6 +8,7 @@ import { SaudeController } from './saude/saude.controller.js';
  * módulo Nest exportado pelo `index.ts` do pacote em `modules/`.
  */
 @Module({
+  imports: [ParlamentaresModule],
   controllers: [SaudeController],
 })
 export class AppModule {}

@@ -50,6 +50,15 @@ importers:
       '@nestjs/platform-express':
         specifier: ^12.3.2
         version: 12.3.2(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@12.3.2)
+      '@prometeu/consulta':
+        specifier: workspace:*
+        version: link:../../modules/consulta
+      '@prometeu/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@prometeu/infraestrutura':
+        specifier: workspace:*
+        version: link:../../packages/infraestrutura
       '@prometeu/shared-kernel':
         specifier: workspace:*
         version: link:../../packages/shared-kernel
@@ -59,6 +68,9 @@ importers:
       rxjs:
         specifier: ^7.8.2
         version: 7.8.2
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
     devDependencies:
       '@nestjs/cli':
         specifier: ^12.0.11
@@ -100,6 +112,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@prometeu/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
       next:
         specifier: ^16.4.3
         version: 16.4.3(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -109,6 +124,9 @@ importers:
       react-dom:
         specifier: ^19.3.1
         version: 19.3.1(react@19.3.1)
+      server-only:
+        specifier: ^0.0.1
+        version: 0.0.1
     devDependencies:
       '@types/react':
         specifier: ^19.3.0
@@ -125,6 +143,18 @@ importers:
       '@nestjs/core':
         specifier: ^12.3.2
         version: 12.3.2(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@12.3.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@prometeu/acervo':
+        specifier: workspace:*
+        version: link:../../modules/acervo
+      '@prometeu/agentes-publicos':
+        specifier: workspace:*
+        version: link:../../modules/agentes-publicos
+      '@prometeu/consulta':
+        specifier: workspace:*
+        version: link:../../modules/consulta
+      '@prometeu/infraestrutura':
+        specifier: workspace:*
+        version: link:../../packages/infraestrutura
       '@prometeu/shared-kernel':
         specifier: workspace:*
         version: link:../../packages/shared-kernel
@@ -3265,6 +3295,9 @@ packages:
     resolution: {integrity: sha512-xRXBn0pPqQTVQiC8wyQrKs2MOlX24zQ0POGaj0kultvoOCstBQM5yvOhAVSUwOMjQtTvsPWoNCHfPGwaaQJhTw==}
     engines: {node: '>= 18'}
 
+  server-only@0.0.1:
+    resolution: {integrity: sha512-qepMx2JxAa5jjfzxG79yPPq+8BuFToHd1hm7kI+Z4zAq1ftQiP7HcxMhDDItrbtwVeLg/cY2JnKnrcFkmiswNA==}
+
   setprototypeof@1.2.0:
     resolution: {integrity: sha512-E5LDX7Wrp85Kil5bhZv46j8jOeboKq5JMmYM3gVGdGH8xFpPWXUMsNrlODCrkoxMEeNi/XZIwuRvY4XNwYMJpw==}
 
@@ -3767,6 +3800,9 @@ packages:
   zip-stream@6.0.1:
     resolution: {integrity: sha512-zK7YHHz4ZXpW89AHXUPbQVGKI7uvkd3hzusTdotCg1UxyaVtg0zFJSTfW/Dq5f7OBBVnq6cZIaC8Ti4hb6dtCA==}
     engines: {node: '>= 14'}
+
+  zod@4.6.7:
+    resolution: {integrity: sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg==}
 
 snapshots:
 
@@ -6359,6 +6395,8 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  server-only@0.0.1: {}
+
   setprototypeof@1.2.0: {}
 
   sharp@0.35.5(@types/node@24.19.2):
@@ -6865,3 +6903,5 @@ snapshots:
       archiver-utils: 5.0.2
       compress-commons: 6.0.2
       readable-stream: 4.8.0
+
+  zod@4.6.7: {}
