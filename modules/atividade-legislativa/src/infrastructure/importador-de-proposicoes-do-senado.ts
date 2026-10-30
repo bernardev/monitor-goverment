@@ -5,7 +5,7 @@ import type {
   RegistrarProposicao,
   RegistrarProposicaoInput,
 } from '../application/registrar-proposicao.js';
-import { TIPOS_DE_PROPOSICAO } from '../domain/proposicao.js';
+import { TIPOS_DE_PROPOSICAO } from '../domain/tipo-de-proposicao.js';
 import { senadoProcesso } from './prata-do-senado.js';
 import type { FalhaDeImportacao, ResumoDaImportacao } from './resumo-da-importacao.js';
 import { inicioDoDia, primeiraVez } from './traducao.js';

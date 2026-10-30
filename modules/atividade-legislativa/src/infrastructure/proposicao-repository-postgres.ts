@@ -4,7 +4,8 @@ import { and, eq } from 'drizzle-orm';
 import type { ProposicaoRepository } from '../application/portas.js';
 import { CASAS_LEGISLATIVAS, type CasaLegislativa } from '../domain/casa-legislativa.js';
 import { CapturaId, PessoaId, ProposicaoId } from '../domain/identificadores.js';
-import { Proposicao, TIPOS_DE_PROPOSICAO } from '../domain/proposicao.js';
+import { Proposicao } from '../domain/proposicao.js';
+import { TIPOS_DE_PROPOSICAO } from '../domain/tipo-de-proposicao.js';
 import { outbox, proposicao } from './esquema.js';
 import { ConflitoDeConcorrencia, confiavel, conhecido } from './persistencia.js';
 

@@ -33,7 +33,7 @@ export type { CasaLegislativa } from './domain/casa-legislativa.js';
 export type { CategoriaDoMotivo } from './domain/motivo-da-ausencia.js';
 export type { Situacao } from './domain/situacao.js';
 export type { OpcaoDeVoto, ResultadoDaVotacao, SituacaoSemVoto } from './domain/voto.js';
-export type { TipoDeProposicao } from './domain/proposicao.js';
+export type { TipoDeProposicao } from './domain/tipo-de-proposicao.js';
 export type * from './domain/eventos.js';
 export type { Relogio } from './application/portas.js';
 export type {

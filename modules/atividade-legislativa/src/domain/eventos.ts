@@ -2,7 +2,7 @@ import type { DomainEvent } from '@prometeu/shared-kernel';
 
 import type { CasaLegislativa } from './casa-legislativa.js';
 import type { CategoriaDoMotivo } from './motivo-da-ausencia.js';
-import type { TipoDeProposicao } from './proposicao.js';
+import type { TipoDeProposicao } from './tipo-de-proposicao.js';
 import type { Situacao } from './situacao.js';
 import type { OpcaoDeVoto, ResultadoDaVotacao, SituacaoSemVoto } from './voto.js';
 

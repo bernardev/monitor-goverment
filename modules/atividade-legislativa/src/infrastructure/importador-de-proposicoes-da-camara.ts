@@ -5,7 +5,8 @@ import type {
   RegistrarProposicao,
   RegistrarProposicaoInput,
 } from '../application/registrar-proposicao.js';
-import { TIPOS_DE_PROPOSICAO, type Tramitacao } from '../domain/proposicao.js';
+import type { Tramitacao } from '../domain/proposicao.js';
+import { TIPOS_DE_PROPOSICAO } from '../domain/tipo-de-proposicao.js';
 import {
   camaraProposicao,
   camaraProposicaoAutores,

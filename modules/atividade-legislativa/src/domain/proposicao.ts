@@ -3,13 +3,7 @@ import { AggregateRoot, DomainError, Result, criarEvento } from '@prometeu/share
 import type { CasaLegislativa } from './casa-legislativa.js';
 import type { EventoDeAtividadeLegislativa, ProposicaoPublicada } from './eventos.js';
 import { type CapturaId, type PessoaId, ProposicaoId } from './identificadores.js';
-
-/**
- * Proposições que podem virar norma: emenda constitucional, lei complementar, lei ordinária, medida
- * provisória e decreto legislativo. Requerimentos e outros documentos de trâmite ficam de fora.
- */
-export const TIPOS_DE_PROPOSICAO = ['PEC', 'PLP', 'PL', 'MPV', 'PDL'] as const;
-export type TipoDeProposicao = (typeof TIPOS_DE_PROPOSICAO)[number];
+import type { TipoDeProposicao } from './tipo-de-proposicao.js';
 
 export interface Autor {
   /** A pessoa, quando o autor é parlamentar que Agentes Públicos conhece. */
