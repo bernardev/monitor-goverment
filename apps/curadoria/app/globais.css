@@ -1,0 +1,57 @@
+/* Base legível e acessível para a equipe editorial; o sistema visual vem depois (docs/roadmap.md). */
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+}
+
+main {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
+
+.topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.formulario {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 40rem;
+}
+
+.formulario label {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.formulario .em-linha,
+.em-linha {
+  display: block;
+}
+
+.erro {
+  color: #b42318;
+  font-weight: 600;
+}
+
+.revisao {
+  display: grid;
+  gap: 1rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.5rem;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+}
