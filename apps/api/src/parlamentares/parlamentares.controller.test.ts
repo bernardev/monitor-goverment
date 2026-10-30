@@ -15,6 +15,8 @@ import type {
 import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
+import { CONSULTA_DE_EMENDAS } from '../emendas/emendas.controller.js';
+import { EmendasFalsas } from '../emendas/emendas-falsas.js';
 import { CONSULTA_DE_PROPOSICOES } from '../proposicoes/proposicoes.controller.js';
 import { ProposicoesFalsas } from '../proposicoes/proposicoes-falsas.js';
 import { VotacoesFalsas } from '../votacoes/votacoes-falsas.js';
@@ -83,6 +85,7 @@ describe('GET /v1/parlamentares', () => {
   const frequencia = new FrequenciaFalsa();
   const votacoes = new VotacoesFalsas();
   const proposicoes = new ProposicoesFalsas();
+  const emendas = new EmendasFalsas();
   let servidor: Parameters<typeof request>[0];
 
   beforeAll(async () => {
@@ -93,6 +96,7 @@ describe('GET /v1/parlamentares', () => {
         { provide: CONSULTA_DE_FREQUENCIA, useValue: frequencia },
         { provide: CONSULTA_DE_VOTACOES, useValue: votacoes },
         { provide: CONSULTA_DE_PROPOSICOES, useValue: proposicoes },
+        { provide: CONSULTA_DE_EMENDAS, useValue: emendas },
       ],
     }).compile();
     app = modulo.createNestApplication();
@@ -205,6 +209,16 @@ describe('GET /v1/parlamentares', () => {
     expect(proposicoes.ultimaPaginacao).toEqual({ pagina: 2, itensPorPagina: 5 });
     expect(resposta.body).toMatchObject({ total: 1, itens: [{ proponente: true }] });
     await request(servidor).get('/v1/parlamentares/nao-e-uuid/proposicoes').expect(404);
+  });
+
+  it('devolve as emendas de que é autor, com a soma da execução', async () => {
+    const resposta = await request(servidor)
+      .get(`/v1/parlamentares/${ANA}/emendas?pagina=3&itens=20`)
+      .expect(200);
+
+    expect(emendas.ultimaPaginacao).toEqual({ pagina: 3, itensPorPagina: 20 });
+    expect(resposta.body).toMatchObject({ total: 1, soma: { pagoCentavos: '50000000' } });
+    await request(servidor).get('/v1/parlamentares/nao-e-uuid/emendas').expect(404);
   });
 
   it('votos: período inválido é 400 e parlamentar desconhecido é 404', async () => {

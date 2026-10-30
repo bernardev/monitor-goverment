@@ -1,5 +1,6 @@
 import { Controller, Get, Header, Inject, NotFoundException, Param, Query } from '@nestjs/common';
 import type {
+  ConsultaDeEmendas,
   ConsultaDeFrequencia,
   ConsultaDeParlamentares,
   ConsultaDeProposicoes,
@@ -7,6 +8,7 @@ import type {
 } from '@prometeu/consulta';
 import type {
   AutoriaDoParlamentar,
+  EmendasDoParlamentar,
   FrequenciaDoParlamentar,
   Pagina,
   ParlamentarResumo,
@@ -16,6 +18,7 @@ import type {
 import { z } from 'zod';
 
 import { CACHE_PUBLICO, ler, paginacao, periodo, UUID } from '../dados-abertos.js';
+import { CONSULTA_DE_EMENDAS } from '../emendas/emendas.controller.js';
 import { CONSULTA_DE_PROPOSICOES } from '../proposicoes/proposicoes.controller.js';
 
 export const CONSULTA_DE_PARLAMENTARES = Symbol('ConsultaDeParlamentares');
@@ -38,6 +41,7 @@ export class ParlamentaresController {
     @Inject(CONSULTA_DE_FREQUENCIA) private readonly frequencia: ConsultaDeFrequencia,
     @Inject(CONSULTA_DE_VOTACOES) private readonly votacoes: ConsultaDeVotacoes,
     @Inject(CONSULTA_DE_PROPOSICOES) private readonly proposicoes: ConsultaDeProposicoes,
+    @Inject(CONSULTA_DE_EMENDAS) private readonly emendas: ConsultaDeEmendas,
   ) {}
 
   /** Quem está no cargo hoje. */
@@ -88,6 +92,21 @@ export class ParlamentaresController {
     const { pagina, itens } = ler(paginacao, query);
     const perfil = await this.perfil(pessoaId);
     return this.proposicoes.doParlamentar(perfil.pessoaId, { pagina, itensPorPagina: itens });
+  }
+
+  /**
+   * As emendas de que o parlamentar é autor, do orçamento mais recente para o mais antigo, com a
+   * execução somada de todas.
+   */
+  @Get(':pessoaId/emendas')
+  @Header('Cache-Control', CACHE_PUBLICO)
+  async emendasDe(
+    @Param('pessoaId') pessoaId: string,
+    @Query() query: Record<string, unknown>,
+  ): Promise<EmendasDoParlamentar> {
+    const { pagina, itens } = ler(paginacao, query);
+    const perfil = await this.perfil(pessoaId);
+    return this.emendas.doParlamentar(perfil.pessoaId, { pagina, itensPorPagina: itens });
   }
 
   private async perfil(pessoaId: string): Promise<PerfilDeParlamentar> {

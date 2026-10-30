@@ -5,11 +5,13 @@ import type { ReactNode } from 'react';
 
 import {
   buscarParlamentar,
+  emendasDoParlamentar,
   frequenciaDoParlamentar,
   proposicoesDoParlamentar,
   votosDoParlamentar,
 } from '../../_api/cliente';
 import { Autorias } from '../../_componentes/autorias';
+import { Emendas } from '../../_componentes/emendas';
 import { Fonte } from '../../_componentes/fonte';
 import { Frequencia } from '../../_componentes/frequencia';
 import { data, nomeDoCargo } from '../../_componentes/formatacao';
@@ -26,11 +28,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PerfilDoParlamentar({ params }: Props): Promise<ReactNode> {
   const { pessoaId } = await params;
-  const [perfil, frequencia, votos, autorias] = await Promise.all([
+  const [perfil, frequencia, votos, autorias, emendas] = await Promise.all([
     buscarParlamentar(pessoaId),
     frequenciaDoParlamentar(pessoaId),
     votosDoParlamentar(pessoaId),
     proposicoesDoParlamentar(pessoaId),
+    emendasDoParlamentar(pessoaId),
   ]);
   if (!perfil) notFound();
 
@@ -75,6 +78,7 @@ export default async function PerfilDoParlamentar({ params }: Props): Promise<Re
         {frequencia && perfil.cargo !== 'senador' && <Frequencia frequencia={frequencia} />}
         {votos && <Votos votos={votos} />}
         {autorias && <Autorias autorias={autorias} />}
+        {emendas && <Emendas emendas={emendas} />}
       </article>
     </main>
   );

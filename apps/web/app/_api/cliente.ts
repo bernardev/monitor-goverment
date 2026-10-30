@@ -2,12 +2,16 @@ import 'server-only';
 
 import type {
   AutoriaDoParlamentar,
+  EmendaDetalhada,
+  EmendaResumo,
+  EmendasDoParlamentar,
   FrequenciaDoParlamentar,
   Pagina,
   ParlamentarResumo,
   PerfilDeParlamentar,
   ProposicaoDetalhada,
   ProposicaoResumo,
+  TipoDeEmenda,
   TipoDeProposicao,
   VotacaoNominalDetalhada,
   VotacaoNominalResumo,
@@ -103,5 +107,33 @@ export function proposicoesDoParlamentar(
 ): Promise<Pagina<AutoriaDoParlamentar> | undefined> {
   return obter<Pagina<AutoriaDoParlamentar>>(
     `/v1/parlamentares/${encodeURIComponent(pessoaId)}/proposicoes?itens=10`,
+  );
+}
+
+export interface FiltroDeEmendas {
+  readonly ano?: number | undefined;
+  readonly tipo?: TipoDeEmenda | undefined;
+  readonly uf?: string | undefined;
+  readonly pagina: number;
+}
+
+/** Emendas parlamentares, do orçamento mais recente; no mesmo ano, a de maior empenho primeiro. */
+export async function listarEmendas(filtro: FiltroDeEmendas): Promise<Pagina<EmendaResumo>> {
+  const busca = new URLSearchParams({ pagina: String(filtro.pagina), itens: '50' });
+  if (filtro.ano) busca.set('ano', String(filtro.ano));
+  if (filtro.tipo) busca.set('tipo', filtro.tipo);
+  if (filtro.uf) busca.set('uf', filtro.uf);
+  const lista = await obter<Pagina<EmendaResumo>>(`/v1/emendas?${busca.toString()}`);
+  return lista ?? { itens: [], pagina: filtro.pagina, itensPorPagina: 50, total: 0 };
+}
+
+export function buscarEmenda(emendaId: string): Promise<EmendaDetalhada | undefined> {
+  return obter<EmendaDetalhada>(`/v1/emendas/${encodeURIComponent(emendaId)}`);
+}
+
+/** As dez emendas mais recentes de que o parlamentar é autor, com o total e a soma de todas. */
+export function emendasDoParlamentar(pessoaId: string): Promise<EmendasDoParlamentar | undefined> {
+  return obter<EmendasDoParlamentar>(
+    `/v1/parlamentares/${encodeURIComponent(pessoaId)}/emendas?itens=10`,
   );
 }

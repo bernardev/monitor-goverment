@@ -16,6 +16,9 @@ export default function PaginaInicial(): ReactNode {
         <li>
           <Link href="/proposicoes">Proposições</Link>
         </li>
+        <li>
+          <Link href="/emendas">Emendas parlamentares</Link>
+        </li>
       </ul>
     </main>
   );

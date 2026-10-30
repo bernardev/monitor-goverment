@@ -116,3 +116,37 @@ export const UFS = [
   'AC', 'AL', 'AM', 'AP', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MG', 'MS', 'MT', 'PA',
   'PB', 'PE', 'PI', 'PR', 'RJ', 'RN', 'RO', 'RR', 'RS', 'SC', 'SE', 'SP', 'TO',
 ] as const; // prettier-ignore
+
+const TIPOS_DE_EMENDA: Readonly<Record<string, string>> = {
+  individual: 'Individual',
+  transferencia_especial: 'Individual, transferência especial',
+  bancada: 'De bancada estadual',
+  comissao: 'De comissão',
+  relator: 'Do relator-geral',
+};
+
+export function nomeDoTipoDeEmenda(tipo: string): string {
+  return TIPOS_DE_EMENDA[tipo] ?? tipo;
+}
+
+const REAIS = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+
+/**
+ * Centavos (texto, como a API devolve) em reais: `"123456789"` → `R$ 1.234.567,89`. A conta é em
+ * inteiro e o Intl recebe o decimal exato em texto: nada passa por ponto flutuante.
+ */
+export function reais(centavos: string | bigint): string {
+  const valor = BigInt(centavos);
+  const absoluto = valor < 0n ? -valor : valor;
+  const centavosDoReal = (absoluto % 100n).toString().padStart(2, '0');
+  const decimal = `${valor < 0n ? '-' : ''}${(absoluto / 100n).toString()}.${centavosDoReal}`;
+  return REAIS.format(decimal as Intl.StringNumericLiteral);
+}
+
+/** O que já saiu do caixa: o pago no ano do orçamento mais o pago depois, como restos a pagar. */
+export function pagoAteAgora(execucao: {
+  pagoCentavos: string;
+  restosPagosCentavos: string;
+}): bigint {
+  return BigInt(execucao.pagoCentavos) + BigInt(execucao.restosPagosCentavos);
+}
