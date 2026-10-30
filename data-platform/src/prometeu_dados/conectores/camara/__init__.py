@@ -6,5 +6,6 @@ API v2: https://dadosabertos.camara.leg.br/swagger/api.html. O SitCamaraWS
 
 from prometeu_dados.conectores.camara.deputados import ConectorDeputadosDaCamara
 from prometeu_dados.conectores.camara.frequencia import ConectorFrequenciaDaCamara
+from prometeu_dados.conectores.camara.votacoes import ConectorVotacoesDaCamara
 
-__all__ = ["ConectorDeputadosDaCamara", "ConectorFrequenciaDaCamara"]
+__all__ = ["ConectorDeputadosDaCamara", "ConectorFrequenciaDaCamara", "ConectorVotacoesDaCamara"]

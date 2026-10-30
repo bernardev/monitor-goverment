@@ -25,7 +25,11 @@ from prometeu_dados.adaptadores.armazem_s3 import ArmazemS3
 from prometeu_dados.adaptadores.cliente_httpx import ClienteHttpx
 from prometeu_dados.adaptadores.gravador_postgres import GravadorPrataPostgres
 from prometeu_dados.conectores import Conector, JanelaDeColeta
-from prometeu_dados.conectores.camara import ConectorDeputadosDaCamara, ConectorFrequenciaDaCamara
+from prometeu_dados.conectores.camara import (
+    ConectorDeputadosDaCamara,
+    ConectorFrequenciaDaCamara,
+    ConectorVotacoesDaCamara,
+)
 from prometeu_dados.ingestao import ingerir
 
 
@@ -50,6 +54,9 @@ class Configuracao:
 
 JANELA_DA_FREQUENCIA = timedelta(days=30)
 """A justificativa da ausência costuma chegar dias depois da sessão; a execução revisita o mês."""
+
+JANELA_DAS_VOTACOES = timedelta(days=30)
+"""Revisitar o mês pega correções que a Câmara faça numa votação já publicada."""
 
 
 def _executar(
@@ -104,10 +111,26 @@ def camara_frequencia(context: AssetExecutionContext) -> MaterializeResult[None]
     return _executar(context, ConectorFrequenciaDaCamara, janela)
 
 
+@asset(
+    group_name="camara",
+    deps=[camara_deputados],
+    description=(
+        "Votações nominais do plenário nos últimos 30 dias e o voto de cada deputado "
+        "(prata: camara_votacao, camara_votos)."
+    ),
+)
+def camara_votacoes(context: AssetExecutionContext) -> MaterializeResult[None]:
+    agora = datetime.now(UTC)
+    janela = JanelaDeColeta(inicio=agora - JANELA_DAS_VOTACOES, fim=agora)
+    return _executar(context, ConectorVotacoesDaCamara, janela)
+
+
 camara_diaria = ScheduleDefinition(
     job=define_asset_job("camara_job", selection=AssetSelection.groups("camara")),
     cron_schedule="0 6 * * *",
     execution_timezone="America/Sao_Paulo",
 )
 
-defs = Definitions(assets=[camara_deputados, camara_frequencia], schedules=[camara_diaria])
+defs = Definitions(
+    assets=[camara_deputados, camara_frequencia, camara_votacoes], schedules=[camara_diaria]
+)

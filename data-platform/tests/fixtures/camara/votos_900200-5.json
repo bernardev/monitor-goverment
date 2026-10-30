@@ -1,0 +1,40 @@
+{
+  "dados": [
+    {
+      "tipoVoto": null,
+      "dataRegistroVoto": "2026-10-15T12:01:00",
+      "deputado_": {
+        "id": 900001,
+        "uri": "https://dadosabertos.camara.leg.br/api/v2/deputados/900001",
+        "nome": "Ana Exemplo",
+        "siglaPartido": "PEX",
+        "uriPartido": "https://dadosabertos.camara.leg.br/api/v2/partidos/1",
+        "siglaUf": "SP",
+        "idLegislatura": 57,
+        "urlFoto": "https://www.camara.leg.br/internet/deputado/bandep/900001.jpg",
+        "email": null
+      }
+    },
+    {
+      "tipoVoto": null,
+      "dataRegistroVoto": "2026-10-15T12:02:00",
+      "deputado_": {
+        "id": 900002,
+        "uri": "https://dadosabertos.camara.leg.br/api/v2/deputados/900002",
+        "nome": "Bruno Modelo",
+        "siglaPartido": "PMO",
+        "uriPartido": "https://dadosabertos.camara.leg.br/api/v2/partidos/1",
+        "siglaUf": "BA",
+        "idLegislatura": 57,
+        "urlFoto": "https://www.camara.leg.br/internet/deputado/bandep/900002.jpg",
+        "email": null
+      }
+    }
+  ],
+  "links": [
+    {
+      "rel": "self",
+      "href": "https://dadosabertos.camara.leg.br/api/v2/votacoes/900200-5/votos"
+    }
+  ]
+}

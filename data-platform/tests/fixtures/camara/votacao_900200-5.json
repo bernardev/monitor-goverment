@@ -1,0 +1,31 @@
+{
+  "dados": {
+    "id": "900200-5",
+    "uri": "https://dadosabertos.camara.leg.br/api/v2/votacoes/900200-5",
+    "data": "2026-10-15",
+    "dataHoraRegistro": "2026-10-15T12:03:39",
+    "siglaOrgao": "PLEN",
+    "uriOrgao": "https://dadosabertos.camara.leg.br/api/v2/orgaos/180",
+    "idOrgao": 180,
+    "uriEvento": "https://dadosabertos.camara.leg.br/api/v2/eventos/90001",
+    "idEvento": 90001,
+    "descricao": "Aprovado o Projeto de Decreto Legislativo nº 901, de 2026. Votação secreta.",
+    "aprovacao": 1,
+    "descUltimaAberturaVotacao": "Votação em turno único.",
+    "dataHoraUltimaAberturaVotacao": "2026-10-15T19:06:28",
+    "ultimaApresentacaoProposicao": {
+      "dataHoraRegistro": null,
+      "descricao": null,
+      "uriProposicaoCitada": null
+    },
+    "efeitosRegistrados": [],
+    "objetosPossiveis": [],
+    "proposicoesAfetadas": []
+  },
+  "links": [
+    {
+      "rel": "self",
+      "href": "https://dadosabertos.camara.leg.br/api/v2/votacoes/900200-5"
+    }
+  ]
+}

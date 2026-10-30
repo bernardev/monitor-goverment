@@ -1,0 +1,55 @@
+{
+  "dados": [
+    {
+      "tipoVoto": "Sim",
+      "dataRegistroVoto": "2026-10-14T19:41:40",
+      "deputado_": {
+        "id": 900001,
+        "uri": "https://dadosabertos.camara.leg.br/api/v2/deputados/900001",
+        "nome": "Ana Exemplo",
+        "siglaPartido": "PEX",
+        "uriPartido": "https://dadosabertos.camara.leg.br/api/v2/partidos/1",
+        "siglaUf": "SP",
+        "idLegislatura": 57,
+        "urlFoto": "https://www.camara.leg.br/internet/deputado/bandep/900001.jpg",
+        "email": null
+      }
+    },
+    {
+      "tipoVoto": "Não",
+      "dataRegistroVoto": "2026-10-14T19:40:02",
+      "deputado_": {
+        "id": 900002,
+        "uri": "https://dadosabertos.camara.leg.br/api/v2/deputados/900002",
+        "nome": "Bruno Modelo",
+        "siglaPartido": " PMO ",
+        "uriPartido": "https://dadosabertos.camara.leg.br/api/v2/partidos/1",
+        "siglaUf": "BA",
+        "idLegislatura": 57,
+        "urlFoto": "https://www.camara.leg.br/internet/deputado/bandep/900002.jpg",
+        "email": null
+      }
+    },
+    {
+      "tipoVoto": "Artigo 17",
+      "dataRegistroVoto": "2026-10-14T19:39:00",
+      "deputado_": {
+        "id": 900003,
+        "uri": "https://dadosabertos.camara.leg.br/api/v2/deputados/900003",
+        "nome": "Carla Amostra",
+        "siglaPartido": "PEX",
+        "uriPartido": "https://dadosabertos.camara.leg.br/api/v2/partidos/1",
+        "siglaUf": "RS",
+        "idLegislatura": 57,
+        "urlFoto": "https://www.camara.leg.br/internet/deputado/bandep/900003.jpg",
+        "email": null
+      }
+    }
+  ],
+  "links": [
+    {
+      "rel": "self",
+      "href": "https://dadosabertos.camara.leg.br/api/v2/votacoes/900100-10/votos"
+    }
+  ]
+}

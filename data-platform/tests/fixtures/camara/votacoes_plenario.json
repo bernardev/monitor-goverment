@@ -1,0 +1,57 @@
+{
+  "dados": [
+    {
+      "id": "900100-10",
+      "uri": "https://dadosabertos.camara.leg.br/api/v2/votacoes/900100-10",
+      "data": "2026-10-14",
+      "dataHoraRegistro": "2026-10-14T19:42:50",
+      "siglaOrgao": "PLEN",
+      "uriOrgao": "https://dadosabertos.camara.leg.br/api/v2/orgaos/180",
+      "uriEvento": "https://dadosabertos.camara.leg.br/api/v2/eventos/90001",
+      "proposicaoObjeto": null,
+      "uriProposicaoObjeto": null,
+      "descricao": "Aprovado o Projeto de Lei nº 900, de 2026. Sim: 1; Não: 1; Total: 2.",
+      "aprovacao": 1
+    },
+    {
+      "id": "900100-12",
+      "uri": "https://dadosabertos.camara.leg.br/api/v2/votacoes/900100-12",
+      "data": "2026-10-14",
+      "dataHoraRegistro": "2026-10-14T19:50:00",
+      "siglaOrgao": "PLEN",
+      "uriOrgao": "https://dadosabertos.camara.leg.br/api/v2/orgaos/180",
+      "uriEvento": "https://dadosabertos.camara.leg.br/api/v2/eventos/90001",
+      "proposicaoObjeto": null,
+      "uriProposicaoObjeto": null,
+      "descricao": "Aprovada a Redação Final.",
+      "aprovacao": 1
+    },
+    {
+      "id": "900200-5",
+      "uri": "https://dadosabertos.camara.leg.br/api/v2/votacoes/900200-5",
+      "data": "2026-10-15",
+      "dataHoraRegistro": "2026-10-15T12:03:39",
+      "siglaOrgao": "PLEN",
+      "uriOrgao": "https://dadosabertos.camara.leg.br/api/v2/orgaos/180",
+      "uriEvento": "https://dadosabertos.camara.leg.br/api/v2/eventos/90001",
+      "proposicaoObjeto": null,
+      "uriProposicaoObjeto": null,
+      "descricao": "Aprovado o Projeto de Decreto Legislativo nº 901, de 2026. Votação secreta.",
+      "aprovacao": 1
+    }
+  ],
+  "links": [
+    {
+      "rel": "self",
+      "href": "https://dadosabertos.camara.leg.br/api/v2/votacoes?idOrgao=180&dataInicio=2026-09-30&dataFim=2026-10-30&itens=100&ordem=ASC&ordenarPor=dataHoraRegistro"
+    },
+    {
+      "rel": "first",
+      "href": "https://dadosabertos.camara.leg.br/api/v2/votacoes?idOrgao=180&dataInicio=2026-09-30&dataFim=2026-10-30&itens=100&ordem=ASC&ordenarPor=dataHoraRegistro&pagina=1"
+    },
+    {
+      "rel": "last",
+      "href": "https://dadosabertos.camara.leg.br/api/v2/votacoes?idOrgao=180&dataInicio=2026-09-30&dataFim=2026-10-30&itens=100&ordem=ASC&ordenarPor=dataHoraRegistro&pagina=1"
+    }
+  ]
+}

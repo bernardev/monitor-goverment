@@ -1,0 +1,42 @@
+{
+  "dados": {
+    "id": "900100-10",
+    "uri": "https://dadosabertos.camara.leg.br/api/v2/votacoes/900100-10",
+    "data": "2026-10-14",
+    "dataHoraRegistro": "2026-10-14T19:42:50",
+    "siglaOrgao": "PLEN",
+    "uriOrgao": "https://dadosabertos.camara.leg.br/api/v2/orgaos/180",
+    "idOrgao": 180,
+    "uriEvento": "https://dadosabertos.camara.leg.br/api/v2/eventos/90001",
+    "idEvento": 90001,
+    "descricao": "Aprovado o Projeto de Lei nº 900, de 2026.  Sim: 1; Não: 1; Total: 2.",
+    "aprovacao": 1,
+    "descUltimaAberturaVotacao": "Votação em turno único.",
+    "dataHoraUltimaAberturaVotacao": "2026-10-14T19:06:28",
+    "ultimaApresentacaoProposicao": {
+      "dataHoraRegistro": null,
+      "descricao": null,
+      "uriProposicaoCitada": null
+    },
+    "efeitosRegistrados": [],
+    "objetosPossiveis": [],
+    "proposicoesAfetadas": [
+      {
+        "id": 9009001,
+        "uri": "https://dadosabertos.camara.leg.br/api/v2/proposicoes/9009001",
+        "siglaTipo": "PL",
+        "codTipo": 139,
+        "numero": 900,
+        "ano": 2026,
+        "ementa": "Dispõe sobre  um tema fictício.",
+        "dataApresentacao": "2026-03-02T10:00"
+      }
+    ]
+  },
+  "links": [
+    {
+      "rel": "self",
+      "href": "https://dadosabertos.camara.leg.br/api/v2/votacoes/900100-10"
+    }
+  ]
+}
