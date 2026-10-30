@@ -1,0 +1,57 @@
+{
+  "ListaParlamentarEmExercicio": {
+    "Metadados": {
+      "Versao": "30/10/2026 09:00:00"
+    },
+    "Parlamentares": {
+      "Parlamentar": [
+        {
+          "IdentificacaoParlamentar": {
+            "CodigoParlamentar": "900101",
+            "NomeParlamentar": "Ana Senadora",
+            "SiglaPartidoParlamentar": "PEX",
+            "UfParlamentar": "SP"
+          },
+          "Mandato": {
+            "CodigoMandato": "901",
+            "UfParlamentar": "SP",
+            "PrimeiraLegislaturaDoMandato": {
+              "NumeroLegislatura": "57",
+              "DataInicio": "2023-02-01",
+              "DataFim": "2027-01-31"
+            },
+            "SegundaLegislaturaDoMandato": {
+              "NumeroLegislatura": "58",
+              "DataInicio": "2027-02-01",
+              "DataFim": "2031-01-31"
+            },
+            "DescricaoParticipacao": "Titular"
+          }
+        },
+        {
+          "IdentificacaoParlamentar": {
+            "CodigoParlamentar": "900102",
+            "NomeParlamentar": "Bruno Suplente",
+            "SiglaPartidoParlamentar": "PMO",
+            "UfParlamentar": "MG"
+          },
+          "Mandato": {
+            "CodigoMandato": "902",
+            "UfParlamentar": "MG",
+            "PrimeiraLegislaturaDoMandato": {
+              "NumeroLegislatura": "56",
+              "DataInicio": "2019-02-01",
+              "DataFim": "2023-01-31"
+            },
+            "SegundaLegislaturaDoMandato": {
+              "NumeroLegislatura": "57",
+              "DataInicio": "2023-02-01",
+              "DataFim": "2027-01-31"
+            },
+            "DescricaoParticipacao": "1º Suplente"
+          }
+        }
+      ]
+    }
+  }
+}

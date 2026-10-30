@@ -1,0 +1,32 @@
+{
+  "MandatoParlamentar": {
+    "Metadados": {},
+    "Parlamentar": {
+      "Codigo": "900101",
+      "Nome": "Ana Senadora",
+      "Mandatos": {
+        "Mandato": {
+          "CodigoMandato": "901",
+          "UfParlamentar": "SP",
+          "PrimeiraLegislaturaDoMandato": {
+            "NumeroLegislatura": "57",
+            "DataInicio": "2023-02-01",
+            "DataFim": "2027-01-31"
+          },
+          "SegundaLegislaturaDoMandato": {
+            "NumeroLegislatura": "58",
+            "DataInicio": "2027-02-01",
+            "DataFim": "2031-01-31"
+          },
+          "DescricaoParticipacao": "Titular",
+          "Exercicios": {
+            "Exercicio": {
+              "CodigoExercicio": "3101",
+              "DataInicio": "2023-02-01"
+            }
+          }
+        }
+      }
+    }
+  }
+}

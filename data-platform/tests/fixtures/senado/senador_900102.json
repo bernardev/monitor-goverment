@@ -1,0 +1,16 @@
+{
+  "DetalheParlamentar": {
+    "Metadados": {},
+    "Parlamentar": {
+      "IdentificacaoParlamentar": {
+        "CodigoParlamentar": "900102",
+        "NomeParlamentar": "Bruno Suplente",
+        "NomeCompletoParlamentar": "Bruno Suplente da Silva",
+        "SexoParlamentar": "Feminino",
+        "UrlFotoParlamentar": "",
+        "SiglaPartidoParlamentar": "PMO"
+      },
+      "DadosBasicosParlamentar": {}
+    }
+  }
+}

@@ -30,6 +30,7 @@ from prometeu_dados.conectores.camara import (
     ConectorFrequenciaDaCamara,
     ConectorVotacoesDaCamara,
 )
+from prometeu_dados.conectores.senado import ConectorSenadoresDoSenado, ConectorVotacoesDoSenado
 from prometeu_dados.ingestao import ingerir
 
 
@@ -125,12 +126,47 @@ def camara_votacoes(context: AssetExecutionContext) -> MaterializeResult[None]:
     return _executar(context, ConectorVotacoesDaCamara, janela)
 
 
-camara_diaria = ScheduleDefinition(
-    job=define_asset_job("camara_job", selection=AssetSelection.groups("camara")),
-    cron_schedule="0 6 * * *",
-    execution_timezone="America/Sao_Paulo",
+@asset(
+    group_name="senado",
+    description=(
+        "Senadores da legislatura atual e seus períodos de exercício, inclusive suplentes que já "
+        "saíram (prata: senado_senador, senado_exercicios)."
+    ),
 )
+def senado_senadores(context: AssetExecutionContext) -> MaterializeResult[None]:
+    agora = datetime.now(UTC)
+    return _executar(context, ConectorSenadoresDoSenado, JanelaDeColeta(inicio=agora, fim=agora))
+
+
+@asset(
+    group_name="senado",
+    deps=[senado_senadores],
+    description=(
+        "Votações nominais do plenário nos últimos 30 dias, com a situação de cada senador "
+        "(prata: senado_votacao)."
+    ),
+)
+def senado_votacoes(context: AssetExecutionContext) -> MaterializeResult[None]:
+    agora = datetime.now(UTC)
+    janela = JanelaDeColeta(inicio=agora - JANELA_DAS_VOTACOES, fim=agora)
+    return _executar(context, ConectorVotacoesDoSenado, janela)
+
+
+def _diaria(grupo: str) -> ScheduleDefinition:
+    return ScheduleDefinition(
+        job=define_asset_job(f"{grupo}_job", selection=AssetSelection.groups(grupo)),
+        cron_schedule="0 6 * * *",
+        execution_timezone="America/Sao_Paulo",
+    )
+
 
 defs = Definitions(
-    assets=[camara_deputados, camara_frequencia, camara_votacoes], schedules=[camara_diaria]
+    assets=[
+        camara_deputados,
+        camara_frequencia,
+        camara_votacoes,
+        senado_senadores,
+        senado_votacoes,
+    ],
+    schedules=[_diaria("camara"), _diaria("senado")],
 )

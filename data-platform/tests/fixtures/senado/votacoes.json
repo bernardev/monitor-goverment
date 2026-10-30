@@ -1,0 +1,123 @@
+[
+  {
+    "ano": 2026,
+    "casaSessao": "SF",
+    "codigoMateria": 9000001,
+    "codigoSessao": 900001,
+    "codigoSessaoLegislativa": 874,
+    "codigoSessaoVotacao": 9101,
+    "dataApresentacao": "2026-03-02",
+    "dataSessao": "2026-10-14",
+    "descricaoVotacao": "Votação nominal do Projeto de Lei Complementar nº 901, de 2026.",
+    "ementa": "Tema  fictício.",
+    "idProcesso": 9000001,
+    "identificacao": "PLP 901/2026",
+    "informeLegislativo": {
+      "siglaColegiado": "PLEN",
+      "texto": "Resultado da votação: sim – 1."
+    },
+    "numero": "901",
+    "numeroSessao": 113,
+    "resultadoVotacao": "A",
+    "sequencialSessao": 1,
+    "sequencialVotacao": 4415,
+    "sigla": "PLP",
+    "siglaTipoSessao": "DOR",
+    "totalVotosAbstencao": null,
+    "totalVotosNao": null,
+    "totalVotosSim": null,
+    "votacaoSecreta": "N",
+    "votos": [
+      {
+        "codigoParlamentar": 900101,
+        "descricaoVotoParlamentar": null,
+        "nomeParlamentar": "Ana Senadora",
+        "sexoParlamentar": "F",
+        "siglaPartidoParlamentar": "PEX",
+        "siglaUFParlamentar": "SP",
+        "siglaVotoParlamentar": "Sim"
+      },
+      {
+        "codigoParlamentar": 900102,
+        "descricaoVotoParlamentar": "Licença saúde",
+        "nomeParlamentar": "Bruno Suplente",
+        "sexoParlamentar": "F",
+        "siglaPartidoParlamentar": "PMO",
+        "siglaUFParlamentar": "MG",
+        "siglaVotoParlamentar": "LS"
+      },
+      {
+        "codigoParlamentar": 900104,
+        "descricaoVotoParlamentar": "Presente – Não registrou voto",
+        "nomeParlamentar": "Dora Exemplo",
+        "sexoParlamentar": "F",
+        "siglaPartidoParlamentar": "PEX",
+        "siglaUFParlamentar": "RS",
+        "siglaVotoParlamentar": "P-NRV"
+      },
+      {
+        "codigoParlamentar": 900105,
+        "descricaoVotoParlamentar": null,
+        "nomeParlamentar": "Edu Exemplo",
+        "sexoParlamentar": "F",
+        "siglaPartidoParlamentar": "PEX",
+        "siglaUFParlamentar": "AP",
+        "siglaVotoParlamentar": "Presidente (art. 51 RISF)"
+      },
+      {
+        "codigoParlamentar": 900106,
+        "descricaoVotoParlamentar": "Não Compareceu",
+        "nomeParlamentar": "Fabi Exemplo",
+        "sexoParlamentar": "F",
+        "siglaPartidoParlamentar": "PMO",
+        "siglaUFParlamentar": "BA",
+        "siglaVotoParlamentar": "NCom"
+      }
+    ]
+  },
+  {
+    "ano": 2026,
+    "casaSessao": "SF",
+    "codigoMateria": 9000001,
+    "codigoSessao": 900001,
+    "codigoSessaoLegislativa": 874,
+    "codigoSessaoVotacao": 9102,
+    "dataApresentacao": "2026-03-02",
+    "dataSessao": "2026-10-15",
+    "descricaoVotacao": "Votação nominal da Mensagem nº 9, de 2026 - Fulano (Embaixada).",
+    "ementa": "Tema  fictício.",
+    "idProcesso": 9000001,
+    "identificacao": "PLP 901/2026",
+    "numero": "901",
+    "numeroSessao": 113,
+    "resultadoVotacao": null,
+    "sequencialSessao": 1,
+    "sequencialVotacao": 4415,
+    "sigla": "PLP",
+    "siglaTipoSessao": "DOR",
+    "totalVotosAbstencao": null,
+    "totalVotosNao": null,
+    "totalVotosSim": null,
+    "votacaoSecreta": "S",
+    "votos": [
+      {
+        "codigoParlamentar": 900101,
+        "descricaoVotoParlamentar": null,
+        "nomeParlamentar": "Ana Senadora",
+        "sexoParlamentar": "F",
+        "siglaPartidoParlamentar": "PEX",
+        "siglaUFParlamentar": "SP",
+        "siglaVotoParlamentar": "Votou"
+      },
+      {
+        "codigoParlamentar": 900102,
+        "descricaoVotoParlamentar": "Atividade parlamentar",
+        "nomeParlamentar": "Bruno Suplente",
+        "sexoParlamentar": "F",
+        "siglaPartidoParlamentar": "PMO",
+        "siglaUFParlamentar": "MG",
+        "siglaVotoParlamentar": "AP"
+      }
+    ]
+  }
+]

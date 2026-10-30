@@ -1,0 +1,16 @@
+{
+  "DetalheParlamentar": {
+    "Metadados": {},
+    "Parlamentar": {
+      "IdentificacaoParlamentar": {
+        "CodigoParlamentar": "900101",
+        "NomeParlamentar": "Ana  Senadora",
+        "NomeCompletoParlamentar": "Ana  Senadora da Silva",
+        "SexoParlamentar": "Feminino",
+        "UrlFotoParlamentar": "http://www.senado.leg.br/senadores/img/fotos-oficiais/senador900101.jpg",
+        "SiglaPartidoParlamentar": "PEX"
+      },
+      "DadosBasicosParlamentar": {}
+    }
+  }
+}
