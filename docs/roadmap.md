@@ -95,12 +95,12 @@ sistema visual do painel.
 A etapa é grande; vai em fatias, cada uma de ponta a ponta. A ordem começa pelo diferencial do produto (a
 ausência com motivo) e deixa o Senado para quando os senadores estiverem em Agentes Públicos.
 
-| Fatia | Entrega                                                                                                                                        | Situação                                   |
-| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
-| 3.1   | Frequência no plenário da Câmara, com o motivo de cada ausência justificada: conector, `RegistroDeFrequencia`, projeção, API e perfil no site. | Concluída                                  |
-| 3.2   | Votações nominais do plenário da Câmara e o voto de cada deputado; antes, os períodos de exercício dos deputados (inclusive suplentes).        | Concluída                                  |
-| 3.3   | Senado: senadores e seus exercícios em Agentes Públicos, votações nominais e quem não votou, com o motivo, em cada votação.                    | Implementada; falta verificar com o Docker |
-| 3.4   | Proposições, autoria e tramitação (Câmara e Senado).                                                                                           | A fazer                                    |
+| Fatia | Entrega                                                                                                                                        | Situação  |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| 3.1   | Frequência no plenário da Câmara, com o motivo de cada ausência justificada: conector, `RegistroDeFrequencia`, projeção, API e perfil no site. | Concluída |
+| 3.2   | Votações nominais do plenário da Câmara e o voto de cada deputado; antes, os períodos de exercício dos deputados (inclusive suplentes).        | Concluída |
+| 3.3   | Senado: senadores e seus exercícios em Agentes Públicos, votações nominais e quem não votou, com o motivo, em cada votação.                    | Concluída |
+| 3.4   | Proposições, autoria e tramitação (Câmara e Senado).                                                                                           | A fazer   |
 
 ### Fatia 3.1: frequência na Câmara
 
@@ -180,10 +180,16 @@ o vínculo da votação com a proposição, que vem na fatia 3.4.
   perfil, o motivo que a própria votação informa. O perfil do senador não mostra "Presença no
   plenário": a frequência diária do Senado não é coletada.
 
-Verificado sem Docker (ele precisou ser encerrado): os conectores rodaram contra a fonte real sem gravar
-nada, validando os 245 senadores e as 190 votações nominais de 2025 e 2026; tipos, lint, formato,
-arquitetura e os testes que não usam container passaram. Falta rodar os testes de integração e a carga
-de ponta a ponta com o banco.
+- **Licença antes da posse do suplente:** o Senado continua listando o titular de licença, com o motivo,
+  até o suplente tomar posse, embora o exercício dele já tenha terminado. A ausência justificada fica
+  ligada ao último exercício, encerrado pela licença; as outras situações exigem mandato no dia.
+
+Resultado: com a fonte real, os 107 senadores com exercício na legislatura viraram 107 pessoas
+(a última depois de traduzir `S/Partido`, como o Senado escreve "sem partido") e 81 em exercício, o
+mesmo número da lista do Senado. As 190 votações nominais de 2025 e 2026 entraram todas, depois de tratar a licença
+antes da posse do suplente, que recusava três votações: 15.390 registros (190 × 81), com 1.962 ausências
+justificadas (atividade parlamentar, licença saúde, missão, licença particular, licença paternidade), 73
+ausências sem justificativa e 2.391 presentes sem voto. Coletar de novo não gerou evento.
 
 Fica para depois, de propósito: unificar a pessoa que foi deputada e virou senadora (as fontes não têm
 identificador comum, e juntar pelo nome confundiria homônimos) e a frequência diária do Senado.
