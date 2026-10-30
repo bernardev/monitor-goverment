@@ -1,0 +1,150 @@
+{
+  "realm": "prometeu",
+  "displayName": "Prometeu",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "bruteForceProtected": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "cidadao",
+        "description": "Conta de cidadão: acompanhar e receber alertas."
+      },
+      {
+        "name": "curador",
+        "description": "Registra promessas, fontes e capturas; propõe vereditos."
+      },
+      {
+        "name": "revisor",
+        "description": "Publica ou recusa vereditos propostos por outra pessoa."
+      },
+      {
+        "name": "editor_chefe",
+        "description": "Responde pela linha editorial; pode publicar e recusar vereditos."
+      },
+      {
+        "name": "administrador",
+        "description": "Administra contas e configurações."
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "prometeu-api",
+      "name": "API do Prometeu",
+      "enabled": true,
+      "bearerOnly": true,
+      "publicClient": false
+    },
+    {
+      "clientId": "curadoria",
+      "name": "Painel de curadoria",
+      "enabled": true,
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "desenvolvimento",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": ["http://localhost:3002/*"],
+      "webOrigins": ["http://localhost:3002"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:3002/*"
+      },
+      "protocolMappers": [
+        {
+          "name": "audiencia-prometeu-api",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "prometeu-api",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "ferramentas-locais",
+      "name": "Testes locais por linha de comando (não existe em produção)",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "protocolMappers": [
+        {
+          "name": "audiencia-prometeu-api",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "prometeu-api",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "id": "0b6c3a52-6f1e-4d5a-9a3e-2f1d0c9b8a71",
+      "username": "curadora",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Carla",
+      "lastName": "Curadora",
+      "email": "curadora@prometeu.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "desenvolvimento",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["curador"]
+    },
+    {
+      "id": "7e2d9c14-3b8a-4f6e-8d1c-5a9b0e3f2c48",
+      "username": "revisor",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Rui",
+      "lastName": "Revisor",
+      "email": "revisor@prometeu.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "desenvolvimento",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["revisor"]
+    },
+    {
+      "id": "c4f1e8a2-9d3b-4c7e-a6f5-1b2d3e4f5a69",
+      "username": "editora",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Edna",
+      "lastName": "Editora",
+      "email": "editora@prometeu.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "desenvolvimento",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["editor_chefe", "curador"]
+    }
+  ]
+}
