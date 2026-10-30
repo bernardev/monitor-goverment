@@ -7,12 +7,13 @@ O resto da plataforma não muda.
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Protocol
+from typing import Protocol
 
 from prometeu_dados.bronze import RespostaBruta
+from prometeu_dados.prata import RegistroPrata
 
 
 @dataclass(frozen=True, slots=True)
@@ -27,16 +28,6 @@ class JanelaDeColeta:
             raise ValueError("A janela de coleta precisa de datas com fuso horário.")
         if self.fim < self.inicio:
             raise ValueError("O fim da janela de coleta é anterior ao início.")
-
-
-@dataclass(frozen=True, slots=True)
-class RegistroPrata:
-    """Linha normalizada destinada a uma tabela do schema `ingestao`."""
-
-    tabela: str
-    chave_natural: tuple[str, ...]
-    dados: Mapping[str, Any]
-    sha256_da_origem: str
 
 
 class FonteMudouDeFormatoError(Exception):

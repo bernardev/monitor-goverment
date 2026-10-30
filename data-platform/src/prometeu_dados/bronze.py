@@ -10,6 +10,7 @@ import hashlib
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import PurePosixPath
+from typing import Protocol
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,3 +47,11 @@ class RespostaBruta:
             f"{instante:%d}",
             self.sha256,
         )
+
+
+class ArmazemDeObjetos(Protocol):
+    """Onde o bronze mora (armazenamento de objetos S3-compatível, ADR-0006)."""
+
+    def guardar(self, resposta: RespostaBruta) -> None:
+        """Grava em `caminho_no_bronze()`. Guardar de novo o mesmo conteúdo não muda nada."""
+        ...
