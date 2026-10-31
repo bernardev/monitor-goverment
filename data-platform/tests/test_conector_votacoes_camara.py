@@ -193,6 +193,20 @@ def test_falha_alto_quando_o_detalhe_muda_de_formato(detalhe: dict[str, Any]) ->
         camara.validar(resposta(f"{API}/votacoes/900100-10", {"dados": detalhe}))
 
 
+def test_votacao_que_a_api_diz_nao_existir_fica_de_fora_sem_parar_a_coleta() -> None:
+    cliente = cliente_padrao()
+    cliente._respostas[f"{API}/votacoes/900100-10/votos"] = (404, b'{"status": 404}')
+
+    urls = [r.url for r in conector(cliente).coletar(JANELA)]
+
+    assert urls == [
+        LISTA,
+        f"{API}/votacoes/900100-12/votos",
+        f"{API}/votacoes/900200-5/votos",
+        f"{API}/votacoes/900200-5",
+    ]
+
+
 def test_lista_sem_id_e_mudanca_de_formato() -> None:
     camara = conector(cliente_padrao())
     with pytest.raises(FonteMudouDeFormatoError):

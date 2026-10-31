@@ -13,7 +13,7 @@ from __future__ import annotations
 import json
 from collections.abc import Callable, Iterator
 from datetime import UTC, date, datetime, timedelta, timezone
-from typing import Any
+from typing import Any, overload
 from urllib.parse import urlsplit
 
 from prometeu_dados.bronze import RespostaBruta
@@ -54,7 +54,9 @@ class ConectorVotacoesDaCamara:
     def coletar(self, janela: JanelaDeColeta) -> Iterator[RespostaBruta]:
         """Percorre as votações do plenário na janela e, de cada uma, busca os votos.
 
-        A votação com votos tem também o detalhe buscado, que traz as proposições afetadas.
+        A votação com votos tem também o detalhe buscado, que traz as proposições afetadas. A lista
+        às vezes traz votação que a própria API diz não existir (404 nos votos e no detalhe): ela
+        fica de fora, sem parar a coleta das outras.
         """
         inicio = janela.inicio.astimezone(BRASILIA).date().isoformat()
         fim = janela.fim.astimezone(BRASILIA).date().isoformat()
@@ -70,7 +72,9 @@ class ConectorVotacoesDaCamara:
             url = _proxima_pagina(_json(pagina))
 
         for id_votacao in dict.fromkeys(ids):
-            votos = self._buscar(f"{API}/votacoes/{id_votacao}/votos")
+            votos = self._buscar(f"{API}/votacoes/{id_votacao}/votos", ausente_e_nada=True)
+            if votos is None:
+                continue
             yield votos
             if self._votos(votos):
                 yield self._buscar(f"{API}/votacoes/{id_votacao}")
@@ -105,8 +109,16 @@ class ConectorVotacoesDaCamara:
                 origem=origem,
             )
 
-    def _buscar(self, url: str) -> RespostaBruta:
+    @overload
+    def _buscar(self, url: str) -> RespostaBruta: ...
+
+    @overload
+    def _buscar(self, url: str, *, ausente_e_nada: bool) -> RespostaBruta | None: ...
+
+    def _buscar(self, url: str, *, ausente_e_nada: bool = False) -> RespostaBruta | None:
         resposta = self._cliente.obter(url)
+        if resposta.status == 404 and ausente_e_nada:
+            return None
         if resposta.status != 200:
             raise FonteIndisponivelError(f"Câmara respondeu {resposta.status} para {url}")
         return RespostaBruta(
