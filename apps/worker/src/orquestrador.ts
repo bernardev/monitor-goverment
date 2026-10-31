@@ -30,6 +30,12 @@ import {
   SCHEMA_DE_FINANCAS_PUBLICAS,
 } from '@prometeu/financas-publicas';
 import {
+  MIGRACOES_DE_OBRAS,
+  montarObras,
+  type ResumoDaImportacao as ResumoDeObras,
+  SCHEMA_DE_OBRAS,
+} from '@prometeu/obras';
+import {
   BancoDoContexto,
   BarramentoPgBoss,
   migrar,
@@ -80,6 +86,7 @@ export class Orquestrador implements OnApplicationBootstrap, OnApplicationShutdo
       SCHEMA_DE_FINANCAS_PUBLICAS,
       urlDoBanco(SCHEMA_DE_FINANCAS_PUBLICAS),
     ),
+    obras: BancoDoContexto.conectar(SCHEMA_DE_OBRAS, urlDoBanco(SCHEMA_DE_OBRAS)),
     ingestao: BancoDoContexto.conectar('ingestao', urlDoBanco('ingestao')),
   };
   private barramento: BarramentoPgBoss | undefined;
@@ -92,6 +99,7 @@ export class Orquestrador implements OnApplicationBootstrap, OnApplicationShutdo
     await migrar(this.bancos.compromissos, MIGRACOES_DE_COMPROMISSOS);
     await migrar(this.bancos.consulta, MIGRACOES_DA_CONSULTA);
     await migrar(this.bancos.financasPublicas, MIGRACOES_DE_FINANCAS_PUBLICAS);
+    await migrar(this.bancos.obras, MIGRACOES_DE_OBRAS);
     this.logger.log('Migrações aplicadas.');
 
     const barramento = await BarramentoPgBoss.iniciar(urlDoBanco('barramento'));
@@ -129,6 +137,13 @@ export class Orquestrador implements OnApplicationBootstrap, OnApplicationShutdo
     await financasPublicas.assinarConsumidores(barramento, (resumo) => {
       this.relatar(resumo, `${String(resumo.novos)} ${UNIDADES_DE_FINANCAS[resumo.importacao]}`);
     });
+    const obras = montarObras({
+      banco: this.bancos.obras,
+      registrarCaptura: acervo.registrarCaptura,
+    });
+    await obras.assinarConsumidores(barramento, (resumo) => {
+      this.relatar(resumo, `${String(resumo.novos)} obras novas`);
+    });
     await consulta.assinarConsumidores(barramento);
 
     this.relays.push(
@@ -138,6 +153,7 @@ export class Orquestrador implements OnApplicationBootstrap, OnApplicationShutdo
       atividadeLegislativa.criarRelay(barramento),
       compromissos.criarRelay(barramento),
       financasPublicas.criarRelay(barramento),
+      obras.criarRelay(barramento),
     );
     for (const relay of this.relays) {
       relay.iniciar(1000, (erro) => {
@@ -154,7 +170,8 @@ export class Orquestrador implements OnApplicationBootstrap, OnApplicationShutdo
   }
 
   private relatar(
-    resumo: ResumoDeDeputados | ResumoDeAtividadeLegislativa | ResumoDeFinancasPublicas,
+    resumo:
+      ResumoDeDeputados | ResumoDeAtividadeLegislativa | ResumoDeFinancasPublicas | ResumoDeObras,
     novidades: string,
   ): void {
     this.logger.log(

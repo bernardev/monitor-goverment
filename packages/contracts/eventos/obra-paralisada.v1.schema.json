@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prometeu.org/contratos/eventos/obra-paralisada.v1.json",
+  "title": "ObraParalisada (v1): dados",
+  "description": "Obras: a obra passou a constar como paralisada; vem junto com ObraAtualizada. idDoAgregado é o id da obra.",
+  "type": "object",
+  "required": ["idNaFonte", "em", "justificativa", "emendas", "capturaId"],
+  "additionalProperties": false,
+  "properties": {
+    "idNaFonte": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d{2}-\\d{2}$",
+      "description": "Projeto de investimento no Obrasgov.br."
+    },
+    "em": {
+      "type": ["string", "null"],
+      "format": "date"
+    },
+    "justificativa": {
+      "type": ["string", "null"]
+    },
+    "emendas": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^\\d{12}$"
+      }
+    },
+    "capturaId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Captura do Acervo que prova o dado (ADR-0009)."
+    }
+  }
+}

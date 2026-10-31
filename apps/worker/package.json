@@ -21,6 +21,7 @@
     "@prometeu/consulta": "workspace:*",
     "@prometeu/financas-publicas": "workspace:*",
     "@prometeu/infraestrutura": "workspace:*",
+    "@prometeu/obras": "workspace:*",
     "@prometeu/shared-kernel": "workspace:*",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2"

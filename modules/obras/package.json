@@ -17,9 +17,18 @@
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "db:gerar": "drizzle-kit generate"
   },
   "dependencies": {
-    "@prometeu/shared-kernel": "workspace:*"
+    "@prometeu/acervo": "workspace:*",
+    "@prometeu/contracts": "workspace:*",
+    "@prometeu/infraestrutura": "workspace:*",
+    "@prometeu/shared-kernel": "workspace:*",
+    "drizzle-orm": "^0.45.4"
+  },
+  "devDependencies": {
+    "@testcontainers/postgresql": "^12.2.1",
+    "drizzle-kit": "^0.31.11"
   }
 }
