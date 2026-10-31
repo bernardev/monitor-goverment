@@ -28,7 +28,7 @@ O que a v1 entrega e quais módulos cada entrega envolve está em
 | 1   | Fatia de ponta a ponta: deputados da Câmara | Conector da Câmara com captura; Agentes Públicos (`Pessoa`, `Mandato`); Acervo mínimo; outbox, barramento e inbox; projeção em Consulta; `GET /v1/parlamentares`; página no site. | Concluída |
 | 2   | Compromissos no banco e acesso editorial    | Repositório da `Promessa` com outbox; login e papéis (aceitar ADR-0014); painel mínimo de curadoria para cadastrar promessa e propor veredito.                                    | Concluída |
 | 3   | Atividade Legislativa                       | Proposições, votações e presença com o motivo da ausência (Câmara e Senado).                                                                                                      | Concluída |
-| 4   | Finanças Públicas e Obras                   | Emenda até a obra: empenho, pagamento, situação e medição da obra.                                                                                                                | Em curso  |
+| 4   | Finanças Públicas e Obras                   | Emenda até a obra: empenho, pagamento, situação e medição da obra.                                                                                                                | Concluída |
 | 5   | Compromissos ligado aos fatos               | Sugestão de vínculos a partir dos eventos de Legislativo, Finanças e Obras; reavaliação do estágio.                                                                               | A fazer   |
 | 6   | Engajamento                                 | "Meu governo" por município, acompanhar político ou promessa, alertas.                                                                                                            | A fazer   |
 
@@ -236,7 +236,7 @@ orçamento, e chega à obra.
 | ----- | ------------------------------------------------------------------------------------------------------------------------------ | --------- |
 | 4.1   | Emendas parlamentares do Portal da Transparência: autor, destinações e execução (empenhado, liquidado, pago e restos a pagar). | Concluída |
 | 4.2   | Para quem o dinheiro foi: favorecidos e convênios de cada emenda, com o município de destino.                                  | Concluída |
-| 4.3   | Obras: situação e medição, ligadas à emenda e à ação orçamentária que as pagam.                                                | A fazer   |
+| 4.3   | Obras: situação e medição, ligadas à emenda e à ação orçamentária que as pagam.                                                | Concluída |
 
 ### Fatia 4.1: emendas parlamentares
 
@@ -309,3 +309,38 @@ emenda, e 210 emendas com pagamento ainda não têm favorecido no arquivo.
 
 Fica para depois, de propósito: ligar o município do favorecido ao código IBGE (a fonte só dá o nome),
 os favorecidos por parlamentar e por município, e o CNPJ do convenente (a fonte só dá o nome).
+
+### Fatia 4.3: obras
+
+- **Fonte:** a API pública de dados abertos do Obrasgov.br, o cadastro federal de projetos de
+  investimento (MGI), sem chave. A API antiga (`api.obrasgov.gestao.gov.br`) sai do ar; a nova pagina
+  com no máximo 200 itens, e uma página de projetos custa segundos.
+- **A ligação com a emenda:** está no empenho. Parte dos empenhos de cada obra traz, no campo do autor
+  da emenda, o código completo da emenda no Portal (às vezes como número decimal, `202360110003.0`).
+  Não há heurística de nome nem de lugar: a obra entra só quando um empenho dela traz o código de uma
+  emenda de 2023 em diante. A ação orçamentária vem da emenda e, quando a fonte informa, do empenho.
+- **Coleta:** percorre os empenhos inteiros, busca um a um só os projetos ligados a emendas e lê
+  inteiras, por página, a execução física, o histórico de paralisação e a localização. Agenda
+  semanal: a coleta leva dezenas de minutos, e a obra muda devagar.
+- **O que a fonte ensinou:** os campos `latitude` e `longitude` saem quebrados quando falta espaço no
+  WKT (`POINT(-35.22 -9.01)` vira longitude `9.01)`), então o ponto é lido do WKT. A mesma geometria
+  atravessa vários municípios. A execução física repete linhas idênticas entre páginas, e há medição
+  acima de 100%, que fica como veio. A maior parte das obras ligadas está só cadastrada, sem execução.
+- **Domínio:** `Obra` no contexto Obras, pelo projeto de investimento: situação (`planejada`,
+  `em_execucao`, `paralisada`, `concluida`, `cancelada`, `inacabada`), medição mais recente,
+  interrupções, municípios, investimento previsto e as emendas que a pagam. `ObraRegistrada` e
+  `ObraAtualizada` trazem o estado completo; a passagem para paralisada vira também `ObraParalisada`,
+  o fato que Compromissos vai acompanhar.
+- **Leitura:** `GET /v1/obras?uf=&situacao=`, `GET /v1/obras/{id}` (com as emendas e os autores) e as
+  obras de cada emenda em `GET /v1/emendas/{id}`. No site, a lista e a página da obra e a seção
+  "Obras" na página da emenda.
+
+Resultado: com a fonte real, a coleta levou 36 minutos e a importação, cerca de dois: 10.121 obras
+ligadas a 1.077 emendas, nenhuma recusada, com R$ 19,6 bilhões de investimento previsto. 1.071 dessas
+emendas já estão no Prometeu; 1.725 obras são pagas com emendas individuais, de 342 parlamentares. A
+maioria está só cadastrada: 6.590 planejadas, 2.536 em execução, 878 concluídas, 91 canceladas, 14
+inacabadas e 12 paralisadas; 3.461 têm medição. O histórico repetia a mesma paralisação até 130 vezes
+com identificadores diferentes: o importador fica com uma.
+
+Fica para depois, de propósito: o painel de obras paralisadas do TCU, as fotos e contratos das obras,
+as emendas que só aparecem na descrição do empenho (texto livre) e as obras de emendas anteriores a 2023.

@@ -99,6 +99,13 @@ subir o Docker e ao rodar API e worker.
    uv run dagster asset materialize -m prometeu_dados.definicoes --select transparencia_emendas
    ```
 
+   As obras pagas com essas emendas, do Obrasgov.br (cerca de 45 minutos: a fonte só responde um
+   projeto por vez; a agenda é semanal):
+
+   ```bash
+   uv run dagster asset materialize -m prometeu_dados.definicoes --select obrasgov_obras
+   ```
+
 4. Suba a API e o site; as listas ficam em `http://localhost:3001/parlamentares`,
    `http://localhost:3001/votacoes`, `http://localhost:3001/proposicoes` e
    `http://localhost:3001/emendas`:

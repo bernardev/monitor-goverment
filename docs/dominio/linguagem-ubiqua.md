@@ -86,19 +86,20 @@
 
 ## Obras e acervo
 
-| Termo                | Definição                                                                                                           |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| **Obra**             | Empreendimento físico financiado com recurso público, com localização.                                              |
-| **Situação da obra** | `planejada`, `em_execucao`, `paralisada`, `concluida`, `cancelada`.                                                 |
-| **Medição**          | Percentual executado informado numa data.                                                                           |
-| **Registro cidadão** | Foto ou relato enviado por cidadão sobre uma obra, publicado só após moderação.                                     |
-| **Documento fonte**  | Recurso externo identificado por URL (PDF, página, vídeo, API).                                                     |
-| **Captura**          | Cópia imutável de um documento fonte num instante, com hash SHA-256. É a prova.                                     |
-| **Bronze**           | Resposta bruta de uma fonte, guardada sem alteração no armazenamento de objetos e endereçada pelo hash.             |
-| **Prata**            | Dados de uma fonte limpos e tipados no schema `ingestao`, cada tabela com contrato versionado.                      |
-| **Lote**             | Resultado de uma coleta gravado de uma vez na prata e anunciado pelo evento `LoteIngerido`.                         |
-| **Projeção**         | Tabela de leitura montada a partir de eventos para o site e a API (contexto Consulta). Descartável e reconstruível. |
-| **Transcrição**      | Texto de um vídeo ou áudio, dividido em segmentos com tempo inicial e final.                                        |
+| Termo                | Definição                                                                                                            |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| **Obra**             | Empreendimento físico financiado com recurso público, com localização.                                               |
+| **Situação da obra** | `planejada` (cadastrada, sem execução), `em_execucao`, `paralisada`, `concluida`, `cancelada`, `inacabada`.          |
+| **Interrupção**      | Paralisação, cancelamento ou declaração de obra inacabada registrada no histórico da obra, com data e justificativa. |
+| **Medição**          | Percentual executado informado numa data. A fonte registra medições acima de 100%, e elas ficam como vieram.         |
+| **Registro cidadão** | Foto ou relato enviado por cidadão sobre uma obra, publicado só após moderação.                                      |
+| **Documento fonte**  | Recurso externo identificado por URL (PDF, página, vídeo, API).                                                      |
+| **Captura**          | Cópia imutável de um documento fonte num instante, com hash SHA-256. É a prova.                                      |
+| **Bronze**           | Resposta bruta de uma fonte, guardada sem alteração no armazenamento de objetos e endereçada pelo hash.              |
+| **Prata**            | Dados de uma fonte limpos e tipados no schema `ingestao`, cada tabela com contrato versionado.                       |
+| **Lote**             | Resultado de uma coleta gravado de uma vez na prata e anunciado pelo evento `LoteIngerido`.                          |
+| **Projeção**         | Tabela de leitura montada a partir de eventos para o site e a API (contexto Consulta). Descartável e reconstruível.  |
+| **Transcrição**      | Texto de um vídeo ou áudio, dividido em segmentos com tempo inicial e final.                                         |
 
 ## Editorial e engajamento
 

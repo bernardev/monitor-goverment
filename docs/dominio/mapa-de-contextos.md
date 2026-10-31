@@ -47,7 +47,8 @@ O dinheiro: do planejamento ao pagamento.
 
 Entregas físicas.
 
-- **Modelo:** `Obra`, `SituacaoDaObra` (em execução, paralisada, concluída...), `Medicao` (% executado), `Localizacao`, `RegistroCidadao` (foto/relato moderado).
+- **Modelo:** `Obra` (com as emendas que a pagam, pelos empenhos), `SituacaoDaObra` (planejada, em execução, paralisada, concluída, cancelada, inacabada), `Medicao` (% executado), `Interrupcao`, `Localizacao`, `RegistroCidadao` (foto/relato moderado).
+- **Relação com Finanças Públicas:** a obra guarda o código da emenda que vem no empenho; a Consulta junta as duas pelo código.
 
 ### 6. Acervo — `acervo`
 
