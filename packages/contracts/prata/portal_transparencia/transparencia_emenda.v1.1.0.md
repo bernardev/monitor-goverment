@@ -1,4 +1,4 @@
-# `ingestao.transparencia_emenda` v1.0.0
+# `ingestao.transparencia_emenda` v1.1.0
 
 Emendas parlamentares aos orçamentos federais desde 2023, uma linha por destinação (ação orçamentária e
 localidade). Fonte: o arquivo único de emendas do
@@ -44,3 +44,9 @@ Mais as [colunas de origem](../colunas-de-origem.md).
 Tipos de emenda: `Emenda Individual - Transferências com Finalidade Definida`,
 `Emenda Individual - Transferências Especiais` (a "emenda PIX"), `Emenda de Bancada`,
 `Emenda de Comissão` e `Emenda de Relator`.
+
+## Mudanças desde a v1.0
+
+Nenhuma nesta tabela. O mesmo conector passou a gravar, do mesmo arquivo, os favorecidos
+([`transparencia_emenda_favorecido`](transparencia_emenda_favorecido.v1.1.0.md)) e os convênios
+([`transparencia_emenda_convenio`](transparencia_emenda_convenio.v1.1.0.md)) de cada emenda.

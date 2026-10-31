@@ -193,8 +193,9 @@ def senado_proposicoes(context: AssetExecutionContext) -> MaterializeResult[None
 @asset(
     group_name="portal_transparencia",
     description=(
-        "Emendas parlamentares aos orçamentos desde 2023: autor, destino, ação orçamentária e "
-        "execução (prata: transparencia_emenda)."
+        "Emendas parlamentares aos orçamentos desde 2023: autor, destino, execução, favorecidos e "
+        "convênios (prata: transparencia_emenda, transparencia_emenda_favorecido e "
+        "transparencia_emenda_convenio)."
     ),
 )
 def transparencia_emendas(context: AssetExecutionContext) -> MaterializeResult[None]:
