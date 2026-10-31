@@ -3,7 +3,7 @@ import type { ConsultaDeEmendas } from '@prometeu/consulta';
 import type { EmendaDetalhada, EmendaResumo, Pagina } from '@prometeu/contracts';
 import { z } from 'zod';
 
-import { CACHE_PUBLICO, ler, paginacao } from '../dados-abertos.js';
+import { CACHE_PUBLICO, ler, municipio, paginacao } from '../dados-abertos.js';
 
 export const CONSULTA_DE_EMENDAS = Symbol('ConsultaDeEmendas');
 
@@ -14,6 +14,7 @@ const filtro = paginacao.extend({
     .string()
     .regex(/^[A-Za-z]{2}$/, 'use a sigla da UF, como SP')
     .optional(),
+  municipio: municipio.optional(),
 });
 
 /** Emendas parlamentares ao orçamento: autor, destino, execução, favorecidos e convênios (ADR-0008). */
@@ -25,8 +26,15 @@ export class EmendasController {
   @Get()
   @Header('Cache-Control', CACHE_PUBLICO)
   async listar(@Query() query: Record<string, unknown>): Promise<Pagina<EmendaResumo>> {
-    const { ano, tipo, uf, pagina, itens } = ler(filtro, query);
-    return this.emendas.listar({ ano, tipo, uf, pagina, itensPorPagina: itens });
+    const { ano, tipo, uf, municipio: destino, pagina, itens } = ler(filtro, query);
+    return this.emendas.listar({
+      ano,
+      tipo,
+      uf,
+      municipio: destino,
+      pagina,
+      itensPorPagina: itens,
+    });
   }
 
   @Get(':emendaId')

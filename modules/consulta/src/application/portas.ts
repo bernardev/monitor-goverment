@@ -4,6 +4,7 @@ import type {
   EmendaResumo,
   EmendasDoParlamentar,
   FrequenciaDoParlamentar,
+  MunicipioResumo,
   ObraDetalhada,
   ObraResumo,
   Pagina,
@@ -11,6 +12,7 @@ import type {
   PerfilDeParlamentar,
   ProposicaoDetalhada,
   ProposicaoResumo,
+  SituacaoDaFonte,
   SituacaoDaObra,
   TipoDeEmenda,
   TipoDeProposicao,
@@ -60,6 +62,8 @@ export interface FiltroDeEmendas extends Paginacao {
   readonly tipo?: TipoDeEmenda | undefined;
   /** Sigla da UF de destino (`SP`). */
   readonly uf?: string | undefined;
+  /** Código IBGE do município de destino. */
+  readonly municipio?: string | undefined;
 }
 
 export interface ConsultaDeEmendas {
@@ -70,10 +74,26 @@ export interface ConsultaDeEmendas {
   doParlamentar(pessoaId: string, paginacao: Paginacao): Promise<EmendasDoParlamentar>;
 }
 
+/** A situação das coletas de cada fonte oficial, para a página pública de status. */
+export interface ConsultaDeFontes {
+  situacao(): Promise<SituacaoDaFonte[]>;
+}
+
 export interface FiltroDeObras extends Paginacao {
   /** Sigla da UF da obra (`SP`). */
   readonly uf?: string | undefined;
   readonly situacao?: SituacaoDaObra | undefined;
+  /** Código IBGE do município da obra. */
+  readonly municipio?: string | undefined;
+  /** Parte do nome da obra, sem importar acento nem maiúsculas. */
+  readonly nome?: string | undefined;
+}
+
+/** Municípios que aparecem nas emendas e nas obras. */
+export interface ConsultaDeMunicipios {
+  /** Até 20, pelo nome; os que começam com o termo primeiro. */
+  buscar(nome: string): Promise<MunicipioResumo[]>;
+  porCodigo(codigoIbge: string): Promise<MunicipioResumo | undefined>;
 }
 
 export interface ConsultaDeObras {
@@ -100,6 +120,8 @@ export interface FiltroDeParlamentares {
   /** Sigla da UF (`SP`). */
   readonly uf?: string | undefined;
   readonly partido?: string | undefined;
+  /** Parte do nome, sem importar acento nem maiúsculas. Com nome, entra também quem saiu do cargo. */
+  readonly nome?: string | undefined;
   readonly pagina: number;
   readonly itensPorPagina: number;
 }

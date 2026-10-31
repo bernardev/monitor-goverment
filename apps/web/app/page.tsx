@@ -6,6 +6,11 @@ export default function PaginaInicial(): ReactNode {
     <main>
       <h1>Prometeu</h1>
       <p>Prometeu, cumpriu? Acompanhe cada promessa até a entrega, com fonte em cada etapa.</p>
+      <form method="get" action="/busca" role="search">
+        <label htmlFor="q">Procure um parlamentar, um município ou uma obra</label>{' '}
+        <input id="q" name="q" type="search" minLength={2} required />{' '}
+        <button type="submit">Buscar</button>
+      </form>
       <ul>
         <li>
           <Link href="/parlamentares">Parlamentares</Link>
@@ -21,6 +26,9 @@ export default function PaginaInicial(): ReactNode {
         </li>
         <li>
           <Link href="/obras">Obras pagas com emendas</Link>
+        </li>
+        <li>
+          <Link href="/fontes">Situação das fontes</Link>
         </li>
       </ul>
     </main>

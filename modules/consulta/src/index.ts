@@ -6,7 +6,9 @@ import type { BancoDoContexto, BarramentoDeEventos } from '@prometeu/infraestrut
 
 import type {
   ConsultaDeEmendas,
+  ConsultaDeFontes,
   ConsultaDeFrequencia,
+  ConsultaDeMunicipios,
   ConsultaDeObras,
   ConsultaDeParlamentares,
   ConsultaDeProposicoes,
@@ -14,15 +16,19 @@ import type {
   Relogio,
 } from './application/portas.js';
 import { ConsultaDeEmendasPostgres } from './infrastructure/consulta-de-emendas-postgres.js';
+import { ConsultaDeFontesPostgres } from './infrastructure/consulta-de-fontes-postgres.js';
 import { ConsultaDeFrequenciaPostgres } from './infrastructure/consulta-de-frequencia-postgres.js';
+import { ConsultaDeMunicipiosPostgres } from './infrastructure/consulta-de-municipios-postgres.js';
 import { ConsultaDeObrasPostgres } from './infrastructure/consulta-de-obras-postgres.js';
 import { ConsultaDeParlamentaresPostgres } from './infrastructure/consulta-de-parlamentares-postgres.js';
 import { ConsultaDeProposicoesPostgres } from './infrastructure/consulta-de-proposicoes-postgres.js';
 import { ConsultaDeVotacoesPostgres } from './infrastructure/consulta-de-votacoes-postgres.js';
+import { ProjetorDeColetas } from './infrastructure/projetor-de-coletas.js';
 import { ProjetorDeConvenios } from './infrastructure/projetor-de-convenios.js';
 import { ProjetorDeEmendas } from './infrastructure/projetor-de-emendas.js';
 import { ProjetorDeFavorecidos } from './infrastructure/projetor-de-favorecidos.js';
 import { ProjetorDeFrequencia } from './infrastructure/projetor-de-frequencia.js';
+import { ProjetorDeMunicipios } from './infrastructure/projetor-de-municipios.js';
 import { ProjetorDeObras } from './infrastructure/projetor-de-obras.js';
 import { ProjetorDeParlamentares } from './infrastructure/projetor-de-parlamentares.js';
 import { ProjetorDeProposicoes } from './infrastructure/projetor-de-proposicoes.js';
@@ -31,7 +37,9 @@ import { assinarConsumidores } from './interface/consumidores.js';
 
 export type {
   ConsultaDeEmendas,
+  ConsultaDeFontes,
   ConsultaDeFrequencia,
+  ConsultaDeMunicipios,
   ConsultaDeObras,
   ConsultaDeParlamentares,
   ConsultaDeProposicoes,
@@ -56,6 +64,8 @@ export interface ModuloConsulta {
   readonly proposicoes: ConsultaDeProposicoes;
   readonly emendas: ConsultaDeEmendas;
   readonly obras: ConsultaDeObras;
+  readonly fontes: ConsultaDeFontes;
+  readonly municipios: ConsultaDeMunicipios;
   assinarConsumidores(barramento: BarramentoDeEventos): Promise<void>;
 }
 
@@ -74,6 +84,8 @@ export function montarConsulta(
     proposicoes: new ConsultaDeProposicoesPostgres(banco, votacoes),
     emendas: new ConsultaDeEmendasPostgres(banco, obras),
     obras,
+    fontes: new ConsultaDeFontesPostgres(banco, relogio),
+    municipios: new ConsultaDeMunicipiosPostgres(banco),
     assinarConsumidores: (barramento) =>
       assinarConsumidores(barramento, banco, {
         parlamentares: new ProjetorDeParlamentares(banco),
@@ -84,6 +96,8 @@ export function montarConsulta(
         favorecidos: new ProjetorDeFavorecidos(banco),
         convenios: new ProjetorDeConvenios(banco),
         obras: new ProjetorDeObras(banco),
+        coletas: new ProjetorDeColetas(banco),
+        municipios: new ProjetorDeMunicipios(banco),
       }),
   };
 }

@@ -6,7 +6,7 @@ import type {
 } from '@prometeu/contracts';
 import type { BancoDoContexto } from '@prometeu/infraestrutura';
 import { CodigoIbge } from '@prometeu/shared-kernel';
-import { and, asc, count, eq, gte, isNotNull, isNull, lte, or, type SQL } from 'drizzle-orm';
+import { and, asc, count, eq, gte, isNotNull, isNull, like, lte, or, type SQL } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 
 import type {
@@ -14,6 +14,7 @@ import type {
   FiltroDeParlamentares,
   Relogio,
 } from '../application/portas.js';
+import { paraBusca } from './busca.js';
 import { captura, parlamentar } from './esquema.js';
 
 const capturaDoMandato = alias(captura, 'captura_do_mandato');
@@ -30,10 +31,16 @@ export class ConsultaDeParlamentaresPostgres implements ConsultaDeParlamentares 
   /** Só quem está no cargo agora; quem já saiu continua com o perfil acessível pelo id. */
   async listar(filtro: FiltroDeParlamentares): Promise<Pagina<ParlamentarResumo>> {
     const agora = this.relogio.agora();
+    // Sem nome, a lista é de quem está no cargo; com nome, a busca acha também quem já saiu.
+    const termo = filtro.nome === undefined ? undefined : paraBusca(filtro.nome);
     const condicoes: (SQL | undefined)[] = [
       isNotNull(parlamentar.nome),
-      lte(parlamentar.mandatoInicio, agora),
-      or(isNull(parlamentar.mandatoFim), gte(parlamentar.mandatoFim, agora)),
+      ...(termo
+        ? [like(parlamentar.nomeBusca, `%${termo}%`)]
+        : [
+            lte(parlamentar.mandatoInicio, agora),
+            or(isNull(parlamentar.mandatoFim), gte(parlamentar.mandatoFim, agora)),
+          ]),
     ];
     if (filtro.uf !== undefined) {
       const uf = CodigoIbge.daUf(filtro.uf);

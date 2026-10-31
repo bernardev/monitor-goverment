@@ -30,6 +30,14 @@ export const periodo = z
 /** Como a query nomeia as casas, e o nome delas na API. */
 export const CASAS = { camara: 'camara_dos_deputados', senado: 'senado_federal' } as const;
 
+/** Código IBGE de município, sete dígitos. */
+export const municipio = z
+  .string()
+  .regex(/^\d{7}$/, 'use o código IBGE do município, com 7 dígitos');
+
+/** Parte de um nome a procurar. */
+export const nome = z.string().trim().min(2, 'procure com ao menos 2 letras').max(80);
+
 export const paginacao = z.object({
   pagina: z.coerce.number().int().min(1).max(10_000).default(1),
   itens: z.coerce.number().int().min(1).max(100).default(50),

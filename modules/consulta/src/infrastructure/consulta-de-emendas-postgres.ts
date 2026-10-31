@@ -51,6 +51,9 @@ export class ConsultaDeEmendasPostgres implements ConsultaDeEmendas {
       filtro.ano === undefined ? undefined : eq(emenda.ano, filtro.ano),
       filtro.tipo === undefined ? undefined : eq(emenda.tipo, filtro.tipo),
       uf === undefined ? undefined : arrayContains(emenda.ufs, [uf]),
+      filtro.municipio === undefined
+        ? undefined
+        : arrayContains(emenda.municipios, [filtro.municipio]),
     );
     const [linhas, [total]] = await Promise.all([
       this.banco.drizzle

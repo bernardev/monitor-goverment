@@ -44,6 +44,18 @@ export default async function PaginaDaObra({ params }: Props): Promise<ReactNode
           {lugarDaObra(obra)}
           {obra.endereco ? ` · ${obra.endereco}` : ''}
         </p>
+        {obra.municipios.length > 0 && (
+          <p>
+            {obra.municipios.length === 1 ? 'Município: ' : 'Municípios: '}
+            {obra.municipios.map((m, n) => (
+              <span key={m.codigoIbge}>
+                {n > 0 ? ', ' : ''}
+                <Link href={`/municipios/${m.codigoIbge}`}>{m.nome ?? m.codigoIbge}</Link>
+              </span>
+            ))}
+            .
+          </p>
+        )}
         {obra.descricao && obra.descricao !== obra.nome && <p>{obra.descricao}</p>}
         <p>
           Projeto {obra.idNaFonte} no Obrasgov.br, o cadastro federal de obras e projetos de

@@ -401,6 +401,37 @@ export interface ConvenioDaEmenda {
   readonly fonte: FonteDoDado;
 }
 
+/** Município que aparece como destino de emenda ou local de obra. */
+export interface MunicipioResumo {
+  readonly codigoIbge: string;
+  readonly nome: string;
+  readonly uf: string;
+}
+
+/** A última coleta de uma tabela da fonte. */
+export interface ColetaDaTabela {
+  /** Tabela da camada prata (`camara_votacao`). */
+  readonly tabela: string;
+  readonly ultimaColetaEm: string;
+  /** Registros gravados na última coleta. */
+  readonly registros: number;
+  readonly versaoDoContrato: string;
+}
+
+/** Uma fonte oficial e se as coletas dela estão em dia. */
+export interface SituacaoDaFonte {
+  /** Identificador da fonte (`camara`, `obrasgov`). */
+  readonly fonte: string;
+  readonly nome: string;
+  /** De quanto em quanto tempo a fonte é coletada. */
+  readonly periodicidade: 'diaria' | 'semanal';
+  /** A coleta mais recente de qualquer tabela; `null` se nunca foi coletada. */
+  readonly ultimaColetaEm: string | null;
+  /** `atrasada`: passou do prazo da agenda com folga. */
+  readonly situacao: 'em_dia' | 'atrasada' | 'nunca_coletada';
+  readonly tabelas: readonly ColetaDaTabela[];
+}
+
 /**
  * Em que pé a obra está. `planejada`: cadastrada, sem execução iniciada. `inacabada`: parou e foi
  * dada como não concluída.

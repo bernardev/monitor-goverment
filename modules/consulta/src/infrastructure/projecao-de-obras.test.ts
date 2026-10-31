@@ -200,6 +200,31 @@ describe('projeção de obras', () => {
     expect(emenda?.obras.map((o) => o.obraId)).toEqual([UBS]);
   });
 
+  it('busca obras pelo nome, sem acento nem maiúsculas, e pelo município', async () => {
+    const nomes = async (filtro: Record<string, unknown>) =>
+      (await consulta.obras.listar({ pagina: 1, itensPorPagina: 10, ...filtro })).itens.map(
+        (o) => o.idNaFonte,
+      );
+
+    expect(await nomes({ nome: 'obra 151020' })).toEqual(['151020.43-16']);
+    expect(await nomes({ municipio: '4320008' })).toEqual(['72343.33-91', '151020.43-16']);
+    expect(await nomes({ municipio: '3550308' })).toEqual([]);
+  });
+
+  it('o município vem da emenda e da obra, com o nome escrito pela obra', async () => {
+    expect(await consulta.municipios.buscar('SAPUCAIA')).toEqual([
+      { codigoIbge: '4320008', nome: 'Sapucaia do Sul', uf: 'RS' },
+    ]);
+    expect(await consulta.municipios.porCodigo('4320008')).toMatchObject({ uf: 'RS' });
+    expect(await consulta.municipios.buscar('s')).toEqual([]);
+    const daCidade = await consulta.emendas.listar({
+      pagina: 1,
+      itensPorPagina: 10,
+      municipio: '4320008',
+    });
+    expect(daCidade.itens.map((e) => e.emendaId)).toEqual([DA_ANA]);
+  });
+
   it('a obra mais nova vale; um evento atrasado não a desfaz', async () => {
     const paralisada = obra('151020.43-16', {
       situacao: 'paralisada',

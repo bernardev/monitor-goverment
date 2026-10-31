@@ -99,7 +99,13 @@ export default async function PaginaDaEmenda({ params }: Props): Promise<ReactNo
               <li
                 key={`${d.localidade}|${d.funcao.codigo}|${d.subfuncao.codigo}|${d.programa.codigo}|${d.acao.codigo}|${d.planoOrcamentario.codigo}`}
               >
-                <strong>{d.localidade}</strong>
+                <strong>
+                  {d.municipioIbge ? (
+                    <Link href={`/municipios/${d.municipioIbge}`}>{d.localidade}</Link>
+                  ) : (
+                    d.localidade
+                  )}
+                </strong>
                 {d.modalidade ? ` · ${nomeDaModalidade(d.modalidade)}` : ''}
                 <span>
                   Ação {classificacao(d.acao)} · programa {classificacao(d.programa)}

@@ -28,6 +28,7 @@ export class ProjetorDeObras {
       percentualCentesimos: dados.medicao?.percentualCentesimos ?? null,
       investimentoPrevisto: BigInt(dados.investimentoPrevistoCentavos),
       codigosDasEmendas: [...new Set(dados.emendas.map((e) => e.codigoDaEmenda))].sort(),
+      municipios: dados.municipios.map((m) => m.codigoIbge).sort(),
       estado: dados,
       capturaId: dados.capturaId,
       ocorridoEm: new Date(envelope.ocorridoEm),

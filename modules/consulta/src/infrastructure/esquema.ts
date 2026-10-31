@@ -1,5 +1,6 @@
 import { definirInbox } from '@prometeu/infraestrutura';
 import type { ObraPublicada } from '@prometeu/obras';
+import { sql } from 'drizzle-orm';
 import {
   bigint,
   boolean,
@@ -24,6 +25,19 @@ export const schemaDaConsulta = pgSchema('consulta');
 const instante = (nome: string) => timestamp(nome, { withTimezone: true, mode: 'date' });
 
 /**
+ * Texto para busca, gerado pelo banco: sem acento e em minúsculas. O acento sai com `translate` antes
+ * do `lower`, que não depende do locale do banco nem de extensão. `paraBusca` faz o mesmo com o
+ * termo procurado.
+ */
+const paraBuscaNoBanco = (coluna: string) =>
+  text(`${coluna}_busca`).generatedAlwaysAs(
+    sql.raw(`lower(translate(${coluna}, '${COM_ACENTO}', '${SEM_ACENTO}'))`),
+  );
+
+export const COM_ACENTO = 'ÁÀÂÃÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜÇÑáàâãäéèêëíìîïóòôõöúùûüçñ';
+export const SEM_ACENTO = 'AAAAAEEEEIIIIOOOOOUUUUCNaaaaaeeeeiiiiooooouuuucn';
+
+/**
  * Perfil de cada parlamentar. Eventos podem chegar fora de ordem (ADR-0007): cada grupo de campos
  * guarda quando o fato aconteceu (`*_em`) e só aceita fatos mais novos.
  */
@@ -46,6 +60,7 @@ export const parlamentar = schemaDaConsulta.table(
     /** Captura do fato mais recente aplicado ao perfil. */
     capturaId: uuid('captura_id'),
     atualizadoEm: instante('atualizado_em').notNull(),
+    nomeBusca: paraBuscaNoBanco('nome'),
   },
   (t) => [
     index('parlamentar_por_nome').on(t.nome),
@@ -242,6 +257,11 @@ export const emenda = schemaDaConsulta.table(
     autorPessoaId: uuid('autor_pessoa_id'),
     autorNome: text('autor_nome').notNull(),
     ufs: text('ufs').array().notNull(),
+    /** Códigos IBGE dos municípios de destino, para o filtro por município. */
+    municipios: text('municipios')
+      .array()
+      .notNull()
+      .default(sql`'{}'`),
     destinacoes: jsonb('destinacoes').$type<DestinacaoProjetada[]>().notNull(),
     empenhado: centavos('empenhado_centavos'),
     liquidado: centavos('liquidado_centavos'),
@@ -257,6 +277,7 @@ export const emenda = schemaDaConsulta.table(
     index('emenda_por_ano').on(t.ano),
     index('emenda_por_autor').on(t.autorPessoaId),
     index('emenda_por_uf').using('gin', t.ufs),
+    index('emenda_por_municipio').using('gin', t.municipios),
   ],
 );
 
@@ -325,15 +346,50 @@ export const obra = schemaDaConsulta.table(
     percentualCentesimos: integer('percentual_centesimos'),
     investimentoPrevisto: centavos('investimento_previsto_centavos'),
     codigosDasEmendas: text('codigos_das_emendas').array().notNull(),
+    /** Códigos IBGE dos municípios da obra. */
+    municipios: text('municipios')
+      .array()
+      .notNull()
+      .default(sql`'{}'`),
     estado: jsonb('estado').$type<ObraPublicada>().notNull(),
     capturaId: uuid('captura_id').notNull(),
     ocorridoEm: instante('ocorrido_em').notNull(),
+    nomeBusca: paraBuscaNoBanco('nome'),
   },
   (t) => [
     uniqueIndex('obra_por_id_na_fonte').on(t.idNaFonte),
     index('obra_por_uf_e_situacao').on(t.uf, t.situacao),
     index('obra_por_emenda').using('gin', t.codigosDasEmendas),
+    index('obra_por_municipio').using('gin', t.municipios),
   ],
+);
+
+/**
+ * Municípios que aparecem como destino de emenda ou local de obra, para a busca por nome. O nome vem
+ * da fonte; o escrito com minúsculas (`São Paulo`) substitui o todo em maiúsculas (`SÃO PAULO`).
+ */
+export const municipio = schemaDaConsulta.table(
+  'municipio',
+  {
+    codigoIbge: char('codigo_ibge', { length: 7 }).primaryKey(),
+    nome: text('nome').notNull(),
+    uf: char('uf', { length: 2 }).notNull(),
+    nomeBusca: paraBuscaNoBanco('nome'),
+  },
+  (t) => [index('municipio_por_uf').on(t.uf)],
+);
+
+/** A última coleta de cada tabela de cada fonte, para a página pública de situação das fontes. */
+export const coleta = schemaDaConsulta.table(
+  'coleta',
+  {
+    fonte: text('fonte').notNull(),
+    tabela: text('tabela').notNull(),
+    versaoDoContrato: text('versao_do_contrato').notNull(),
+    registros: integer('registros').notNull(),
+    ocorridoEm: instante('ocorrido_em').notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.fonte, t.tabela] })],
 );
 
 export const captura = schemaDaConsulta.table('captura', {

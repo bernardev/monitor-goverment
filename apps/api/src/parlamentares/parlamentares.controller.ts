@@ -17,7 +17,7 @@ import type {
 } from '@prometeu/contracts';
 import { z } from 'zod';
 
-import { CACHE_PUBLICO, ler, paginacao, periodo, UUID } from '../dados-abertos.js';
+import { CACHE_PUBLICO, ler, nome, paginacao, periodo, UUID } from '../dados-abertos.js';
 import { CONSULTA_DE_EMENDAS } from '../emendas/emendas.controller.js';
 import { CONSULTA_DE_PROPOSICOES } from '../proposicoes/proposicoes.controller.js';
 
@@ -31,6 +31,7 @@ const filtro = paginacao.extend({
     .regex(/^[A-Za-z]{2}$/, 'use a sigla da UF, como SP')
     .optional(),
   partido: z.string().trim().min(1).max(20).optional(),
+  nome: nome.optional(),
 });
 
 /** API pública de dados abertos, somente leitura (ADR-0008). */
@@ -44,12 +45,12 @@ export class ParlamentaresController {
     @Inject(CONSULTA_DE_EMENDAS) private readonly emendas: ConsultaDeEmendas,
   ) {}
 
-  /** Quem está no cargo hoje. */
+  /** Quem está no cargo hoje; com `nome`, também quem já saiu. */
   @Get()
   @Header('Cache-Control', CACHE_PUBLICO)
   async listar(@Query() query: Record<string, unknown>): Promise<Pagina<ParlamentarResumo>> {
-    const { uf, partido, pagina, itens } = ler(filtro, query);
-    return this.consulta.listar({ uf, partido, pagina, itensPorPagina: itens });
+    const { uf, partido, nome: parteDoNome, pagina, itens } = ler(filtro, query);
+    return this.consulta.listar({ uf, partido, nome: parteDoNome, pagina, itensPorPagina: itens });
   }
 
   @Get(':pessoaId')

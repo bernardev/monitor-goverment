@@ -1,0 +1,1363 @@
+{
+  "id": "99623e5b-410b-456e-9ebd-7abc14e14331",
+  "prevId": "a5b37453-342a-4d3f-8665-30dc1f4bb48b",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "consulta.autoria": {
+      "name": "autoria",
+      "schema": "consulta",
+      "columns": {
+        "proposicao_id": {
+          "name": "proposicao_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pessoa_id": {
+          "name": "pessoa_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "proponente": {
+          "name": "proponente",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "autoria_por_pessoa": {
+          "name": "autoria_por_pessoa",
+          "columns": [
+            {
+              "expression": "pessoa_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "autoria_proposicao_id_pessoa_id_pk": {
+          "name": "autoria_proposicao_id_pessoa_id_pk",
+          "columns": [
+            "proposicao_id",
+            "pessoa_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "consulta.captura": {
+      "name": "captura",
+      "schema": "consulta",
+      "columns": {
+        "captura_id": {
+          "name": "captura_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "fonte": {
+          "name": "fonte",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "coletada_em": {
+          "name": "coletada_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sha256": {
+          "name": "sha256",
+          "type": "char(64)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "consulta.coleta": {
+      "name": "coleta",
+      "schema": "consulta",
+      "columns": {
+        "fonte": {
+          "name": "fonte",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tabela": {
+          "name": "tabela",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "versao_do_contrato": {
+          "name": "versao_do_contrato",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "registros": {
+          "name": "registros",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ocorrido_em": {
+          "name": "ocorrido_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "coleta_fonte_tabela_pk": {
+          "name": "coleta_fonte_tabela_pk",
+          "columns": [
+            "fonte",
+            "tabela"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "consulta.convenio": {
+      "name": "convenio",
+      "schema": "consulta",
+      "columns": {
+        "convenio_id": {
+          "name": "convenio_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "numero": {
+          "name": "numero",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "convenente": {
+          "name": "convenente",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "objeto": {
+          "name": "objeto",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "publicado_em": {
+          "name": "publicado_em",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "valor_centavos": {
+          "name": "valor_centavos",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "emendas": {
+          "name": "emendas",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "codigos_das_emendas": {
+          "name": "codigos_das_emendas",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "captura_id": {
+          "name": "captura_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ocorrido_em": {
+          "name": "ocorrido_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "convenio_por_emenda": {
+          "name": "convenio_por_emenda",
+          "columns": [
+            {
+              "expression": "codigos_das_emendas",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "consulta.emenda": {
+      "name": "emenda",
+      "schema": "consulta",
+      "columns": {
+        "emenda_id": {
+          "name": "emenda_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "codigo_na_fonte": {
+          "name": "codigo_na_fonte",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ano": {
+          "name": "ano",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "numero": {
+          "name": "numero",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "autor_pessoa_id": {
+          "name": "autor_pessoa_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "autor_nome": {
+          "name": "autor_nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ufs": {
+          "name": "ufs",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "municipios": {
+          "name": "municipios",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "destinacoes": {
+          "name": "destinacoes",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "empenhado_centavos": {
+          "name": "empenhado_centavos",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "liquidado_centavos": {
+          "name": "liquidado_centavos",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pago_centavos": {
+          "name": "pago_centavos",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "restos_inscritos_centavos": {
+          "name": "restos_inscritos_centavos",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "restos_cancelados_centavos": {
+          "name": "restos_cancelados_centavos",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "restos_pagos_centavos": {
+          "name": "restos_pagos_centavos",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "captura_id": {
+          "name": "captura_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ocorrido_em": {
+          "name": "ocorrido_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "emenda_por_codigo": {
+          "name": "emenda_por_codigo",
+          "columns": [
+            {
+              "expression": "codigo_na_fonte",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "emenda_por_ano": {
+          "name": "emenda_por_ano",
+          "columns": [
+            {
+              "expression": "ano",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "emenda_por_autor": {
+          "name": "emenda_por_autor",
+          "columns": [
+            {
+              "expression": "autor_pessoa_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "emenda_por_uf": {
+          "name": "emenda_por_uf",
+          "columns": [
+            {
+              "expression": "ufs",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "emenda_por_municipio": {
+          "name": "emenda_por_municipio",
+          "columns": [
+            {
+              "expression": "municipios",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "consulta.favorecidos_da_emenda": {
+      "name": "favorecidos_da_emenda",
+      "schema": "consulta",
+      "columns": {
+        "codigo_da_emenda": {
+          "name": "codigo_da_emenda",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "favorecidos": {
+          "name": "favorecidos",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recebido_centavos": {
+          "name": "recebido_centavos",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "captura_id": {
+          "name": "captura_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ocorrido_em": {
+          "name": "ocorrido_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "consulta.frequencia": {
+      "name": "frequencia",
+      "schema": "consulta",
+      "columns": {
+        "registro_id": {
+          "name": "registro_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "pessoa_id": {
+          "name": "pessoa_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "casa": {
+          "name": "casa",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dia": {
+          "name": "dia",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "situacao": {
+          "name": "situacao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "motivo_categoria": {
+          "name": "motivo_categoria",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "motivo_descricao": {
+          "name": "motivo_descricao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "registro_na_fonte": {
+          "name": "registro_na_fonte",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sessoes": {
+          "name": "sessoes",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "captura_id": {
+          "name": "captura_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ocorrido_em": {
+          "name": "ocorrido_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "frequencia_por_pessoa": {
+          "name": "frequencia_por_pessoa",
+          "columns": [
+            {
+              "expression": "pessoa_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "dia",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "consulta.inbox": {
+      "name": "inbox",
+      "schema": "consulta",
+      "columns": {
+        "id_do_evento": {
+          "name": "id_do_evento",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "consumidor": {
+          "name": "consumidor",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "processado_em": {
+          "name": "processado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "inbox_id_do_evento_consumidor_pk": {
+          "name": "inbox_id_do_evento_consumidor_pk",
+          "columns": [
+            "id_do_evento",
+            "consumidor"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "consulta.municipio": {
+      "name": "municipio",
+      "schema": "consulta",
+      "columns": {
+        "codigo_ibge": {
+          "name": "codigo_ibge",
+          "type": "char(7)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "uf": {
+          "name": "uf",
+          "type": "char(2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nome_busca": {
+          "name": "nome_busca",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "generated": {
+            "as": "lower(translate(nome, 'ÁÀÂÃÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜÇÑáàâãäéèêëíìîïóòôõöúùûüçñ', 'AAAAAEEEEIIIIOOOOOUUUUCNaaaaaeeeeiiiiooooouuuucn'))",
+            "type": "stored"
+          }
+        }
+      },
+      "indexes": {
+        "municipio_por_uf": {
+          "name": "municipio_por_uf",
+          "columns": [
+            {
+              "expression": "uf",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "consulta.obra": {
+      "name": "obra",
+      "schema": "consulta",
+      "columns": {
+        "obra_id": {
+          "name": "obra_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "id_na_fonte": {
+          "name": "id_na_fonte",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "situacao": {
+          "name": "situacao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "uf": {
+          "name": "uf",
+          "type": "char(2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "percentual_centesimos": {
+          "name": "percentual_centesimos",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "investimento_previsto_centavos": {
+          "name": "investimento_previsto_centavos",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "codigos_das_emendas": {
+          "name": "codigos_das_emendas",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "municipios": {
+          "name": "municipios",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "estado": {
+          "name": "estado",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "captura_id": {
+          "name": "captura_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ocorrido_em": {
+          "name": "ocorrido_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nome_busca": {
+          "name": "nome_busca",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "generated": {
+            "as": "lower(translate(nome, 'ÁÀÂÃÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜÇÑáàâãäéèêëíìîïóòôõöúùûüçñ', 'AAAAAEEEEIIIIOOOOOUUUUCNaaaaaeeeeiiiiooooouuuucn'))",
+            "type": "stored"
+          }
+        }
+      },
+      "indexes": {
+        "obra_por_id_na_fonte": {
+          "name": "obra_por_id_na_fonte",
+          "columns": [
+            {
+              "expression": "id_na_fonte",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "obra_por_uf_e_situacao": {
+          "name": "obra_por_uf_e_situacao",
+          "columns": [
+            {
+              "expression": "uf",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "situacao",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "obra_por_emenda": {
+          "name": "obra_por_emenda",
+          "columns": [
+            {
+              "expression": "codigos_das_emendas",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "obra_por_municipio": {
+          "name": "obra_por_municipio",
+          "columns": [
+            {
+              "expression": "municipios",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "consulta.parlamentar": {
+      "name": "parlamentar",
+      "schema": "consulta",
+      "columns": {
+        "pessoa_id": {
+          "name": "pessoa_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nome_em": {
+          "name": "nome_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sigla_partido": {
+          "name": "sigla_partido",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "partido_em": {
+          "name": "partido_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "url_da_foto": {
+          "name": "url_da_foto",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "foto_em": {
+          "name": "foto_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mandato_id": {
+          "name": "mandato_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cargo": {
+          "name": "cargo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "circunscricao": {
+          "name": "circunscricao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mandato_inicio": {
+          "name": "mandato_inicio",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mandato_fim": {
+          "name": "mandato_fim",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mandato_captura_id": {
+          "name": "mandato_captura_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "captura_id": {
+          "name": "captura_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "atualizado_em": {
+          "name": "atualizado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nome_busca": {
+          "name": "nome_busca",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "generated": {
+            "as": "lower(translate(nome, 'ÁÀÂÃÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜÇÑáàâãäéèêëíìîïóòôõöúùûüçñ', 'AAAAAEEEEIIIIOOOOOUUUUCNaaaaaeeeeiiiiooooouuuucn'))",
+            "type": "stored"
+          }
+        }
+      },
+      "indexes": {
+        "parlamentar_por_nome": {
+          "name": "parlamentar_por_nome",
+          "columns": [
+            {
+              "expression": "nome",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "parlamentar_por_circunscricao": {
+          "name": "parlamentar_por_circunscricao",
+          "columns": [
+            {
+              "expression": "circunscricao",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "consulta.proposicao": {
+      "name": "proposicao",
+      "schema": "consulta",
+      "columns": {
+        "proposicao_id": {
+          "name": "proposicao_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "casa": {
+          "name": "casa",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "codigo_na_fonte": {
+          "name": "codigo_na_fonte",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sigla": {
+          "name": "sigla",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "numero": {
+          "name": "numero",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ano": {
+          "name": "ano",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ementa": {
+          "name": "ementa",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "apresentada_em": {
+          "name": "apresentada_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "situacao": {
+          "name": "situacao",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ultima_tramitacao_em": {
+          "name": "ultima_tramitacao_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "norma_gerada": {
+          "name": "norma_gerada",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "url_do_texto": {
+          "name": "url_do_texto",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "autores": {
+          "name": "autores",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tramitacoes": {
+          "name": "tramitacoes",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "captura_id": {
+          "name": "captura_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ocorrido_em": {
+          "name": "ocorrido_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "proposicao_por_codigo": {
+          "name": "proposicao_por_codigo",
+          "columns": [
+            {
+              "expression": "casa",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "codigo_na_fonte",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "proposicao_por_ultima_tramitacao": {
+          "name": "proposicao_por_ultima_tramitacao",
+          "columns": [
+            {
+              "expression": "ultima_tramitacao_em",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "consulta.votacao": {
+      "name": "votacao",
+      "schema": "consulta",
+      "columns": {
+        "votacao_id": {
+          "name": "votacao_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "casa": {
+          "name": "casa",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "codigo_na_fonte": {
+          "name": "codigo_na_fonte",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dia": {
+          "name": "dia",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "registrada_em": {
+          "name": "registrada_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "descricao": {
+          "name": "descricao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "resultado": {
+          "name": "resultado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "secreta": {
+          "name": "secreta",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "relacao_completa": {
+          "name": "relacao_completa",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "proposicoes": {
+          "name": "proposicoes",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "placar": {
+          "name": "placar",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "contagem_sem_voto": {
+          "name": "contagem_sem_voto",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "captura_id": {
+          "name": "captura_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "captura_dos_votos_id": {
+          "name": "captura_dos_votos_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ocorrido_em": {
+          "name": "ocorrido_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "votacao_por_dia": {
+          "name": "votacao_por_dia",
+          "columns": [
+            {
+              "expression": "dia",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "registrada_em",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "consulta.voto": {
+      "name": "voto",
+      "schema": "consulta",
+      "columns": {
+        "votacao_id": {
+          "name": "votacao_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pessoa_id": {
+          "name": "pessoa_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "opcao": {
+          "name": "opcao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "situacao_sem_voto": {
+          "name": "situacao_sem_voto",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "motivo_categoria": {
+          "name": "motivo_categoria",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "motivo_descricao": {
+          "name": "motivo_descricao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "registro_na_fonte": {
+          "name": "registro_na_fonte",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sigla_partido_na_fonte": {
+          "name": "sigla_partido_na_fonte",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "voto_por_pessoa": {
+          "name": "voto_por_pessoa",
+          "columns": [
+            {
+              "expression": "pessoa_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "voto_votacao_id_pessoa_id_pk": {
+          "name": "voto_votacao_id_pessoa_id_pk",
+          "columns": [
+            "votacao_id",
+            "pessoa_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {
+    "consulta": "consulta"
+  },
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

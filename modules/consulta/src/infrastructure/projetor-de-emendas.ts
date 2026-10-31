@@ -32,6 +32,9 @@ export class ProjetorDeEmendas {
       autorPessoaId: dados.autor.pessoaId,
       autorNome: dados.autor.nomeNaFonte,
       ufs: ufsDeDestino(dados.destinacoes),
+      municipios: [
+        ...new Set(dados.destinacoes.flatMap((d) => (d.municipioIbge ? [d.municipioIbge] : []))),
+      ].sort(),
       destinacoes: dados.destinacoes,
       empenhado: somar('empenhadoCentavos'),
       liquidado: somar('liquidadoCentavos'),

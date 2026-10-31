@@ -7,6 +7,10 @@ import {
 
 import { inbox } from '../infrastructure/esquema.js';
 import {
+  EVENTOS_DE_COLETA,
+  type ProjetorDeColetas,
+} from '../infrastructure/projetor-de-coletas.js';
+import {
   EVENTOS_DE_CONVENIO,
   type ProjetorDeConvenios,
 } from '../infrastructure/projetor-de-convenios.js';
@@ -26,6 +30,10 @@ import {
   EVENTOS_PROJETADOS,
   type ProjetorDeParlamentares,
 } from '../infrastructure/projetor-de-parlamentares.js';
+import {
+  EVENTOS_DE_MUNICIPIO,
+  type ProjetorDeMunicipios,
+} from '../infrastructure/projetor-de-municipios.js';
 import { EVENTOS_DE_OBRA, type ProjetorDeObras } from '../infrastructure/projetor-de-obras.js';
 import {
   EVENTOS_DE_PROPOSICAO,
@@ -44,6 +52,8 @@ export const CONSUMIDOR_DE_EMENDAS = 'consulta.projetar_emendas';
 export const CONSUMIDOR_DE_FAVORECIDOS = 'consulta.projetar_favorecidos';
 export const CONSUMIDOR_DE_CONVENIOS = 'consulta.projetar_convenios';
 export const CONSUMIDOR_DE_OBRAS = 'consulta.projetar_obras';
+export const CONSUMIDOR_DE_COLETAS = 'consulta.projetar_coletas';
+export const CONSUMIDOR_DE_MUNICIPIOS = 'consulta.projetar_municipios';
 
 export interface Projetores {
   readonly parlamentares: ProjetorDeParlamentares;
@@ -54,6 +64,8 @@ export interface Projetores {
   readonly favorecidos: ProjetorDeFavorecidos;
   readonly convenios: ProjetorDeConvenios;
   readonly obras: ProjetorDeObras;
+  readonly coletas: ProjetorDeColetas;
+  readonly municipios: ProjetorDeMunicipios;
 }
 
 interface Projetor {
@@ -75,6 +87,8 @@ export async function assinarConsumidores(
     [CONSUMIDOR_DE_FAVORECIDOS, EVENTOS_DE_FAVORECIDOS, projetores.favorecidos],
     [CONSUMIDOR_DE_CONVENIOS, EVENTOS_DE_CONVENIO, projetores.convenios],
     [CONSUMIDOR_DE_OBRAS, EVENTOS_DE_OBRA, projetores.obras],
+    [CONSUMIDOR_DE_COLETAS, EVENTOS_DE_COLETA, projetores.coletas],
+    [CONSUMIDOR_DE_MUNICIPIOS, EVENTOS_DE_MUNICIPIO, projetores.municipios],
   ];
   for (const [consumidor, eventos, projetor] of assinaturas) {
     const consumir = consumidorIdempotente(banco, inbox, consumidor, (envelope) =>

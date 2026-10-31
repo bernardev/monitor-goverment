@@ -7,9 +7,10 @@ import type {
 } from '@prometeu/contracts';
 import type { BancoDoContexto } from '@prometeu/infraestrutura';
 import { CodigoIbge } from '@prometeu/shared-kernel';
-import { and, arrayContains, count, desc, eq, inArray } from 'drizzle-orm';
+import { and, arrayContains, count, desc, eq, inArray, like } from 'drizzle-orm';
 
 import type { ConsultaDeObras, FiltroDeObras } from '../application/portas.js';
+import { paraBusca } from './busca.js';
 import { captura, emenda, obra } from './esquema.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -34,6 +35,10 @@ export class ConsultaDeObrasPostgres implements ConsultaDeObras {
     const onde = and(
       uf === undefined ? undefined : eq(obra.uf, uf),
       filtro.situacao === undefined ? undefined : eq(obra.situacao, filtro.situacao),
+      filtro.municipio === undefined
+        ? undefined
+        : arrayContains(obra.municipios, [filtro.municipio]),
+      filtro.nome === undefined ? undefined : like(obra.nomeBusca, `%${paraBusca(filtro.nome)}%`),
     );
     const [linhas, [total]] = await Promise.all([
       this.banco.drizzle

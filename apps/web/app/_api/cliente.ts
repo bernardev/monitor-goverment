@@ -6,6 +6,7 @@ import type {
   EmendaResumo,
   EmendasDoParlamentar,
   FrequenciaDoParlamentar,
+  MunicipioResumo,
   ObraDetalhada,
   ObraResumo,
   Pagina,
@@ -13,6 +14,7 @@ import type {
   PerfilDeParlamentar,
   ProposicaoDetalhada,
   ProposicaoResumo,
+  SituacaoDaFonte,
   SituacaoDaObra,
   TipoDeEmenda,
   TipoDeProposicao,
@@ -38,16 +40,21 @@ async function obter<T>(caminho: string): Promise<T | undefined> {
 
 export interface FiltroDaLista {
   readonly uf?: string | undefined;
+  /** Parte do nome; com nome, entra também quem já saiu do cargo. */
+  readonly nome?: string | undefined;
   readonly pagina: number;
+  readonly itens?: number;
 }
 
 export async function listarParlamentares(
   filtro: FiltroDaLista,
 ): Promise<Pagina<ParlamentarResumo>> {
-  const busca = new URLSearchParams({ pagina: String(filtro.pagina), itens: '50' });
+  const itens = filtro.itens ?? 50;
+  const busca = new URLSearchParams({ pagina: String(filtro.pagina), itens: String(itens) });
   if (filtro.uf) busca.set('uf', filtro.uf);
+  if (filtro.nome) busca.set('nome', filtro.nome);
   const pagina = await obter<Pagina<ParlamentarResumo>>(`/v1/parlamentares?${busca.toString()}`);
-  return pagina ?? { itens: [], pagina: filtro.pagina, itensPorPagina: 50, total: 0 };
+  return pagina ?? { itens: [], pagina: filtro.pagina, itensPorPagina: itens, total: 0 };
 }
 
 export function buscarParlamentar(pessoaId: string): Promise<PerfilDeParlamentar | undefined> {
@@ -117,6 +124,8 @@ export interface FiltroDeEmendas {
   readonly ano?: number | undefined;
   readonly tipo?: TipoDeEmenda | undefined;
   readonly uf?: string | undefined;
+  /** Código IBGE do município de destino. */
+  readonly municipio?: string | undefined;
   readonly pagina: number;
 }
 
@@ -126,6 +135,7 @@ export async function listarEmendas(filtro: FiltroDeEmendas): Promise<Pagina<Eme
   if (filtro.ano) busca.set('ano', String(filtro.ano));
   if (filtro.tipo) busca.set('tipo', filtro.tipo);
   if (filtro.uf) busca.set('uf', filtro.uf);
+  if (filtro.municipio) busca.set('municipio', filtro.municipio);
   const lista = await obter<Pagina<EmendaResumo>>(`/v1/emendas?${busca.toString()}`);
   return lista ?? { itens: [], pagina: filtro.pagina, itensPorPagina: 50, total: 0 };
 }
@@ -144,18 +154,40 @@ export function emendasDoParlamentar(pessoaId: string): Promise<EmendasDoParlame
 export interface FiltroDeObras {
   readonly uf?: string | undefined;
   readonly situacao?: SituacaoDaObra | undefined;
+  readonly municipio?: string | undefined;
+  readonly nome?: string | undefined;
   readonly pagina: number;
+  readonly itens?: number;
 }
 
 /** Obras pagas com emendas, da de maior investimento previsto para a de menor. */
 export async function listarObras(filtro: FiltroDeObras): Promise<Pagina<ObraResumo>> {
-  const busca = new URLSearchParams({ pagina: String(filtro.pagina), itens: '50' });
+  const itens = filtro.itens ?? 50;
+  const busca = new URLSearchParams({ pagina: String(filtro.pagina), itens: String(itens) });
   if (filtro.uf) busca.set('uf', filtro.uf);
   if (filtro.situacao) busca.set('situacao', filtro.situacao);
+  if (filtro.municipio) busca.set('municipio', filtro.municipio);
+  if (filtro.nome) busca.set('nome', filtro.nome);
   const lista = await obter<Pagina<ObraResumo>>(`/v1/obras?${busca.toString()}`);
-  return lista ?? { itens: [], pagina: filtro.pagina, itensPorPagina: 50, total: 0 };
+  return lista ?? { itens: [], pagina: filtro.pagina, itensPorPagina: itens, total: 0 };
 }
 
 export function buscarObra(obraId: string): Promise<ObraDetalhada | undefined> {
   return obter<ObraDetalhada>(`/v1/obras/${encodeURIComponent(obraId)}`);
+}
+
+/** Quando cada fonte oficial foi coletada pela última vez. */
+export async function situacaoDasFontes(): Promise<SituacaoDaFonte[]> {
+  return (await obter<SituacaoDaFonte[]>('/v1/fontes')) ?? [];
+}
+
+/** Municípios pelo nome (destino de emenda ou local de obra); pede ao menos 2 letras. */
+export async function buscarMunicipios(nome: string): Promise<MunicipioResumo[]> {
+  if (nome.trim().length < 2) return [];
+  const busca = new URLSearchParams({ nome });
+  return (await obter<MunicipioResumo[]>(`/v1/municipios?${busca.toString()}`)) ?? [];
+}
+
+export function buscarMunicipio(codigoIbge: string): Promise<MunicipioResumo | undefined> {
+  return obter<MunicipioResumo>(`/v1/municipios/${encodeURIComponent(codigoIbge)}`);
 }

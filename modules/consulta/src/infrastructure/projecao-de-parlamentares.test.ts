@@ -248,5 +248,11 @@ describe('projeção de parlamentares', () => {
 
     expect(lista.itens.map((p) => p.nome)).toEqual(['Ana Exemplo']);
     expect((await consulta.buscar(BRUNO))?.mandato?.fim).toBe('2026-10-15T03:00:00.000Z');
+    // A busca por nome acha também quem saiu, sem importar acento nem maiúsculas.
+    const busca = async (nome: string) =>
+      (await consulta.listar({ nome, pagina: 1, itensPorPagina: 10 })).itens.map((p) => p.nome);
+    expect(await busca('BRUNO')).toEqual(['Bruno Modelo']);
+    expect(await busca('exêmplo')).toEqual(['Ana Exemplo']);
+    expect(await busca('ninguém')).toEqual([]);
   });
 });
