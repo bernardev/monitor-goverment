@@ -61,3 +61,13 @@ export type TabelaInbox = ReturnType<typeof definirInbox>;
 
 /** Outbox do schema `ingestao`, gravada pela plataforma de dados e esvaziada pelo worker (ADR-0015). */
 export const outboxDaIngestao = definirOutbox(pgSchema('ingestao'));
+
+/** Outbox de um schema pelo nome, para comandos de operação. */
+export function outboxDoSchema(schema: string): TabelaOutbox {
+  return definirOutbox(pgSchema(schema));
+}
+
+/** Inbox de um schema pelo nome, para comandos de operação. */
+export function inboxDoSchema(schema: string): TabelaInbox {
+  return definirInbox(pgSchema(schema));
+}

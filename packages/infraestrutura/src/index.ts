@@ -11,9 +11,17 @@ export { comCorrelacao, idDeCorrelacaoAtual } from './correlacao.js';
 export { migrar } from './migracoes.js';
 export { gravarNaOutbox, RelayDaOutbox } from './outbox.js';
 export {
+  type DestinoDaReentrega,
+  type OrigemDaReentrega,
+  type Reentrega,
+  reentregar,
+} from './reentrega.js';
+export {
   definirInbox,
   definirOutbox,
+  inboxDoSchema,
   outboxDaIngestao,
+  outboxDoSchema,
   type TabelaInbox,
   type TabelaOutbox,
 } from './tabelas.js';

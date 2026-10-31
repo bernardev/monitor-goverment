@@ -9,7 +9,8 @@
     "start": "node dist/main.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "reentregar": "node dist/reentregar.js"
   },
   "dependencies": {
     "@nestjs/common": "^12.3.2",

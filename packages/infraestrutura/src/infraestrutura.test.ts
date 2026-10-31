@@ -9,6 +9,7 @@ import { BarramentoPgBoss } from './barramento.js';
 import { consumidorIdempotente } from './consumidor.js';
 import { comCorrelacao } from './correlacao.js';
 import { gravarNaOutbox, RelayDaOutbox } from './outbox.js';
+import { reentregar } from './reentrega.js';
 import { definirInbox, definirOutbox } from './tabelas.js';
 import {
   BarramentoEmMemoria,
@@ -186,6 +187,34 @@ describe('infraestrutura de eventos contra PostgreSQL real', () => {
     } finally {
       await barramento.fechar();
     }
+  });
+
+  it('a reentrega faz o consumidor processar de novo um evento já entregue', async () => {
+    const barramento = new BarramentoEmMemoria();
+    const relay = new RelayDaOutbox(banco, outbox, barramento);
+    const efeitos: string[] = [];
+    const manipular = consumidorIdempotente(banco, inbox, 'teste.reentrega', async (envelope) => {
+      efeitos.push(envelope.idDoAgregado);
+      return Promise.resolve();
+    });
+    await barramento.assinar('AlgoAconteceu', 'teste.reentrega', manipular);
+    await banco.transacao((tx) => gravarNaOutbox(tx, outbox, [umEvento(1), umEvento(2)]));
+    await relay.publicarPendentes();
+    const [primeiro] = await banco.drizzle.select().from(outbox).orderBy(outbox.ocorridoEm);
+
+    const reentrega = await reentregar(
+      { banco, outbox },
+      { banco, inbox, consumidor: 'teste.reentrega' },
+      { eventos: [primeiro?.id ?? ''] },
+    );
+    await relay.publicarPendentes();
+
+    expect(reentrega).toEqual({ republicados: 1, esquecidos: 1 });
+    expect(efeitos).toEqual(['agregado-1', 'agregado-2', 'agregado-1']);
+    // Sem filtro, tudo o que já foi publicado volta; o pendente não conta.
+    expect(
+      await reentregar({ banco, outbox }, { banco, inbox, consumidor: 'teste.reentrega' }),
+    ).toEqual({ republicados: 2, esquecidos: 2 });
   });
 
   it('conexão ociosa encerrada pelo servidor não derruba o processo, e a próxima consulta funciona', async () => {
