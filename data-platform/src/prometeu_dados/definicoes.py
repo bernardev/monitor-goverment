@@ -31,6 +31,7 @@ from prometeu_dados.conectores.camara import (
     ConectorProposicoesDaCamara,
     ConectorVotacoesDaCamara,
 )
+from prometeu_dados.conectores.obrasgov import ConectorObrasDoObrasGov
 from prometeu_dados.conectores.portal_transparencia import ConectorEmendasDoPortal
 from prometeu_dados.conectores.senado import (
     ConectorProposicoesDoSenado,
@@ -203,10 +204,24 @@ def transparencia_emendas(context: AssetExecutionContext) -> MaterializeResult[N
     return _executar(context, ConectorEmendasDoPortal, JanelaDeColeta(inicio=agora, fim=agora))
 
 
-def _diaria(grupo: str) -> ScheduleDefinition:
+@asset(
+    group_name="obrasgov",
+    description=(
+        "Obras pagas com emendas desde 2023: situação, execução física, paralisações e "
+        "localização (prata: obrasgov_empenho_de_emenda, obrasgov_projeto, "
+        "obrasgov_execucao_fisica, obrasgov_situacao e obrasgov_localizacao)."
+    ),
+)
+def obrasgov_obras(context: AssetExecutionContext) -> MaterializeResult[None]:
+    agora = datetime.now(UTC)
+    return _executar(context, ConectorObrasDoObrasGov, JanelaDeColeta(inicio=agora, fim=agora))
+
+
+def _agenda(grupo: str, cron: str = "0 6 * * *") -> ScheduleDefinition:
+    """Às 6h de Brasília; todo dia, salvo outro `cron`."""
     return ScheduleDefinition(
         job=define_asset_job(f"{grupo}_job", selection=AssetSelection.groups(grupo)),
-        cron_schedule="0 6 * * *",
+        cron_schedule=cron,
         execution_timezone="America/Sao_Paulo",
     )
 
@@ -221,6 +236,13 @@ defs = Definitions(
         senado_votacoes,
         senado_proposicoes,
         transparencia_emendas,
+        obrasgov_obras,
     ],
-    schedules=[_diaria("camara"), _diaria("senado"), _diaria("portal_transparencia")],
+    schedules=[
+        _agenda("camara"),
+        _agenda("senado"),
+        _agenda("portal_transparencia"),
+        # Semanal, às segundas: a coleta leva dezenas de minutos, e a obra muda devagar.
+        _agenda("obrasgov", cron="0 6 * * 1"),
+    ],
 )

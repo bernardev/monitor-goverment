@@ -34,4 +34,5 @@ uv run dagster asset materialize -m prometeu_dados.definicoes --select camara_vo
 uv run dagster asset materialize -m prometeu_dados.definicoes --select senado_senadores,senado_votacoes
 uv run dagster asset materialize -m prometeu_dados.definicoes --select camara_proposicoes,senado_proposicoes
 uv run dagster asset materialize -m prometeu_dados.definicoes --select transparencia_emendas
+uv run dagster asset materialize -m prometeu_dados.definicoes --select obrasgov_obras
 ```
