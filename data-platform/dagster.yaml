@@ -1,0 +1,8 @@
+# Instância do Dagster nos contêineres (DAGSTER_HOME=/opt/dagster). O histórico de execuções, que o
+# daemon e a interface compartilham, fica no volume `dagster`; o dado coletado vai para o PostgreSQL e
+# o armazenamento de objetos.
+storage:
+  sqlite:
+    base_dir: /opt/dagster/historico
+telemetry:
+  enabled: false

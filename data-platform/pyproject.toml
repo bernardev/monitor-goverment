@@ -15,6 +15,10 @@ dependencies = [
 ]
 
 [dependency-groups]
+# Para os contêineres do Dagster: a interface web. O daemon vem com o `dagster`.
+operacao = [
+    "dagster-webserver>=1.13.27",
+]
 dev = [
     "boto3-stubs[s3]>=1.43.122",
     "dagster-webserver>=1.13.27",

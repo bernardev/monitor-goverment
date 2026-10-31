@@ -46,6 +46,39 @@ services:
     volumes:
       - ./keycloak:/opt/keycloak/data/import:ro
 
+  # Plataforma de dados (ADR-0005): o daemon dispara as agendas das coletas e avisa as falhas pelo
+  # webhook de ALERTA_WEBHOOK_URL. Perfil próprio, para subir só quando for coletar:
+  #   docker compose -f infra/docker/docker-compose.yml --profile dados up -d
+  dados:
+    profiles: [dados]
+    build: ../../data-platform
+    environment: &ambiente-dos-dados
+      INGESTAO_DATABASE_URL: postgresql://ctx_ingestao:desenvolvimento@postgres:5432/prometeu
+      S3_ENDPOINT: http://objetos:9000
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-prometeu}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-desenvolvimento}
+      ALERTA_WEBHOOK_URL: ${ALERTA_WEBHOOK_URL:-}
+    volumes:
+      - dagster:/opt/dagster/historico
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Interface do Dagster: execuções, agendas e a carga histórica (http://localhost:3070).
+  dados-interface:
+    profiles: [dados]
+    build: ../../data-platform
+    command: ['dagster-webserver', '-h', '0.0.0.0', '-p', '3070', '-m', 'prometeu_dados.definicoes']
+    environment: *ambiente-dos-dados
+    ports:
+      - '${DAGSTER_PORTA:-3070}:3070'
+    volumes:
+      - dagster:/opt/dagster/historico
+    depends_on:
+      - dados
+
 volumes:
   postgres:
   objetos:
+  dagster:

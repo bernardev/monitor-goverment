@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Protocol
 
 from prometeu_dados.bronze import RespostaBruta
@@ -28,6 +28,22 @@ class JanelaDeColeta:
             raise ValueError("A janela de coleta precisa de datas com fuso horário.")
         if self.fim < self.inicio:
             raise ValueError("O fim da janela de coleta é anterior ao início.")
+
+    def em_partes(self, passo: timedelta) -> list[JanelaDeColeta]:
+        """Janelas consecutivas de até `passo`, para fontes que limitam o período de uma consulta.
+
+        Cada parte termina um microssegundo antes de a seguinte começar: no calendário, o dia da
+        divisa fica numa parte só.
+        """
+        if passo <= timedelta(0):
+            raise ValueError("O passo da divisão da janela precisa ser positivo.")
+        partes = []
+        inicio = self.inicio
+        while inicio + passo < self.fim:
+            partes.append(JanelaDeColeta(inicio, inicio + passo - timedelta(microseconds=1)))
+            inicio += passo
+        partes.append(JanelaDeColeta(inicio, self.fim))
+        return partes
 
 
 class FonteMudouDeFormatoError(Exception):

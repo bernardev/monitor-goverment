@@ -1331,6 +1331,9 @@ dev = [
     { name = "testcontainers" },
     { name = "types-defusedxml" },
 ]
+operacao = [
+    { name = "dagster-webserver" },
+]
 
 [package.metadata]
 requires-dist = [
@@ -1354,6 +1357,7 @@ dev = [
     { name = "testcontainers", extras = ["postgres"], specifier = ">=4.15.0" },
     { name = "types-defusedxml", specifier = ">=0.7.0.20260504" },
 ]
+operacao = [{ name = "dagster-webserver", specifier = ">=1.13.27" }]
 
 [[package]]
 name = "propcache"

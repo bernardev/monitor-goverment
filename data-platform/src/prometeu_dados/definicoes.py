@@ -8,19 +8,28 @@ montados e entregues aos conectores.
 import os
 from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, time, timedelta, timezone
 from typing import Self
 
 from dagster import (
     AssetExecutionContext,
     AssetSelection,
+    Config,
+    DefaultScheduleStatus,
+    DefaultSensorStatus,
     Definitions,
     MaterializeResult,
+    OpExecutionContext,
+    RunFailureSensorContext,
     ScheduleDefinition,
     asset,
     define_asset_job,
+    job,
+    op,
+    run_failure_sensor,
 )
 
+from prometeu_dados.adaptadores.alerta_webhook import AlertaPorWebhook
 from prometeu_dados.adaptadores.armazem_s3 import ArmazemS3
 from prometeu_dados.adaptadores.cliente_httpx import ClienteHttpx
 from prometeu_dados.adaptadores.gravador_postgres import GravadorPrataPostgres
@@ -60,6 +69,8 @@ class Configuracao:
         )
 
 
+BRASILIA = timezone(timedelta(hours=-3))
+
 JANELA_DA_FREQUENCIA = timedelta(days=30)
 """A justificativa da ausência costuma chegar dias depois da sessão; a execução revisita o mês."""
 
@@ -71,7 +82,7 @@ JANELA_DAS_PROPOSICOES = timedelta(days=3)
 
 
 def _executar(
-    context: AssetExecutionContext,
+    context: AssetExecutionContext | OpExecutionContext,
     conector: Callable[[ClienteHttpx], Conector],
     janela: JanelaDeColeta,
 ) -> MaterializeResult[None]:
@@ -217,13 +228,82 @@ def obrasgov_obras(context: AssetExecutionContext) -> MaterializeResult[None]:
     return _executar(context, ConectorObrasDoObrasGov, JanelaDeColeta(inicio=agora, fim=agora))
 
 
+CARGAS_HISTORICAS: dict[str, tuple[Callable[[ClienteHttpx], Conector], timedelta | None]] = {
+    # O serviço legado devolve o período inteiro de cada deputado numa consulta só, e o custo é
+    # quase todo fixo por consulta: dividir só multiplicaria o tempo.
+    "camara_frequencia": (ConectorFrequenciaDaCamara, None),
+    # A API recusa mais de 3 meses por consulta; um mês por lote mantém o lote pequeno.
+    "camara_votacoes": (ConectorVotacoesDaCamara, timedelta(days=30)),
+    # A API recusa mais de 1 ano por consulta.
+    "senado_votacoes": (ConectorVotacoesDoSenado, timedelta(days=90)),
+}
+
+
+class CargaHistorica(Config):
+    """O que carregar e de quando: `de` e `ate` são dias de Brasília, `aaaa-mm-dd`, inclusive."""
+
+    fonte: str
+    de: str
+    ate: str | None = None
+
+
+@op
+def carregar_historico(context: OpExecutionContext, config: CargaHistorica) -> None:
+    """Coleta o período em partes do tamanho que a fonte aceita, uma parte por lote.
+
+    Cada parte é gravada e anunciada antes da seguinte: se a carga parar, basta recomeçar do dia
+    da parte que falhou. Regravar uma parte não muda nada, porque a prata é gravada por chave e os
+    importadores são idempotentes.
+    """
+    if config.fonte not in CARGAS_HISTORICAS:
+        raise ValueError(f"Carga histórica de {config.fonte!r}: use {sorted(CARGAS_HISTORICAS)}.")
+    conector, passo = CARGAS_HISTORICAS[config.fonte]
+    inicio = datetime.combine(date.fromisoformat(config.de), time(), BRASILIA)
+    fim = (
+        datetime.combine(date.fromisoformat(config.ate), time.max, BRASILIA)
+        if config.ate
+        else datetime.now(UTC)
+    )
+    janela = JanelaDeColeta(inicio=inicio, fim=fim)
+    partes = [janela] if passo is None else janela.em_partes(passo)
+    for numero, parte in enumerate(partes, start=1):
+        context.log.info(
+            f"{config.fonte}: parte {numero} de {len(partes)}, "
+            f"{parte.inicio.astimezone(BRASILIA).date()} a {parte.fim.astimezone(BRASILIA).date()}."
+        )
+        _executar(context, conector, parte)
+
+
+@job(description="Carga histórica de uma fonte do legislativo, por período (ver o README).")
+def carga_historica() -> None:
+    carregar_historico()
+
+
 def _agenda(grupo: str, cron: str = "0 6 * * *") -> ScheduleDefinition:
-    """Às 6h de Brasília; todo dia, salvo outro `cron`."""
+    """Às 6h de Brasília; todo dia, salvo outro `cron`. Já nasce ligada: o Dagster deixa as agendas
+    paradas até alguém ligá-las à mão, e uma coleta esquecida desligada não avisa ninguém."""
     return ScheduleDefinition(
         job=define_asset_job(f"{grupo}_job", selection=AssetSelection.groups(grupo)),
         cron_schedule=cron,
         execution_timezone="America/Sao_Paulo",
+        default_status=DefaultScheduleStatus.RUNNING,
     )
+
+
+@run_failure_sensor(
+    default_status=DefaultSensorStatus.RUNNING,
+    description="Avisa a equipe pelo webhook de ALERTA_WEBHOOK_URL quando uma coleta falha.",
+)
+def avisar_falha(context: RunFailureSensorContext) -> None:
+    execucao = context.dagster_run
+    mensagem = (
+        f"Prometeu: a coleta {execucao.job_name} falhou (execução {execucao.run_id}). "
+        f"{context.failure_event.message or ''}"
+    ).strip()
+    if not AlertaPorWebhook(os.environ.get("ALERTA_WEBHOOK_URL")).avisar(mensagem):
+        context.log.warning(
+            f"Aviso de falha não enviado (sem webhook ou webhook fora do ar): {mensagem}"
+        )
 
 
 defs = Definitions(
@@ -238,6 +318,8 @@ defs = Definitions(
         transparencia_emendas,
         obrasgov_obras,
     ],
+    jobs=[carga_historica],
+    sensors=[avisar_falha],
     schedules=[
         _agenda("camara"),
         _agenda("senado"),
