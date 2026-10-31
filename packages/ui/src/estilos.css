@@ -1093,7 +1093,7 @@ main:not(.capitulos) button {
 
   .tabela tr {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
     gap: 2px 16px;
     padding: 14px 0;
     border-bottom: 1px solid var(--fraco);
@@ -1105,7 +1105,6 @@ main:not(.capitulos) button {
   }
 
   .tabela td:first-child {
-    grid-column: 1 / -1;
     font-weight: 700;
   }
 
