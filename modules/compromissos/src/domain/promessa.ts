@@ -6,6 +6,7 @@ import { type EstagioNaCadeia, estagioMaisAvancado, posicaoNaCadeia } from './es
 import type { EventoDeCompromissos } from './eventos.js';
 import { FonteDaPromessa, type NovaFonte } from './fonte-da-promessa.js';
 import {
+  type CapturaId,
   type CuradorId,
   type FonteId,
   PromessaId,
@@ -13,6 +14,7 @@ import {
   type VinculoId,
 } from './identificadores.js';
 import type { Meta } from './meta.js';
+import type { ReferenciaExterna } from './referencia-externa.js';
 import { type DadosDaProposta, PropostaDeVeredito } from './proposta-de-veredito.js';
 import { RegistroDeVeredito } from './registro-de-veredito.js';
 import type { Tema } from './tema.js';
@@ -45,6 +47,16 @@ export interface EstadoDaPromessa {
   readonly historico: RegistroDeVeredito[];
   proposta: PropostaDeVeredito | undefined;
   estagio: EstagioNaCadeia;
+  /** Fatos ligados por vínculo confirmado que mudaram desde a última reavaliação. */
+  reavaliacoes: PedidoDeReavaliacao[];
+}
+
+/** Um fato vinculado mudou (a obra parou, a emenda pagou, o PL tramitou): a curadoria olha de novo. */
+export interface PedidoDeReavaliacao {
+  readonly alvo: ReferenciaExterna;
+  readonly motivo: string;
+  readonly captura: CapturaId;
+  readonly pedidoEm: Date;
 }
 
 /**
@@ -80,6 +92,7 @@ export class Promessa extends AggregateRoot<PromessaId> {
       historico: [],
       proposta: undefined,
       estagio: 'prometida',
+      reavaliacoes: [],
     });
 
     promessa.emitir(
@@ -148,6 +161,10 @@ export class Promessa extends AggregateRoot<PromessaId> {
 
   get propostaPendente(): PropostaDeVeredito | undefined {
     return this.estado.proposta;
+  }
+
+  get reavaliacoesPendentes(): readonly PedidoDeReavaliacao[] {
+    return [...this.estado.reavaliacoes];
   }
 
   /** Antes do primeiro veredito publicado, a promessa está `nao_iniciada` (estado inicial). */
@@ -265,6 +282,64 @@ export class Promessa extends AggregateRoot<PromessaId> {
       agora,
     );
     this.recalcularEstagio(agora);
+    return Result.ok(undefined);
+  }
+
+  /* Reavaliação */
+
+  /**
+   * Pedido das políticas que acompanham os fatos de outros contextos. Só vale para fato ligado por
+   * vínculo confirmado, o único que conta para o estágio. O mesmo motivo para o mesmo fato, ainda
+   * pendente, não se repete (`false`). Não mexe no estágio nem no veredito: quem decide é uma pessoa.
+   */
+  solicitarReavaliacao(
+    alvo: ReferenciaExterna,
+    motivo: string,
+    captura: CapturaId,
+    agora: Date,
+  ): Result<boolean, DomainError> {
+    const texto = textoObrigatorio(
+      motivo,
+      'reavaliacao.sem_motivo',
+      'O pedido de reavaliação diz o que mudou no fato.',
+    );
+    if (!texto.ok) return texto;
+    if (!this.estado.vinculos.some((v) => v.contaParaOEstagio && v.alvo.equals(alvo))) {
+      return Result.fail(
+        new DomainError(
+          'reavaliacao.sem_vinculo_confirmado',
+          'Só um fato com vínculo confirmado pede reavaliação da promessa.',
+          { tipo: alvo.tipo, id: alvo.id.valor },
+        ),
+      );
+    }
+    if (this.estado.reavaliacoes.some((p) => p.alvo.equals(alvo) && p.motivo === texto.value)) {
+      return Result.ok(false);
+    }
+    this.estado.reavaliacoes.push({ alvo, motivo: texto.value, captura, pedidoEm: agora });
+    this.emitir(
+      'ReavaliacaoSolicitada',
+      {
+        tipoDoAlvo: alvo.tipo,
+        idDoAlvo: alvo.id.valor,
+        motivo: texto.value,
+        capturaId: captura.valor,
+      },
+      agora,
+    );
+    return Result.ok(true);
+  }
+
+  /** A curadoria olhou os fatos que mudaram (e decidiu o que fazer com vínculo e veredito). */
+  concluirReavaliacao(por: CuradorId, agora: Date): Result<void, DomainError> {
+    const pedidos = this.estado.reavaliacoes.length;
+    if (pedidos === 0) {
+      return Result.fail(
+        new DomainError('reavaliacao.sem_pedido', 'A promessa não tem reavaliação pendente.'),
+      );
+    }
+    this.estado.reavaliacoes = [];
+    this.emitir('ReavaliacaoConcluida', { concluidaPor: por.valor, pedidos }, agora);
     return Result.ok(undefined);
   }
 

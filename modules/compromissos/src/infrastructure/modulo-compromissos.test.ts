@@ -1,6 +1,10 @@
 import type { ConsultaDeMandatos, MandatoPublicado } from '@prometeu/agentes-publicos';
 import { BancoDoContexto, migrar } from '@prometeu/infraestrutura';
-import { iniciarPostgresDeTeste, type PostgresDeTeste } from '@prometeu/infraestrutura/testes';
+import {
+  BarramentoEmMemoria,
+  iniciarPostgresDeTeste,
+  type PostgresDeTeste,
+} from '@prometeu/infraestrutura/testes';
 import { gerarUuidV7 } from '@prometeu/shared-kernel';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -136,6 +140,85 @@ describe('módulo Compromissos montado sobre o PostgreSQL', () => {
     });
 
     expect(proposta.ok ? undefined : proposta.error.code).toBe('veredito.mandato_em_curso');
+  });
+
+  it('obra paralisada vira pedido de reavaliação no painel, uma vez só, até a curadoria concluir', async () => {
+    const barramento = new BarramentoEmMemoria();
+    await modulo.assinarConsumidores(barramento);
+    const obra = gerarUuidV7();
+    const captura = gerarUuidV7();
+    const registrada = await modulo.registrarPromessa.execute({
+      pessoaId: gerarUuidV7(),
+      mandatoId: MANDATO_ENCERRADO,
+      texto: 'Terminar a ponte do Sapucaia',
+      tema: 'infraestrutura',
+      mensurabilidade: 'mensuravel',
+      competencia: 'propria',
+      fonte: {
+        tipo: 'entrevista',
+        capturaId: gerarUuidV7(),
+        citacaoLiteral: 'A ponte sai.',
+        localizacao: { tipo: 'pagina', pagina: 1 },
+        dataDaDeclaracao: new Date('2022-09-01T12:00:00Z'),
+      },
+      registradoPor: gerarUuidV7(),
+    });
+    if (!registrada.ok) throw new Error(registrada.error.message);
+    const { promessaId } = registrada.value;
+    const sugerido = await modulo.sugerirVinculo.execute({
+      promessaId,
+      tipoDoAlvo: 'obra',
+      idDoAlvo: obra,
+      estagioQueComprova: 'execucao',
+      origem: 'curador',
+      evidencias: [gerarUuidV7()],
+    });
+    if (!sugerido.ok) throw new Error(sugerido.error.message);
+    const confirmado = await modulo.confirmarVinculo.execute({
+      promessaId,
+      vinculoId: sugerido.value.vinculoId,
+      confirmadoPor: gerarUuidV7(),
+    });
+    expect(confirmado.ok).toBe(true);
+
+    const paralisada = {
+      id: gerarUuidV7(),
+      tipo: 'ObraParalisada',
+      versao: 1,
+      ocorridoEm: AGORA.toISOString(),
+      idDoAgregado: obra,
+      idDeCorrelacao: gerarUuidV7(),
+      dados: {
+        idNaFonte: '1.2',
+        em: '2027-02-10',
+        justificativa: null,
+        emendas: [],
+        capturaId: captura,
+      },
+    };
+    await barramento.publicar(paralisada);
+    await barramento.publicar({ ...paralisada, id: gerarUuidV7() });
+
+    expect((await modulo.consultaEditorial.buscar(promessaId))?.reavaliacoes).toEqual([
+      {
+        tipoDoAlvo: 'obra',
+        idDoAlvo: obra,
+        motivo: 'A obra foi paralisada em 10/02/2027.',
+        capturaId: captura,
+        pedidoEm: AGORA.toISOString(),
+      },
+    ]);
+    const naLista = (await modulo.consultaEditorial.listar()).find(
+      (p) => p.promessaId === promessaId,
+    );
+    expect(naLista?.reavaliacoesPendentes).toBe(1);
+
+    const concluida = await modulo.concluirReavaliacao.execute({
+      promessaId,
+      concluidaPor: gerarUuidV7(),
+    });
+    expect(concluida.ok).toBe(true);
+    expect((await modulo.consultaEditorial.buscar(promessaId))?.reavaliacoesPendentes).toBe(0);
   });
 
   it('busca de id inválido ou inexistente não encontra nada', async () => {

@@ -168,6 +168,54 @@ describe('PromessaRepositoryPostgres', () => {
     }
   });
 
+  it('pedidos de reavaliação: acha a promessa pelo fato, grava, recarrega e conclui', async () => {
+    await banco.drizzle.execute(sql`DELETE FROM compromissos.outbox`);
+    const repositorio = new PromessaRepositoryPostgres(banco);
+    const promessa = umaPromessa().build();
+    const obra = umAlvo('obra');
+    const vinculo = valor(
+      promessa.sugerirVinculo(
+        {
+          alvo: obra,
+          estagioQueComprova: 'execucao',
+          origem: 'curador',
+          evidencias: [umaCaptura()],
+        },
+        ONTEM,
+      ),
+    );
+    await repositorio.salvar(promessa);
+    expect(await repositorio.comVinculoConfirmado('obra', obra.id.valor)).toEqual([]);
+
+    const lida = await repositorio.buscarPorId(promessa.id);
+    if (!lida) throw new Error('Promessa não encontrada.');
+    valor(lida.confirmarVinculo(vinculo, umCurador(), ONTEM));
+    valor(lida.solicitarReavaliacao(obra, 'A obra parou.', umaCaptura(), HOJE));
+    await repositorio.salvar(lida);
+    expect(await repositorio.comVinculoConfirmado('obra', obra.id.valor)).toEqual([
+      promessa.id.valor,
+    ]);
+
+    const recarregada = await repositorio.buscarPorId(promessa.id);
+    if (!recarregada) throw new Error('Promessa não encontrada.');
+    expect(recarregada.reavaliacoesPendentes).toEqual(lida.reavaliacoesPendentes);
+    valor(recarregada.concluirReavaliacao(umCurador(), HOJE));
+    await repositorio.salvar(recarregada);
+    expect((await repositorio.buscarPorId(promessa.id))?.reavaliacoesPendentes).toEqual([]);
+
+    const eventos = await banco.drizzle.select().from(outbox);
+    expect(eventos.map((e) => e.tipo)).toEqual([
+      'VinculoSugerido',
+      'VinculoConfirmado',
+      'EstagioDaPromessaAvancou',
+      'ReavaliacaoSolicitada',
+      'ReavaliacaoConcluida',
+    ]);
+    for (const evento of eventos) {
+      expect(violacoesDoContrato(evento.tipo, evento.versao, evento.dados)).toEqual([]);
+    }
+  });
+
   it('duas gravações sobre a mesma versão: a segunda falha', async () => {
     const promessa = umaPromessa().build();
     await new PromessaRepositoryPostgres(banco).salvar(promessa);

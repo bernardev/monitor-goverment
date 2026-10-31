@@ -145,6 +145,7 @@ export class Orquestrador implements OnApplicationBootstrap, OnApplicationShutdo
       this.relatar(resumo, `${String(resumo.novos)} obras novas`);
     });
     await consulta.assinarConsumidores(barramento);
+    await compromissos.assinarConsumidores(barramento);
 
     this.relays.push(
       new RelayDaOutbox(this.bancos.ingestao, outboxDaIngestao, barramento),

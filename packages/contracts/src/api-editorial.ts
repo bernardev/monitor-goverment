@@ -30,6 +30,28 @@ export interface VinculoNaCuradoria {
   readonly evidencias: readonly string[];
 }
 
+/**
+ * Fato do autor da promessa que pode comprová-la: uma proposição de autoria, uma emenda ou uma obra
+ * paga por emenda dele. A curadoria decide se sugere o vínculo; nada aqui muda a promessa.
+ */
+export interface CandidatoAVinculo {
+  readonly tipoDoAlvo: 'proposicao' | 'emenda' | 'obra';
+  readonly idDoAlvo: string;
+  /** `PL 900/2026`, `Emenda 0001/2026`, o nome da obra. */
+  readonly titulo: string;
+  /** Ementa, ação e destino, situação da obra. */
+  readonly detalhe: string;
+  /** Estágios que este tipo de fato pode comprovar; o primeiro é o sugerido pelo estado do fato. */
+  readonly estagios: readonly string[];
+  /** De 0 a 1: a parte das palavras da promessa que aparece no fato. */
+  readonly relevancia: number;
+  readonly termosEmComum: readonly string[];
+  /** A captura que prova o fato: vira a evidência do vínculo. */
+  readonly capturaId: string;
+  /** Já tem vínculo ativo (sugerido ou confirmado) com a promessa. */
+  readonly vinculado: boolean;
+}
+
 export interface VereditoNaCuradoria {
   readonly veredito: string;
   readonly justificativa: string;
@@ -54,6 +76,17 @@ export interface ResumoDePromessaNaCuradoria {
   readonly estagio: string;
   readonly vereditoVigente: string;
   readonly aguardandoRevisao: boolean;
+  /** Quantos fatos vinculados mudaram desde a última reavaliação. */
+  readonly reavaliacoesPendentes: number;
+}
+
+/** Um fato com vínculo confirmado mudou e a curadoria precisa olhar a promessa de novo. */
+export interface PedidoDeReavaliacaoNaCuradoria {
+  readonly tipoDoAlvo: string;
+  readonly idDoAlvo: string;
+  readonly motivo: string;
+  readonly capturaId: string;
+  readonly pedidoEm: string;
 }
 
 export interface PromessaNaCuradoria extends ResumoDePromessaNaCuradoria {
@@ -67,6 +100,7 @@ export interface PromessaNaCuradoria extends ResumoDePromessaNaCuradoria {
   readonly vinculos: readonly VinculoNaCuradoria[];
   readonly historico: readonly VereditoPublicadoNaCuradoria[];
   readonly propostaPendente: VereditoNaCuradoria | null;
+  readonly reavaliacoes: readonly PedidoDeReavaliacaoNaCuradoria[];
 }
 
 /** Erro de regra de negócio devolvido pela API (código estável da linguagem ubíqua). */

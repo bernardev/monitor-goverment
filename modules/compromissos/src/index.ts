@@ -13,6 +13,7 @@ import { AdicionarFonte } from './application/casos-de-uso/adicionar-fonte.js';
 import { PublicarVeredito, RecusarVeredito } from './application/casos-de-uso/decidir-veredito.js';
 import { ConfirmarVinculo, RejeitarVinculo } from './application/casos-de-uso/decidir-vinculo.js';
 import { ProporVeredito } from './application/casos-de-uso/propor-veredito.js';
+import { ConcluirReavaliacao, SolicitarReavaliacao } from './application/casos-de-uso/reavaliar.js';
 import { RegistrarPromessa } from './application/casos-de-uso/registrar-promessa.js';
 import { SugerirVinculo } from './application/casos-de-uso/sugerir-vinculo.js';
 import type { Relogio } from './application/portas.js';
@@ -20,6 +21,7 @@ import { ConsultaEditorialPostgres } from './infrastructure/consulta-editorial-p
 import { outbox } from './infrastructure/esquema.js';
 import { MandatosEmAgentesPublicos } from './infrastructure/mandatos-em-agentes-publicos.js';
 import { PromessaRepositoryPostgres } from './infrastructure/promessa-repository-postgres.js';
+import { assinarConsumidores } from './interface/consumidores.js';
 
 export type { ConsultaDeMandatos, Relogio } from './application/portas.js';
 export type { FonteInput } from './application/entrada.js';
@@ -49,6 +51,17 @@ export {
   ProporVeredito,
   type ProporVereditoInput,
 } from './application/casos-de-uso/propor-veredito.js';
+export {
+  ConcluirReavaliacao,
+  type ConcluirReavaliacaoInput,
+  type FatoQueMudou,
+  SolicitarReavaliacao,
+  type SolicitarReavaliacaoOutput,
+} from './application/casos-de-uso/reavaliar.js';
+export {
+  CONSUMIDOR_DE_REAVALIACAO,
+  EVENTOS_QUE_PEDEM_REAVALIACAO,
+} from './interface/consumidores.js';
 export {
   RegistrarPromessa,
   type RegistrarPromessaInput,
@@ -82,14 +95,19 @@ export interface ModuloCompromissos {
   readonly proporVeredito: ProporVeredito;
   readonly publicarVeredito: PublicarVeredito;
   readonly recusarVeredito: RecusarVeredito;
+  readonly solicitarReavaliacao: SolicitarReavaliacao;
+  readonly concluirReavaliacao: ConcluirReavaliacao;
   readonly consultaEditorial: ConsultaEditorialPostgres;
   criarRelay(barramento: BarramentoDeEventos): RelayDaOutbox;
+  /** A política da reavaliação, que escuta obras, emendas e proposições. */
+  assinarConsumidores(barramento: BarramentoDeEventos): Promise<void>;
 }
 
 export function montarCompromissos(dependencias: DependenciasDeCompromissos): ModuloCompromissos {
   const { banco } = dependencias;
   const promessas = new PromessaRepositoryPostgres(banco);
   const relogio = dependencias.relogio ?? { agora: () => new Date() };
+  const solicitarReavaliacao = new SolicitarReavaliacao(promessas, relogio);
   return {
     registrarPromessa: new RegistrarPromessa(promessas, relogio),
     adicionarFonte: new AdicionarFonte(promessas, relogio),
@@ -103,7 +121,11 @@ export function montarCompromissos(dependencias: DependenciasDeCompromissos): Mo
     ),
     publicarVeredito: new PublicarVeredito(promessas, relogio),
     recusarVeredito: new RecusarVeredito(promessas, relogio),
+    solicitarReavaliacao,
+    concluirReavaliacao: new ConcluirReavaliacao(promessas, relogio),
     consultaEditorial: new ConsultaEditorialPostgres(banco, promessas),
     criarRelay: (barramento) => new RelayDaOutbox(banco, outbox, barramento),
+    assinarConsumidores: (barramento) =>
+      assinarConsumidores(barramento, banco, solicitarReavaliacao),
   };
 }

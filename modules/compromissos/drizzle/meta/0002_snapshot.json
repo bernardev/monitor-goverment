@@ -1,0 +1,714 @@
+{
+  "id": "9feb871f-4b3d-4812-a1ee-60692890f782",
+  "prevId": "5d3748f0-311a-4b50-84d3-4566c01e9a51",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "compromissos.fonte": {
+      "name": "fonte",
+      "schema": "compromissos",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "promessa_id": {
+          "name": "promessa_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "captura_id": {
+          "name": "captura_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "citacao_literal": {
+          "name": "citacao_literal",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "localizacao": {
+          "name": "localizacao",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "data_da_declaracao": {
+          "name": "data_da_declaracao",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "fonte_por_promessa": {
+          "name": "fonte_por_promessa",
+          "columns": [
+            {
+              "expression": "promessa_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "fonte_promessa_id_promessa_id_fk": {
+          "name": "fonte_promessa_id_promessa_id_fk",
+          "tableFrom": "fonte",
+          "tableTo": "promessa",
+          "schemaTo": "compromissos",
+          "columnsFrom": [
+            "promessa_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "compromissos.inbox": {
+      "name": "inbox",
+      "schema": "compromissos",
+      "columns": {
+        "id_do_evento": {
+          "name": "id_do_evento",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "consumidor": {
+          "name": "consumidor",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "processado_em": {
+          "name": "processado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "inbox_id_do_evento_consumidor_pk": {
+          "name": "inbox_id_do_evento_consumidor_pk",
+          "columns": [
+            "id_do_evento",
+            "consumidor"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "compromissos.outbox": {
+      "name": "outbox",
+      "schema": "compromissos",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "versao": {
+          "name": "versao",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ocorrido_em": {
+          "name": "ocorrido_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id_do_agregado": {
+          "name": "id_do_agregado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id_de_correlacao": {
+          "name": "id_de_correlacao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dados": {
+          "name": "dados",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "publicado_em": {
+          "name": "publicado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "outbox_pendentes": {
+          "name": "outbox_pendentes",
+          "columns": [
+            {
+              "expression": "ocorrido_em",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"compromissos\".\"outbox\".\"publicado_em\" IS NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "compromissos.pedido_de_reavaliacao": {
+      "name": "pedido_de_reavaliacao",
+      "schema": "compromissos",
+      "columns": {
+        "promessa_id": {
+          "name": "promessa_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo_do_alvo": {
+          "name": "tipo_do_alvo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id_do_alvo": {
+          "name": "id_do_alvo",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "motivo": {
+          "name": "motivo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "captura_id": {
+          "name": "captura_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pedido_em": {
+          "name": "pedido_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "pedido_de_reavaliacao_por_promessa": {
+          "name": "pedido_de_reavaliacao_por_promessa",
+          "columns": [
+            {
+              "expression": "promessa_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "pedido_de_reavaliacao_promessa_id_promessa_id_fk": {
+          "name": "pedido_de_reavaliacao_promessa_id_promessa_id_fk",
+          "tableFrom": "pedido_de_reavaliacao",
+          "tableTo": "promessa",
+          "schemaTo": "compromissos",
+          "columnsFrom": [
+            "promessa_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "compromissos.promessa": {
+      "name": "promessa",
+      "schema": "compromissos",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "pessoa_id": {
+          "name": "pessoa_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "candidatura_id": {
+          "name": "candidatura_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mandato_id": {
+          "name": "mandato_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "texto": {
+          "name": "texto",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tema": {
+          "name": "tema",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mensurabilidade": {
+          "name": "mensurabilidade",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "competencia": {
+          "name": "competencia",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "meta_descricao": {
+          "name": "meta_descricao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "meta_prazo": {
+          "name": "meta_prazo",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "estagio": {
+          "name": "estagio",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "versao": {
+          "name": "versao",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "promessa_por_pessoa": {
+          "name": "promessa_por_pessoa",
+          "columns": [
+            {
+              "expression": "pessoa_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "compromissos.proposta_de_veredito": {
+      "name": "proposta_de_veredito",
+      "schema": "compromissos",
+      "columns": {
+        "promessa_id": {
+          "name": "promessa_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "veredito": {
+          "name": "veredito",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "justificativa": {
+          "name": "justificativa",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "evidencias": {
+          "name": "evidencias",
+          "type": "uuid[]",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fundamento": {
+          "name": "fundamento",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "errata": {
+          "name": "errata",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "proposto_por": {
+          "name": "proposto_por",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "proposto_em": {
+          "name": "proposto_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "proposta_de_veredito_promessa_id_promessa_id_fk": {
+          "name": "proposta_de_veredito_promessa_id_promessa_id_fk",
+          "tableFrom": "proposta_de_veredito",
+          "tableTo": "promessa",
+          "schemaTo": "compromissos",
+          "columnsFrom": [
+            "promessa_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "compromissos.registro_de_veredito": {
+      "name": "registro_de_veredito",
+      "schema": "compromissos",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "promessa_id": {
+          "name": "promessa_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "veredito": {
+          "name": "veredito",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "justificativa": {
+          "name": "justificativa",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "evidencias": {
+          "name": "evidencias",
+          "type": "uuid[]",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fundamento": {
+          "name": "fundamento",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "errata": {
+          "name": "errata",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "proposto_por": {
+          "name": "proposto_por",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "proposto_em": {
+          "name": "proposto_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "revisado_por": {
+          "name": "revisado_por",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "publicado_em": {
+          "name": "publicado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "corrige": {
+          "name": "corrige",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "registro_por_promessa": {
+          "name": "registro_por_promessa",
+          "columns": [
+            {
+              "expression": "promessa_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "registro_de_veredito_promessa_id_promessa_id_fk": {
+          "name": "registro_de_veredito_promessa_id_promessa_id_fk",
+          "tableFrom": "registro_de_veredito",
+          "tableTo": "promessa",
+          "schemaTo": "compromissos",
+          "columnsFrom": [
+            "promessa_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "compromissos.vinculo": {
+      "name": "vinculo",
+      "schema": "compromissos",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "promessa_id": {
+          "name": "promessa_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo_do_alvo": {
+          "name": "tipo_do_alvo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id_do_alvo": {
+          "name": "id_do_alvo",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "estagio_que_comprova": {
+          "name": "estagio_que_comprova",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "origem": {
+          "name": "origem",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "evidencias": {
+          "name": "evidencias",
+          "type": "uuid[]",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "situacao": {
+          "name": "situacao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sugerido_em": {
+          "name": "sugerido_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "decidido_por": {
+          "name": "decidido_por",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "decidido_em": {
+          "name": "decidido_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "motivo": {
+          "name": "motivo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "vinculo_por_promessa": {
+          "name": "vinculo_por_promessa",
+          "columns": [
+            {
+              "expression": "promessa_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "vinculo_promessa_id_promessa_id_fk": {
+          "name": "vinculo_promessa_id_promessa_id_fk",
+          "tableFrom": "vinculo",
+          "tableTo": "promessa",
+          "schemaTo": "compromissos",
+          "columnsFrom": [
+            "promessa_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {
+    "compromissos": "compromissos"
+  },
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

@@ -21,6 +21,19 @@ export class PromessaRepositoryEmMemoria implements PromessaRepository {
     return Promise.resolve();
   }
 
+  comVinculoConfirmado(tipoDoAlvo: string, idDoAlvo: string): Promise<string[]> {
+    return Promise.resolve(
+      [...this.promessas.values()]
+        .filter((p) =>
+          p.vinculos.some(
+            (v) =>
+              v.contaParaOEstagio && v.alvo.tipo === tipoDoAlvo && v.alvo.id.valor === idDoAlvo,
+          ),
+        )
+        .map((p) => p.id.valor),
+    );
+  }
+
   tiposDosEventos(): string[] {
     return this.eventos.map((evento) => evento.tipo);
   }

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prometeu.org/contratos/eventos/reavaliacao-concluida.v1.json",
+  "title": "ReavaliacaoConcluida (v1): dados",
+  "description": "Compromissos: a curadoria olhou os fatos que mudaram e concluiu a reavaliação da promessa.",
+  "type": "object",
+  "required": ["concluidaPor", "pedidos"],
+  "additionalProperties": false,
+  "properties": {
+    "concluidaPor": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "pedidos": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Quantos pedidos de reavaliação estavam pendentes."
+    }
+  }
+}

@@ -36,6 +36,7 @@ import {
   type FundamentoGravado,
   fonte,
   outbox,
+  pedidoDeReavaliacao,
   promessa,
   propostaDeVeredito,
   registroDeVeredito,
@@ -66,7 +67,7 @@ export class PromessaRepositoryPostgres implements PromessaRepository {
     const [raiz] = await executor.select().from(promessa).where(eq(promessa.id, id.valor));
     if (!raiz) return undefined;
 
-    const [fontes, vinculos, registros, [proposta]] = await Promise.all([
+    const [fontes, vinculos, registros, [proposta], reavaliacoes] = await Promise.all([
       executor.select().from(fonte).where(eq(fonte.promessaId, raiz.id)).orderBy(asc(fonte.id)),
       executor
         .select()
@@ -79,6 +80,11 @@ export class PromessaRepositoryPostgres implements PromessaRepository {
         .where(eq(registroDeVeredito.promessaId, raiz.id))
         .orderBy(asc(registroDeVeredito.publicadoEm), asc(registroDeVeredito.id)),
       executor.select().from(propostaDeVeredito).where(eq(propostaDeVeredito.promessaId, raiz.id)),
+      executor
+        .select()
+        .from(pedidoDeReavaliacao)
+        .where(eq(pedidoDeReavaliacao.promessaId, raiz.id))
+        .orderBy(asc(pedidoDeReavaliacao.pedidoEm)),
     ]);
 
     const encontrada = Promessa.reconstituir(confiavel(PromessaId.de(raiz.id)), {
@@ -102,6 +108,15 @@ export class PromessaRepositoryPostgres implements PromessaRepository {
       historico: registros.map(paraRegistro),
       proposta: proposta ? paraProposta(proposta) : undefined,
       estagio: daLista(ESTAGIOS, raiz.estagio),
+      reavaliacoes: reavaliacoes.map((r) => ({
+        alvo: ReferenciaExterna.criar(
+          daLista(TIPOS_DE_ALVO, r.tipoDoAlvo),
+          confiavel(IdDoAlvo.de(r.idDoAlvo)),
+        ),
+        motivo: r.motivo,
+        captura: confiavel(CapturaId.de(r.capturaId)),
+        pedidoEm: r.pedidoEm,
+      })),
     });
     this.versoes.set(encontrada, raiz.versao);
     return encontrada;
@@ -180,8 +195,37 @@ export class PromessaRepositoryPostgres implements PromessaRepository {
         await tx.insert(propostaDeVeredito).values({ promessaId, ...colunasDaProposta(pendente) });
       }
 
+      await tx.delete(pedidoDeReavaliacao).where(eq(pedidoDeReavaliacao.promessaId, promessaId));
+      if (alvo.reavaliacoesPendentes.length > 0) {
+        await tx.insert(pedidoDeReavaliacao).values(
+          alvo.reavaliacoesPendentes.map((r) => ({
+            promessaId,
+            tipoDoAlvo: r.alvo.tipo,
+            idDoAlvo: r.alvo.id.valor,
+            motivo: r.motivo,
+            capturaId: r.captura.valor,
+            pedidoEm: r.pedidoEm,
+          })),
+        );
+      }
+
       await gravarNaOutbox(tx, outbox, alvo.pullDomainEvents());
     });
+  }
+
+  /** Promessas com vínculo confirmado com o fato: as que uma mudança nele pede para reavaliar. */
+  async comVinculoConfirmado(tipoDoAlvo: string, idDoAlvo: string): Promise<string[]> {
+    const linhas = await this.banco.executor
+      .selectDistinct({ promessaId: vinculo.promessaId })
+      .from(vinculo)
+      .where(
+        and(
+          eq(vinculo.tipoDoAlvo, tipoDoAlvo),
+          eq(vinculo.idDoAlvo, idDoAlvo),
+          eq(vinculo.situacao, 'confirmado'),
+        ),
+      );
+    return linhas.map((l) => l.promessaId);
   }
 
   private async gravarRaiz(tx: Executor, alvo: Promessa): Promise<void> {

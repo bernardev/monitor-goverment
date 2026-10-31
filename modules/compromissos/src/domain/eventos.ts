@@ -93,6 +93,17 @@ export type VereditoPublicado = DomainEvent<
   }
 >;
 
+/** Um fato ligado por vínculo confirmado mudou; a curadoria precisa olhar a promessa de novo. */
+export type ReavaliacaoSolicitada = DomainEvent<
+  'ReavaliacaoSolicitada',
+  { tipoDoAlvo: TipoDeAlvo; idDoAlvo: string; motivo: string; capturaId: string }
+>;
+
+export type ReavaliacaoConcluida = DomainEvent<
+  'ReavaliacaoConcluida',
+  { concluidaPor: string; pedidos: number }
+>;
+
 export type EventoDeCompromissos =
   | PromessaRegistrada
   | FonteAdicionada
@@ -103,4 +114,6 @@ export type EventoDeCompromissos =
   | EstagioDaPromessaRecuou
   | VereditoProposto
   | VereditoRecusado
-  | VereditoPublicado;
+  | VereditoPublicado
+  | ReavaliacaoSolicitada
+  | ReavaliacaoConcluida;

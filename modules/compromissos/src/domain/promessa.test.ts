@@ -471,3 +471,77 @@ describe('Promessa: errata (invariante 5)', () => {
     expect(promessa.historicoDeVereditos).toHaveLength(1);
   });
 });
+
+describe('Promessa: reavaliação quando o fato vinculado muda', () => {
+  function comObraConfirmada() {
+    const promessa = umaPromessa().build();
+    const obra = umAlvo('obra');
+    const vinculo = valor(
+      promessa.sugerirVinculo(
+        {
+          alvo: obra,
+          estagioQueComprova: 'execucao',
+          origem: 'curador',
+          evidencias: [umaCaptura()],
+        },
+        HOJE,
+      ),
+    );
+    valor(promessa.confirmarVinculo(vinculo, umCurador(), HOJE));
+    promessa.pullDomainEvents();
+    return { promessa, obra, vinculo };
+  }
+
+  it('só fato com vínculo confirmado pede reavaliação', () => {
+    const promessa = umaPromessa().build();
+    const obra = umAlvo('obra');
+    valor(
+      promessa.sugerirVinculo(
+        {
+          alvo: obra,
+          estagioQueComprova: 'execucao',
+          origem: 'curador',
+          evidencias: [umaCaptura()],
+        },
+        HOJE,
+      ),
+    );
+
+    expect(erro(promessa.solicitarReavaliacao(obra, 'Parou.', umaCaptura(), HOJE))).toBe(
+      'reavaliacao.sem_vinculo_confirmado',
+    );
+  });
+
+  it('o pedido fica pendente sem mexer no estágio, e o mesmo motivo não se repete', () => {
+    const { promessa, obra } = comObraConfirmada();
+
+    expect(valor(promessa.solicitarReavaliacao(obra, ' A obra parou. ', umaCaptura(), HOJE))).toBe(
+      true,
+    );
+    expect(valor(promessa.solicitarReavaliacao(obra, 'A obra parou.', umaCaptura(), HOJE))).toBe(
+      false,
+    );
+
+    expect(promessa.estagio).toBe('execucao');
+    expect(promessa.reavaliacoesPendentes.map((p) => p.motivo)).toEqual(['A obra parou.']);
+    expect(promessa.pullDomainEvents().map((e) => e.tipo)).toEqual(['ReavaliacaoSolicitada']);
+    expect(erro(promessa.solicitarReavaliacao(obra, '  ', umaCaptura(), HOJE))).toBe(
+      'reavaliacao.sem_motivo',
+    );
+  });
+
+  it('a curadoria conclui a reavaliação de todos os pedidos de uma vez', () => {
+    const { promessa, obra } = comObraConfirmada();
+    expect(erro(promessa.concluirReavaliacao(umCurador(), HOJE))).toBe('reavaliacao.sem_pedido');
+    valor(promessa.solicitarReavaliacao(obra, 'A obra parou.', umaCaptura(), ONTEM));
+    valor(promessa.solicitarReavaliacao(obra, 'A obra voltou.', umaCaptura(), HOJE));
+    promessa.pullDomainEvents();
+
+    valor(promessa.concluirReavaliacao(umCurador(), HOJE));
+
+    expect(promessa.reavaliacoesPendentes).toEqual([]);
+    expect(promessa.pullDomainEvents().map((e) => [e.tipo, e.dados])).toEqual([
+      ['ReavaliacaoConcluida', expect.objectContaining({ pedidos: 2 })],
+    ]);
+  });
+});

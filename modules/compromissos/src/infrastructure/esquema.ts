@@ -78,6 +78,22 @@ export const vinculo = schemaDeCompromissos.table(
   (t) => [index('vinculo_por_promessa').on(t.promessaId)],
 );
 
+/** Pedidos de reavaliação pendentes: saem todos quando a curadoria conclui a reavaliação. */
+export const pedidoDeReavaliacao = schemaDeCompromissos.table(
+  'pedido_de_reavaliacao',
+  {
+    promessaId: uuid('promessa_id')
+      .notNull()
+      .references(() => promessa.id),
+    tipoDoAlvo: text('tipo_do_alvo').notNull(),
+    idDoAlvo: uuid('id_do_alvo').notNull(),
+    motivo: text('motivo').notNull(),
+    capturaId: uuid('captura_id').notNull(),
+    pedidoEm: instante('pedido_em').notNull(),
+  },
+  (t) => [index('pedido_de_reavaliacao_por_promessa').on(t.promessaId)],
+);
+
 // Função, e não objeto: cada tabela precisa das próprias instâncias de coluna.
 const colunasDoVeredito = () => ({
   veredito: text('veredito').notNull(),

@@ -8,6 +8,8 @@ import type { Promessa } from '../domain/promessa.js';
 export interface PromessaRepository {
   buscarPorId(id: PromessaId): Promise<Promessa | undefined>;
   salvar(promessa: Promessa): Promise<void>;
+  /** Ids das promessas com vínculo confirmado com o fato. */
+  comVinculoConfirmado(tipoDoAlvo: string, idDoAlvo: string): Promise<string[]>;
 }
 
 /** Fonte única do instante atual, para que os casos de uso sejam testáveis sem depender do relógio. */

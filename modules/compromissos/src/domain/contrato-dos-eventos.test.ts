@@ -40,6 +40,10 @@ describe('eventos do Compromissos respeitam os contratos publicados (packages/co
     } as const;
     const vinculo = valor(promessa.sugerirVinculo(novoVinculo, HOJE));
     valor(promessa.confirmarVinculo(vinculo, umCurador(), HOJE));
+    valor(
+      promessa.solicitarReavaliacao(novoVinculo.alvo, 'A obra foi paralisada.', umaCaptura(), HOJE),
+    );
+    valor(promessa.concluirReavaliacao(umCurador(), HOJE));
     valor(promessa.rejeitarVinculo(vinculo, umCurador(), 'Obra é de outro município.', HOJE));
     const proposta = {
       veredito: 'em_andamento',
@@ -54,7 +58,7 @@ describe('eventos do Compromissos respeitam os contratos publicados (packages/co
     valor(promessa.publicarVeredito(umCurador(), HOJE));
 
     const eventos: DomainEvent[] = promessa.pullDomainEvents();
-    expect(new Set(eventos.map((e) => e.tipo)).size).toBe(10);
+    expect(new Set(eventos.map((e) => e.tipo)).size).toBe(12);
     for (const evento of eventos) {
       expect(violacoesDoContrato(evento.tipo, evento.versao, evento.dados), evento.tipo).toEqual(
         [],

@@ -47,9 +47,11 @@ export type {
   VotosDoParlamentar,
 } from './api.js';
 export type {
+  CandidatoAVinculo,
   ErroDeNegocio,
   FonteNaCuradoria,
   LocalizacaoDoTrecho,
+  PedidoDeReavaliacaoNaCuradoria,
   PromessaNaCuradoria,
   ResumoDePromessaNaCuradoria,
   VereditoNaCuradoria,

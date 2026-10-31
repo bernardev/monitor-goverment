@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prometeu.org/contratos/eventos/reavaliacao-solicitada.v1.json",
+  "title": "ReavaliacaoSolicitada (v1): dados",
+  "description": "Compromissos: um fato ligado à promessa por vínculo confirmado mudou (a obra parou, a emenda pagou, a proposição tramitou); a curadoria precisa olhar de novo. Não muda estágio nem veredito.",
+  "type": "object",
+  "required": ["tipoDoAlvo", "idDoAlvo", "motivo", "capturaId"],
+  "additionalProperties": false,
+  "properties": {
+    "tipoDoAlvo": {
+      "enum": ["proposicao", "ato_normativo", "acao_orcamentaria", "emenda", "obra"]
+    },
+    "idDoAlvo": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "motivo": {
+      "type": "string",
+      "minLength": 1,
+      "description": "O que mudou no fato, em uma frase."
+    },
+    "capturaId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Captura do Acervo que prova o estado novo do fato (ADR-0009)."
+    }
+  }
+}

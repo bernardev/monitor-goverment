@@ -8,6 +8,7 @@ import { AdicionarFonte } from './adicionar-fonte.js';
 import { PublicarVeredito, RecusarVeredito } from './decidir-veredito.js';
 import { ConfirmarVinculo, RejeitarVinculo } from './decidir-vinculo.js';
 import { ProporVeredito } from './propor-veredito.js';
+import { ConcluirReavaliacao, SolicitarReavaliacao } from './reavaliar.js';
 import { RegistrarPromessa, type RegistrarPromessaInput } from './registrar-promessa.js';
 import { SugerirVinculo } from './sugerir-vinculo.js';
 
@@ -233,6 +234,70 @@ describe('Casos de uso de Compromissos', () => {
         }),
       );
       expect(promessas.tiposDosEventos().at(-1)).toBe('VereditoRecusado');
+    });
+  });
+  describe('Reavaliação', () => {
+    async function vincular(promessaId: string, idDoAlvo: string, confirmar: boolean) {
+      const { vinculoId } = valor(
+        await new SugerirVinculo(promessas, relogio).execute({
+          promessaId,
+          tipoDoAlvo: 'obra',
+          idDoAlvo,
+          estagioQueComprova: 'execucao',
+          origem: 'curador',
+          evidencias: [uuid()],
+        }),
+      );
+      if (confirmar) {
+        valor(
+          await new ConfirmarVinculo(promessas, relogio).execute({
+            promessaId,
+            vinculoId,
+            confirmadoPor: uuid(),
+          }),
+        );
+      }
+    }
+
+    it('só as promessas com vínculo confirmado ao fato ganham pedido', async () => {
+      const obra = uuid();
+      const confirmada = await registrar();
+      const sugerida = await registrar();
+      const outra = await registrar();
+      await vincular(confirmada, obra, true);
+      await vincular(sugerida, obra, false);
+      await vincular(outra, uuid(), true);
+      const solicitar = new SolicitarReavaliacao(promessas, relogio);
+      const fato = {
+        tipoDoAlvo: 'obra',
+        idDoAlvo: obra,
+        motivo: 'A obra parou.',
+        capturaId: uuid(),
+      };
+
+      expect(valor(await solicitar.execute(fato)).promessas).toEqual([confirmada]);
+      expect(valor(await solicitar.execute(fato)).promessas).toEqual([]);
+      expect(promessas.tiposDosEventos().filter((t) => t === 'ReavaliacaoSolicitada')).toHaveLength(
+        1,
+      );
+
+      valor(
+        await new ConcluirReavaliacao(promessas, relogio).execute({
+          promessaId: confirmada,
+          concluidaPor: uuid(),
+        }),
+      );
+      expect(promessas.tiposDosEventos().at(-1)).toBe('ReavaliacaoConcluida');
+    });
+
+    it('recusa fato de tipo desconhecido', async () => {
+      const resultado = await new SolicitarReavaliacao(promessas, relogio).execute({
+        tipoDoAlvo: 'contrato',
+        idDoAlvo: uuid(),
+        motivo: 'Mudou.',
+        capturaId: uuid(),
+      });
+      expect(erro(resultado)).toBe('entrada.opcao_invalida');
     });
   });
 });

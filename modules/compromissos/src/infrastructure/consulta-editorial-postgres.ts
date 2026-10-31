@@ -9,7 +9,12 @@ import { desc, sql } from 'drizzle-orm';
 import { PromessaId } from '../domain/identificadores.js';
 import type { Promessa } from '../domain/promessa.js';
 import type { PropostaDeVeredito } from '../domain/proposta-de-veredito.js';
-import { promessa, propostaDeVeredito, registroDeVeredito } from './esquema.js';
+import {
+  pedidoDeReavaliacao,
+  promessa,
+  propostaDeVeredito,
+  registroDeVeredito,
+} from './esquema.js';
 import type { PromessaRepositoryPostgres } from './promessa-repository-postgres.js';
 
 /**
@@ -31,6 +36,9 @@ export class ConsultaEditorialPostgres {
     const pendente = sql<boolean>`EXISTS (
       SELECT 1 FROM ${propostaDeVeredito} p WHERE p.promessa_id = ${promessa.id}
     )`;
+    const reavaliacoes = sql<number>`(
+      SELECT count(*)::int FROM ${pedidoDeReavaliacao} q WHERE q.promessa_id = ${promessa.id}
+    )`;
     const linhas = await this.banco.drizzle
       .select({
         promessaId: promessa.id,
@@ -39,6 +47,7 @@ export class ConsultaEditorialPostgres {
         estagio: promessa.estagio,
         vigente,
         pendente,
+        reavaliacoes,
       })
       .from(promessa)
       .orderBy(desc(promessa.id))
@@ -50,6 +59,7 @@ export class ConsultaEditorialPostgres {
       estagio: l.estagio,
       vereditoVigente: l.vigente ?? 'nao_iniciada',
       aguardandoRevisao: l.pendente,
+      reavaliacoesPendentes: l.reavaliacoes,
     }));
   }
 
@@ -102,6 +112,14 @@ function paraCuradoria(p: Promessa): PromessaNaCuradoria {
       corrige: r.corrige?.valor ?? null,
     })),
     propostaPendente: p.propostaPendente ? paraVeredito(p.propostaPendente) : null,
+    reavaliacoesPendentes: p.reavaliacoesPendentes.length,
+    reavaliacoes: p.reavaliacoesPendentes.map((r) => ({
+      tipoDoAlvo: r.alvo.tipo,
+      idDoAlvo: r.alvo.id.valor,
+      motivo: r.motivo,
+      capturaId: r.captura.valor,
+      pedidoEm: r.pedidoEm.toISOString(),
+    })),
   };
 }
 
