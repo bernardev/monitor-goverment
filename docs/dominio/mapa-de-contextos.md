@@ -40,7 +40,7 @@ O que acontece nas casas legislativas, de forma genérica para Câmara, Senado, 
 
 O dinheiro: do planejamento ao pagamento.
 
-- **Modelo:** `ProgramaPPA`, `AcaoOrcamentaria`, `Emenda` (individual, bancada, comissão, relator; a destinação da individual tem modalidade: finalidade definida ou transferência especial/PIX), `PlanoDeTrabalho`, `Empenho`, `Liquidacao`, `Pagamento`, `Transferencia`, `Arrecadacao`.
+- **Modelo:** `ProgramaPPA`, `AcaoOrcamentaria`, `Emenda` (individual, bancada, comissão, relator; a destinação da individual tem modalidade: finalidade definida ou transferência especial/PIX), `FavorecidosDaEmenda` (recebimentos mês a mês), `Convenio`, `PlanoDeTrabalho`, `Empenho`, `Liquidacao`, `Pagamento`, `Transferencia`, `Arrecadacao`.
 - **Regra:** valores monetários sempre como `Dinheiro` (centavos inteiros + moeda). Nunca ponto flutuante.
 
 ### 5. Obras — `obras`

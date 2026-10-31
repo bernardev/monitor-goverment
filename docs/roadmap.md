@@ -235,7 +235,7 @@ orçamento, e chega à obra.
 | Fatia | Entrega                                                                                                                        | Situação  |
 | ----- | ------------------------------------------------------------------------------------------------------------------------------ | --------- |
 | 4.1   | Emendas parlamentares do Portal da Transparência: autor, destinações e execução (empenhado, liquidado, pago e restos a pagar). | Concluída |
-| 4.2   | Para quem o dinheiro foi: favorecidos e convênios de cada emenda, com o município de destino.                                  | A fazer   |
+| 4.2   | Para quem o dinheiro foi: favorecidos e convênios de cada emenda, com o município de destino.                                  | Concluída |
 | 4.3   | Obras: situação e medição, ligadas à emenda e à ação orçamentária que as pagam.                                                | A fazer   |
 
 ### Fatia 4.1: emendas parlamentares
@@ -275,6 +275,37 @@ falsa), e 99% dos autores de emendas individuais ficaram ligados a pessoas: 23.6
 orçamento de 2023 5.556 de 5.575 (eram 522). As 19 que sobram em 2023 são de dois parlamentares cujo
 nome no Portal difere do nome parlamentar na Câmara.
 
-Fica para depois, de propósito: os favorecidos e convênios (fatia 4.2), os orçamentos anteriores a
-2023 e juntar numa só pessoa quem passou da Câmara para o Senado (as fontes não têm um identificador
-em comum).
+Fica para depois, de propósito: os orçamentos anteriores a 2023 e juntar numa só pessoa quem passou
+da Câmara para o Senado (as fontes não têm um identificador em comum).
+
+### Fatia 4.2: favorecidos e convênios
+
+- **Fonte:** os outros dois CSVs do mesmo ZIP de emendas, coletados na mesma execução: quem recebeu
+  o dinheiro de cada emenda, mês a mês, e os convênios que cada emenda paga. O conector das emendas
+  passou a gravar três tabelas (contrato prata `portal_transparencia` v1.1).
+- **O que a fonte ensinou:** o valor por favorecido é o recebido no mês, não acumulado, e pode ser
+  negativo (estorno). Cada CNPJ tem um só nome e um só município. O mesmo convênio pode ser pago por
+  várias emendas, e repete convenente, objeto, data e valor em todas; há convênios de 2020 pagos com
+  emendas de 2023. A "inscrição genérica" mistura pessoas e empresas estrangeiras, e o Portal corta a
+  grafia em parte das linhas.
+- **Pessoas físicas:** o Portal publica nome e parte do CPF de quem recebe como pessoa física (bolsas,
+  auxílios). Pela regra de LGPD da plataforma (dado de cidadão é o mínimo necessário), o conector as
+  soma por emenda, mês e município, sem nome nem CPF, já na prata; o mesmo vale para a inscrição
+  genérica e o favorecido sem informação. O domínio recusa favorecido somado com nome ou documento.
+- **Domínio:** `FavorecidosDaEmenda` (os recebimentos de uma emenda, ligada pelo código da fonte, pois
+  o lote pode chegar antes da emenda) e `Convenio` (pelo número, com as emendas que o pagam). Eventos
+  `FavorecidosDaEmendaRegistrados`/`Atualizados` e `ConvenioRegistrado`/`Atualizado`, com o estado
+  completo; a mesma lista repetida pela fonte não vira evento.
+- **Leitura:** `GET /v1/emendas/{id}` ganhou `favorecidos` (cada favorecido com o total recebido e o
+  primeiro e o último mês) e `convenios`. No site, as seções "Para quem o dinheiro foi" e
+  "Convênios" na página da emenda.
+
+Resultado: com a fonte real, a coleta das três tabelas levou pouco mais de um minuto, e a importação,
+cerca de um minuto: 22.600 listas de favorecidos e 16.989 convênios (R$ 18,9 bilhões), nenhum
+recusado. Os favorecidos receberam R$ 133,2 bilhões desde março de 2023, 99% do que as emendas pagaram
+(R$ 134,6 bilhões), quase tudo a 33.268 pessoas jurídicas. Cerca de 45 mil pagamentos a pessoas físicas
+(R$ 60 milhões) viraram 8.412 somas por município, sem nome. 544 convênios são pagos por mais de uma
+emenda, e 210 emendas com pagamento ainda não têm favorecido no arquivo.
+
+Fica para depois, de propósito: ligar o município do favorecido ao código IBGE (a fonte só dá o nome),
+os favorecidos por parlamentar e por município, e o CNPJ do convenente (a fonte só dá o nome).

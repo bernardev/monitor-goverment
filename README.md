@@ -91,8 +91,9 @@ subir o Docker e ao rodar API e worker.
    uv run dagster asset materialize -m prometeu_dados.definicoes --select camara_proposicoes,senado_proposicoes
    ```
 
-   As emendas parlamentares do Portal da Transparência, orçamentos de 2023 em diante (menos de um
-   minuto para coletar; o worker leva cerca de um minuto para importar):
+   As emendas parlamentares do Portal da Transparência, orçamentos de 2023 em diante, com os
+   favorecidos e convênios de cada uma (cerca de um minuto para coletar; o worker leva alguns minutos
+   para importar):
 
    ```bash
    uv run dagster asset materialize -m prometeu_dados.definicoes --select transparencia_emendas
