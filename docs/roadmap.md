@@ -430,3 +430,26 @@ Fica para depois, de propósito: a sugestão automática de vínculo (`sugestao_
 proposição, emenda ou obra nova do autor, que pede um critério de semelhança melhor que palavras em
 comum; a tarefa de veredito final quando o mandato termina; e ações orçamentárias e atos normativos
 como candidatos (ainda não há fonte para eles).
+
+## Antes da etapa 6: identidade visual
+
+A etapa 6 é a parte do cidadão, e o site ainda era HTML sem estilo. Três direções foram desenhadas sobre
+a página real de um deputado; a escolhida está no [ADR-0017](adr/0017-identidade-visual.md): o nome
+é o verbo, e a página de um político se lê em capítulos de cor plana, cada um aberto por um verbo no
+pretérito (_Prometeu. Compareceu. Votou. Propôs. Indicou. Financiou._).
+
+- **`packages/ui`:** tokens em variáveis CSS (quatro campos de cor, cinco tamanhos, uma família), uma
+  folha de estilo e componentes de servidor: capítulo, cifra, proporção, calendário de presença e
+  cadeia de entrega. A barra do topo toma a cor do capítulo que passa por baixo dela. Uma regra do
+  dependency-cruiser impede o pacote de conhecer domínio, contratos ou apps.
+- **Site:** a página inicial (busca, números reais de cada lista, fotos do Congresso, do Senado e da
+  promulgação da Constituição) e a página do parlamentar em capítulos. As outras páginas herdam a
+  base: listas em fichas, resumos em linhas, tabelas que viram fichas no telefone.
+- **Obras por autor:** `GET /v1/obras?autor=<pessoa>` filtra as obras pagas por emendas da pessoa,
+  para o capítulo _Financiou._
+- **Verificado no navegador**, em 1440, 768 e 390 px, com o inspetor da skill de direção de arte: títulos em até duas linhas, uma família carregada, contraste dos textos, nada vazando
+  para o lado.
+
+Fica para depois, de propósito: o painel de curadoria no mesmo sistema; o modo escuro (os campos de
+cor são a identidade, e um tema escuro pede outra escolha de campos); a busca no telefone dentro da
+barra; e fotos próprias dos municípios e das obras, que não existem em acervo aberto.
