@@ -86,6 +86,14 @@ module.exports = {
       from: { path: '^packages/shared-kernel/' },
       to: { path: '^(modules|apps)/' },
     },
+    {
+      name: 'ui-so-apresentacao',
+      comment:
+        'ADR-0017: o sistema visual não conhece domínio, contratos nem apps; recebe dados prontos.',
+      severity: 'error',
+      from: { path: '^packages/ui/' },
+      to: { path: '^(modules|apps|packages/(contracts|infraestrutura|shared-kernel))/' },
+    },
   ],
   options: {
     doNotFollow: { path: 'node_modules' },

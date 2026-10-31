@@ -23,5 +23,6 @@ Status possíveis: `Proposto` · `Aceito` · `Substituído por ADR-XXXX` · `Des
 | [0014](0014-identidade-e-acesso.md)                | Identidade e acesso                                               | Proposto |
 | [0015](0015-outbox-por-schema-e-barramento.md)     | Outbox por schema, relay por contexto e barramento pg-boss        | Aceito   |
 | [0016](0016-registro-de-capturas-na-importacao.md) | Capturas registradas pelo Acervo durante a importação             | Aceito   |
+| [0017](0017-identidade-visual.md)                  | Identidade visual: Prometeu no pretérito                          | Aceito   |
 
 Modelo para novos ADRs: copie [template.md](template.md).
