@@ -22,8 +22,9 @@ import { mandato, outbox, pessoa } from './esquema.js';
 
 const LOTE_1 = '0192d5e0-3333-7000-8000-000000000001';
 const LOTE_2 = '0192d5e0-3333-7000-8000-000000000002';
+const LOTE_3 = '0192d5e0-3333-7000-8000-000000000003';
 
-// Tabelas prata como a plataforma de dados as cria (data-platform/migracoes, contrato v2.0.0).
+// Tabelas prata como a plataforma de dados as cria (data-platform/migracoes, contrato v2.1.0).
 const PRATA = sql.raw(`
   CREATE TABLE ingestao.camara_legislatura (
     id_legislatura integer PRIMARY KEY, data_inicio date NOT NULL, data_fim date NOT NULL,
@@ -47,6 +48,29 @@ const LEGISLATURA_57 = sql`
     (57, '2023-02-01', '2027-01-31', ${LOTE_1}, 'camara', 'https://camara/legislaturas/57',
      '2026-10-30T09:00:00Z', ${'1'.repeat(64)}, 'bronze/camara/l', 'application/json');
 `;
+
+const LEGISLATURA_56 = sql`
+  INSERT INTO ingestao.camara_legislatura VALUES
+    (56, '2019-02-01', '2023-01-31', ${LOTE_3}, 'camara', 'https://camara/legislaturas/56',
+     '2026-10-30T09:00:00Z', ${'2'.repeat(64)}, 'bronze/camara/l', 'application/json');
+`;
+
+/**
+ * A legislatura anterior: a Ana, reeleita, era de outro partido; o Davi saiu com ela, e o exercício
+ * dele ficou aberto na fonte.
+ */
+function daLegislaturaAnterior(lote: string) {
+  const origem = sql`${lote}, 'camara', 'https://camara/deputados', '2026-10-30T09:00:00Z', ${'c'.repeat(64)}, 'bronze/camara/d', 'application/json'`;
+  const daAna = JSON.stringify([
+    { inicio: '2019-02-01T10:00:00-03:00', fim: '2023-01-31T23:59:00-03:00' },
+  ]);
+  const doDavi = JSON.stringify([{ inicio: '2019-02-01T10:00:00-03:00', fim: null }]);
+  return sql`
+    INSERT INTO ingestao.camara_deputado VALUES
+      (900001, 56, 'Ana Exemplo', 'POU', 'SP', null, ${daAna}, ${origem}),
+      (900004, 56, 'Davi Antigo', 'PEX', 'PE', null, ${doDavi}, ${origem})
+  `;
+}
 
 const EXERCICIOS_DA_ANA = JSON.stringify([
   { inicio: '2023-02-01T12:05:00-03:00', fim: '2026-03-31T18:00:00-03:00' },
@@ -81,7 +105,7 @@ const loteIngerido = (id: string, tabela = 'camara_deputado'): EnvelopeDeEvento 
   dados: {
     fonte: 'camara',
     tabela,
-    versaoDoContrato: '2.0.0',
+    versaoDoContrato: '2.1.0',
     coletadoDe: '2026-10-30T09:00:00Z',
     coletadoAte: '2026-10-30T09:00:00Z',
     registros: 3,
@@ -236,6 +260,41 @@ describe('importação de deputados da Câmara (prata → Agentes Públicos)', (
       ['FiliacaoPartidariaAlterada', 'PEX', null],
     ]);
     expect(resumos.at(-1)).toMatchObject({ loteId: LOTE_2, pessoasNovas: 0 });
+  });
+
+  it('com a legislatura anterior, o reeleito ganha o mandato antigo sem trocar de partido', async () => {
+    await banco.drizzle.execute(sql`TRUNCATE agentes_publicos.outbox`);
+    await ingestao.drizzle.execute(LEGISLATURA_56);
+    await ingestao.drizzle.execute(deputados(LOTE_3, 'b'.repeat(64), 'S.PART.'));
+    await ingestao.drizzle.execute(daLegislaturaAnterior(LOTE_3));
+
+    await barramento.publicar(loteIngerido(LOTE_3));
+
+    expect(resumos.at(-1)).toMatchObject({ loteId: LOTE_3, lidos: 5, pessoasNovas: 1 });
+    const eventos = await banco.drizzle.select().from(outbox);
+    expect(eventos.map((e) => e.tipo).sort()).toEqual([
+      'MandatoRegistrado',
+      'MandatoRegistrado',
+      'PessoaRegistrada',
+    ]);
+
+    const emJunhoDe2022 = new Date('2022-06-01T15:00:00.000Z');
+    const ana = { fonte: 'camara', codigo: '900001' } as const;
+    expect(await modulo.mandatos.vigente(ana, 'deputado_federal', emJunhoDe2022)).toMatchObject({
+      circunscricao: '35',
+      fim: new Date('2023-02-01T02:59:00.000Z'),
+    });
+    // O exercício aberto na fonte termina com a legislatura.
+    const davi = { fonte: 'camara', codigo: '900004' } as const;
+    expect(await modulo.mandatos.vigente(davi, 'deputado_federal', emJunhoDe2022)).toMatchObject({
+      circunscricao: '26',
+      fim: new Date('2023-02-01T02:59:59.999Z'),
+    });
+    const em2022 = await modulo.pessoas.parlamentaresEmExercicio(
+      new Date('2022-01-01T03:00:00.000Z'),
+      new Date('2023-01-01T02:59:59.999Z'),
+    );
+    expect(em2022.map((p) => p.nome).sort()).toEqual(['Ana Exemplo', 'Davi Antigo']);
   });
 
   it('ignora lotes de outras tabelas', async () => {

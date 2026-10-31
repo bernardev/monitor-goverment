@@ -80,7 +80,7 @@ const loteIngerido = (tabela = 'senado_senador'): EnvelopeDeEvento => ({
   dados: {
     fonte: 'senado',
     tabela,
-    versaoDoContrato: '1.0.0',
+    versaoDoContrato: '1.1.0',
     coletadoDe: '2026-10-30T09:00:00Z',
     coletadoAte: '2026-10-30T09:00:00Z',
     registros: SENADORES.length,
