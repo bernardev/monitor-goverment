@@ -44,6 +44,11 @@ NAO_MUDA_O_EXERCICIO = frozenset({"CONVOCADO", None})
 mudanças de nome ou partido. Uma situação nova faz o conector falhar em vez de adivinhar se o
 deputado estava no cargo."""
 
+ENTRADA = "Entrada - "
+"""A Câmara às vezes lança a volta do suplente com a situação ainda `CONVOCADO`; a descrição diz
+que é uma entrada (`Entrada - Reassunção / DIVERSO - Convocação Eleito ou Suplente`). Sem isso, o
+período inteiro até a saída seguinte sumia, e os votos dele nesse período ficavam sem mandato."""
+
 BRASILIA = timezone(timedelta(hours=-3))
 """Sem horário de verão desde 2019. Os horários do histórico são de Brasília."""
 
@@ -224,7 +229,8 @@ def _exercicios(entradas: list[dict[str, Any]], url: str) -> list[dict[str, str 
     inicio: datetime | None = None
     for entrada in entradas:
         situacao = entrada.get("situacao")
-        if situacao in ENTRA_EM_EXERCICIO:
+        descricao = entrada.get("descricaoStatus") or ""
+        if situacao in ENTRA_EM_EXERCICIO or (situacao == "CONVOCADO" and ENTRADA in descricao):
             if inicio is None:
                 inicio = _instante(entrada, url)
         elif situacao in SAI_DO_EXERCICIO:

@@ -8,6 +8,7 @@ import pytest
 from prometeu_dados.bronze import RespostaBruta
 from prometeu_dados.conectores import FonteMudouDeFormatoError, JanelaDeColeta
 from prometeu_dados.conectores.camara import ConectorDeputadosDaCamara
+from prometeu_dados.conectores.camara.deputados import _exercicios
 from prometeu_dados.rede import FonteIndisponivelError, RespostaHttp
 
 FIXTURES = Path(__file__).parent / "fixtures" / "camara"
@@ -130,6 +131,38 @@ def test_periodos_de_exercicio_seguem_posse_licenca_e_reassuncao() -> None:
     assert ana_56["id_legislatura"] == 56
     assert ana_56["exercicios"] == [
         {"inicio": "2019-02-01T10:00:00-03:00", "fim": "2023-01-31T23:59:00-03:00"}
+    ]
+
+
+def test_reassuncao_lancada_como_convocado_abre_o_exercicio() -> None:
+    """Histórico real de um suplente (camara:223128): a volta de 04/12/2024 vem como CONVOCADO."""
+    entradas = [
+        {"dataHora": "2023-11-24T12:49", "situacao": "Exercício", "descricaoStatus": "Entrada"},
+        {
+            "dataHora": "2024-12-03T11:48",
+            "situacao": "SUPLENCIA",
+            "descricaoStatus": "Saída - Afastamento de Suplente (automático)",
+        },
+        {
+            "dataHora": "2024-12-04T09:01",
+            "situacao": "CONVOCADO",
+            "descricaoStatus": "DIVERSO - Convocação Eleito ou Suplente - Aguardando Convocação",
+        },
+        {
+            "dataHora": "2024-12-04T09:02",
+            "situacao": "CONVOCADO",
+            "descricaoStatus": "Entrada - Reassunção / DIVERSO - Convocação Eleito ou Suplente",
+        },
+        {
+            "dataHora": "2025-11-13T09:58",
+            "situacao": "SUPLENCIA",
+            "descricaoStatus": "Saída - Afastamento de Suplente (automático)",
+        },
+    ]
+
+    assert _exercicios(entradas, "teste") == [
+        {"inicio": "2023-11-24T12:49:00-03:00", "fim": "2024-12-03T11:48:00-03:00"},
+        {"inicio": "2024-12-04T09:02:00-03:00", "fim": "2025-11-13T09:58:00-03:00"},
     ]
 
 
