@@ -8,6 +8,7 @@ import {
   pagoAteAgora,
   percentual,
   reais,
+  reaisResumidos,
 } from './formatacao';
 
 // O Intl separa o símbolo com espaço inquebrável, que `\s` também casa.
@@ -23,6 +24,15 @@ describe('reais', () => {
     ['9007199254740993', 'R$ 90.071.992.547.409,93'],
   ])('%s centavos → %s', (centavos, esperado) => {
     expect(semNbsp(reais(centavos))).toBe(esperado);
+  });
+});
+
+describe('reaisResumidos', () => {
+  it('lê numa frase, sem arredondar para cima', () => {
+    expect(reaisResumidos('13417949652')).toBe('R$ 134,1 milhões');
+    expect(reaisResumidos(150000000n)).toBe('R$ 1,5 milhão');
+    expect(reaisResumidos('250000000000')).toBe('R$ 2,5 bilhões');
+    expect(reaisResumidos('4950000')).toBe('R$ 49,5 mil');
   });
 });
 

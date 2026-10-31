@@ -214,3 +214,18 @@ export function pagoAteAgora(execucao: {
 }): bigint {
   return BigInt(execucao.pagoCentavos) + BigInt(execucao.restosPagosCentavos);
 }
+
+const UMA_CASA = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 });
+
+/** `R$ 134,2 milhões`: o valor para ler numa frase; o exato fica nas tabelas. */
+export function reaisResumidos(centavos: bigint | string): string {
+  const reaisInteiros = Number(BigInt(centavos) / 100n);
+  const em = (escala: number, um: string, varios: string) => {
+    const valor = Math.floor((reaisInteiros / escala) * 10) / 10;
+    return `R$ ${UMA_CASA.format(valor)} ${valor < 2 ? um : varios}`;
+  };
+  if (reaisInteiros >= 1e9) return em(1e9, 'bilhão', 'bilhões');
+  if (reaisInteiros >= 1e6) return em(1e6, 'milhão', 'milhões');
+  if (reaisInteiros >= 1e3) return em(1e3, 'mil', 'mil');
+  return reais(centavos);
+}

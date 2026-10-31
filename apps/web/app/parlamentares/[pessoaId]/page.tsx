@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 
@@ -7,15 +6,22 @@ import {
   buscarParlamentar,
   emendasDoParlamentar,
   frequenciaDoParlamentar,
+  listarObras,
   proposicoesDoParlamentar,
   votosDoParlamentar,
 } from '../../_api/cliente';
-import { Autorias } from '../../_componentes/autorias';
-import { Emendas } from '../../_componentes/emendas';
 import { Fonte } from '../../_componentes/fonte';
-import { Frequencia } from '../../_componentes/frequencia';
 import { data, nomeDoCargo } from '../../_componentes/formatacao';
-import { Votos } from '../../_componentes/votos';
+import {
+  Autorias,
+  Emendas,
+  Obras,
+  type ObrasDoParlamentar,
+  Presenca,
+  Promessas,
+  VERBOS,
+  Votos,
+} from './capitulos';
 
 interface Props {
   readonly params: Promise<{ pessoaId: string }>;
@@ -26,60 +32,76 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: perfil ? `${perfil.nome} | Prometeu` : 'Parlamentar não encontrado | Prometeu' };
 }
 
+/** As obras pagas pelas emendas da pessoa: as maiores e quantas há em cada situação. */
+async function obrasDoParlamentar(pessoaId: string): Promise<ObrasDoParlamentar> {
+  const total = (situacao: 'concluida' | 'em_execucao' | 'paralisada') =>
+    listarObras({ autor: pessoaId, situacao, pagina: 1, itens: 1 }).then((p) => p.total);
+  const [maiores, concluidas, emExecucao, paralisadas] = await Promise.all([
+    listarObras({ autor: pessoaId, pagina: 1, itens: 6 }),
+    total('concluida'),
+    total('em_execucao'),
+    total('paralisada'),
+  ]);
+  return { maiores, concluidas, emExecucao, paralisadas };
+}
+
 export default async function PerfilDoParlamentar({ params }: Props): Promise<ReactNode> {
   const { pessoaId } = await params;
-  const [perfil, frequencia, votos, autorias, emendas] = await Promise.all([
+  const [perfil, frequencia, votos, autorias, emendas, obras] = await Promise.all([
     buscarParlamentar(pessoaId),
     frequenciaDoParlamentar(pessoaId),
     votosDoParlamentar(pessoaId),
     proposicoesDoParlamentar(pessoaId),
     emendasDoParlamentar(pessoaId),
+    obrasDoParlamentar(pessoaId),
   ]);
   if (!perfil) notFound();
 
+  // A frequência diária só é coletada na Câmara; no Senado, a ausência e o motivo vêm em cada
+  // votação.
+  const comPresenca = frequencia !== undefined && perfil.cargo !== 'senador';
+  const capitulos = Object.entries(VERBOS).filter(([id]) => id !== 'compareceu' || comPresenca);
+
   return (
-    <main>
-      <p>
-        <Link href="/parlamentares">← Parlamentares</Link>
-      </p>
-      <article>
-        <header className="perfil">
-          {perfil.urlDaFoto && (
-            <img
-              src={perfil.urlDaFoto}
-              alt={`Foto oficial de ${perfil.nome}`}
-              width={120}
-              height={160}
-            />
-          )}
-          <div>
-            <h1>{perfil.nome}</h1>
-            <p>
+    <main className="capitulos">
+      <section className="retrato" data-campo="papel" aria-labelledby="nome">
+        <div className="retrato__miolo">
+          <div className="retrato__texto">
+            <h1 id="nome" className="retrato__nome">
+              {perfil.nome}
+            </h1>
+            <p className="destaque">
               {nomeDoCargo(perfil.cargo)}
               {perfil.uf ? ` por ${perfil.uf}` : ''} · {perfil.siglaPartido ?? 'sem partido'}
+              {perfil.mandato
+                ? `. Mandato de ${data(perfil.mandato.inicio)}${perfil.mandato.fim ? ` a ${data(perfil.mandato.fim)}` : ', em curso'}.`
+                : '.'}
             </p>
+            <nav aria-label="O que fez">
+              <ul className="sumario">
+                {capitulos.map(([id, verbo]) => (
+                  <li key={id}>
+                    <a href={`#${id}`}>{verbo}</a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+            <Fonte fonte={perfil.mandato?.fonte ?? perfil.fonte} />
           </div>
-        </header>
-        <Fonte fonte={perfil.fonte} />
+          {perfil.urlDaFoto && (
+            <figure className="retrato__foto">
+              <img src={perfil.urlDaFoto} alt={`Foto oficial de ${perfil.nome}`} />
+            </figure>
+          )}
+        </div>
+      </section>
 
-        {perfil.mandato && (
-          <section>
-            <h2>Mandato</h2>
-            <p>
-              {nomeDoCargo(perfil.mandato.cargo)}, de {data(perfil.mandato.inicio)}
-              {perfil.mandato.fim ? ` a ${data(perfil.mandato.fim)}` : ' (em curso)'}.
-            </p>
-            <Fonte fonte={perfil.mandato.fonte} />
-          </section>
-        )}
-
-        {/* A frequência diária só é coletada na Câmara; no Senado, a ausência e o motivo vêm em
-            cada votação. */}
-        {frequencia && perfil.cargo !== 'senador' && <Frequencia frequencia={frequencia} />}
-        {votos && <Votos votos={votos} />}
-        {autorias && <Autorias autorias={autorias} />}
-        {emendas && <Emendas emendas={emendas} />}
-      </article>
+      <Promessas />
+      {comPresenca && <Presenca frequencia={frequencia} />}
+      {votos && <Votos votos={votos} />}
+      {autorias && <Autorias autorias={autorias} />}
+      {emendas && <Emendas emendas={emendas} />}
+      <Obras obras={obras} />
     </main>
   );
 }
