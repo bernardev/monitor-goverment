@@ -14,7 +14,10 @@ export interface EmendaRepository {
  * é quem, compara com os parlamentares em exercício quando a emenda foi apresentada.
  */
 export interface AutoresDasEmendas {
-  /** O parlamentar de nome único entre os que exerciam mandato no ano anterior ao do orçamento. */
+  /**
+   * O parlamentar de nome único entre os que exerciam mandato quando as emendas ao orçamento foram
+   * apresentadas, no fim do ano anterior.
+   */
   parlamentarPeloNome(nome: string, anoDoOrcamento: number): Promise<PessoaId | undefined>;
 }
 

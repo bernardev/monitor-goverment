@@ -52,8 +52,9 @@ const TIPO_PIX = 'Emenda Individual - Transferências Especiais';
 
 /**
  * A emenda 2026 da Ana tem duas ações, uma em cada modalidade; a de 2024 também é dela (ela já
- * estava no cargo em 2023). A do ex-deputado não identifica ninguém, e a de bancada é coletiva. No
- * segundo lote, a Ana recebe mais um pagamento.
+ * estava no cargo quando as emendas de 2024 foram apresentadas, no fim de 2023; o homônimo que saiu
+ * em janeiro de 2023 não estava). A do ex-deputado não identifica ninguém, e a de bancada é
+ * coletiva. No segundo lote, a Ana recebe mais um pagamento.
  */
 function linhas(lote: string, pagoDaAna: number) {
   const linha = (
@@ -127,30 +128,34 @@ describe('importação das emendas do Portal (prata → Finanças Públicas)', (
     const relogio = { agora: () => AGORA };
     const registrarCaptura = montarAcervo(acervo, relogio).registrarCaptura;
     const agentesPublicos = montarAgentesPublicos({ banco: agentes, registrarCaptura, relogio });
-    const sincronizada = await agentesPublicos.sincronizar.execute({
-      identificador: { fonte: 'camara', codigo: '900001' },
-      nome: 'Ana Exemplo',
-      siglaPartido: 'PEX',
-      urlDaFoto: null,
-      mandatos: [
-        {
-          cargo: 'deputado_federal',
-          circunscricao: '35',
-          inicio: new Date('2023-02-01T15:05:00.000Z'),
-          fim: new Date('2027-02-01T02:59:59.999Z'),
+    const deputada = async (codigo: string, inicio: string, fim: string) => {
+      const sincronizada = await agentesPublicos.sincronizar.execute({
+        identificador: { fonte: 'camara', codigo },
+        nome: 'Ana Exemplo',
+        siglaPartido: 'PEX',
+        urlDaFoto: null,
+        mandatos: [
+          {
+            cargo: 'deputado_federal',
+            circunscricao: '35',
+            inicio: new Date(inicio),
+            fim: new Date(fim),
+          },
+        ],
+        origem: {
+          fonte: 'camara',
+          url: 'https://camara/deputados',
+          coletadaEm: AGORA,
+          sha256: 'd'.repeat(64),
+          caminho: 'bronze/camara/d',
+          tipoDeConteudo: 'application/json',
         },
-      ],
-      origem: {
-        fonte: 'camara',
-        url: 'https://camara/deputados',
-        coletadaEm: AGORA,
-        sha256: 'd'.repeat(64),
-        caminho: 'bronze/camara/d',
-        tipoDeConteudo: 'application/json',
-      },
-    });
-    if (!sincronizada.ok) throw new Error(sincronizada.error.message);
-    ana = sincronizada.value.pessoaId;
+      });
+      if (!sincronizada.ok) throw new Error(sincronizada.error.message);
+      return sincronizada.value.pessoaId;
+    };
+    ana = await deputada('900001', '2023-02-01T15:05:00.000Z', '2027-02-01T02:59:59.999Z');
+    await deputada('900009', '2019-02-01T13:00:00.000Z', '2023-02-01T02:59:59.999Z');
 
     const modulo = montarFinancasPublicas({
       banco,
