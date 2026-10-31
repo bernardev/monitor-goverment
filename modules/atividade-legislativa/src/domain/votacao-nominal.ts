@@ -345,7 +345,7 @@ function validar(apuracao: ApuracaoDaVotacao, agora: Date): Result<Apurada, Doma
   for (const voto of apuracao.votos) {
     const { mandato } = voto;
     if (repetida(mandato)) return repetido(mandato);
-    if (!noMandato(mandato, voto.registradoEm, apuracao.dia)) return foraDoMandato(mandato);
+    if (!noMandato(mandato, apuracao.dia)) return foraDoMandato(mandato);
     if (voto.opcao !== 'secreto' && !voto.registroNaFonte?.trim()) {
       return falha('votacao.voto_sem_registro', 'Falta a grafia da fonte para o voto.');
     }
@@ -367,7 +367,7 @@ function validar(apuracao: ApuracaoDaVotacao, agora: Date): Result<Apurada, Doma
     // De licença, o parlamentar está fora do exercício: a ausência justificada pode ser de um mandato
     // já encerrado, mas nunca de um que ainda não começou.
     const licenciado = justificada && mandato.fim !== null && mandato.fim < apuracao.dia.inicio;
-    if (!licenciado && !noMandato(mandato, null, apuracao.dia)) return foraDoMandato(mandato);
+    if (!licenciado && !noMandato(mandato, apuracao.dia)) return foraDoMandato(mandato);
     if (justificada !== (registro.motivo !== undefined)) {
       return falha(
         'votacao.motivo_incoerente',
@@ -409,10 +409,14 @@ const VOTOS_CONHECIDOS: ReadonlySet<OpcaoDeVoto> = new Set([
   'obstrucao',
 ]);
 
-/** Com horário, o mandato contém o instante; sem horário, basta tocar o dia da votação. */
-function noMandato(mandato: MandatoVigente, instante: Date | null, dia: DiaDeSessao): boolean {
-  if (instante === null) return dia.tocaNoPeriodo(mandato.inicio, mandato.fim);
-  return instante >= mandato.inicio && (mandato.fim === null || instante <= mandato.fim);
+/**
+ * O mandato toca o dia da votação. Mesmo com o horário do voto, o dia é a régua: a casa lança posse e
+ * afastamento no mesmo dia dos votos, e registra voto minutos depois do afastamento automático do
+ * suplente (27/04/2023, às 12h53, com voto às 13h27). Quem tem dois mandatos no dia não vota duas
+ * vezes: a pessoa repetida é recusada.
+ */
+function noMandato(mandato: MandatoVigente, dia: DiaDeSessao): boolean {
+  return dia.tocaNoPeriodo(mandato.inicio, mandato.fim);
 }
 
 function repetido(mandato: MandatoVigente): Result<never, DomainError> {

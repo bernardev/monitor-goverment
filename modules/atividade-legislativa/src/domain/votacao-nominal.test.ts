@@ -91,7 +91,7 @@ describe('VotacaoNominal', () => {
       'votacao.voto_fora_do_mandato',
       () =>
         umaApuracaoDeVotacao([
-          { ...umVoto(1), mandato: { ...umMandato(1), fim: new Date('2026-10-14T03:00:00Z') } },
+          { ...umVoto(1), mandato: { ...umMandato(1), fim: new Date('2026-10-13T15:00:00Z') } },
         ]),
     ],
     ['votacao.sem_descricao', () => ({ ...umaApuracaoDeVotacao(), descricao: '  ' })],

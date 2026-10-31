@@ -61,7 +61,8 @@ const PL_900 = JSON.stringify([
 ]);
 
 /**
- * Ana (900001) e o suplente Bruno (900002, no cargo até 15/10) votam no PL 900; Carla (900003) não é
+ * Ana (900001) e o suplente Bruno (900002, no cargo até 15/10) votam no PL 900; a suplente Diana
+ * (900004) também, registrada às 19h41 depois do afastamento das 13h do mesmo dia; Carla (900003) não é
  * conhecida de Agentes Públicos; a votação secreta é do dia 15, quando Bruno já tinha saído; a última
  * votação chegou sem a lista de votos. No segundo lote a Câmara corrige o voto do Bruno.
  */
@@ -87,6 +88,7 @@ function votacoes(lote: string, versao: string, votoDoBruno: string) {
       ${votos('900100-10', [
         voto(900001, 'Sim', '2026-10-14T19:41:40-03:00'),
         voto(900002, votoDoBruno, '2026-10-14T19:40:02-03:00'),
+        voto(900004, 'Sim', '2026-10-14T19:41:45-03:00'),
       ])},
       ${votos('900100-20', [
         voto(900001, 'Não', '2026-10-14T20:09:00-03:00'),
@@ -146,6 +148,7 @@ describe('importação das votações nominais da Câmara (prata → Atividade L
     for (const [codigo, nome, inicio, fim] of [
       ['900001', 'Ana Exemplo', '2023-02-01T15:05:00.000Z', '2027-02-01T02:59:59.999Z'],
       ['900002', 'Bruno Modelo', '2026-06-16T20:13:00.000Z', '2026-10-15T03:00:00.000Z'],
+      ['900004', 'Diana Suplente', '2026-06-16T20:13:00.000Z', '2026-10-14T16:00:00.000Z'],
     ] as const) {
       const sincronizada = await agentesPublicos.sincronizar.execute({
         identificador: { fonte: 'camara', codigo },
@@ -222,6 +225,7 @@ describe('importação das votações nominais da Câmara (prata → Atividade L
       [
         [pessoas.get('900001'), 'sim', 'Sim'],
         [pessoas.get('900002'), 'nao', 'Não'],
+        [pessoas.get('900004'), 'sim', 'Sim'],
       ].sort(),
     );
     expect(secreta?.votos.map((v) => [v.opcao, v.registroNaFonte])).toEqual([['secreto', null]]);

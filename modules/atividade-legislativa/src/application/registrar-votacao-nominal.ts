@@ -94,11 +94,15 @@ export class RegistrarVotacaoNominal {
 
     const votos: VotoApurado[] = [];
     for (const voto of entrada.votos) {
+      // A casa registra voto minutos depois de um afastamento lançado no mesmo dia (o automático do
+      // suplente, quando o titular volta): vale o exercício do dia, como na frequência.
+      const noInstante =
+        voto.registradoEm === null
+          ? undefined
+          : await this.mandatos.vigenteEm(voto.parlamentar, entrada.casa, voto.registradoEm);
       const mandato = encontrado(
         voto.parlamentar,
-        voto.registradoEm === null
-          ? await this.mandatos.vigenteNoDia(voto.parlamentar, entrada.casa, dia.value)
-          : await this.mandatos.vigenteEm(voto.parlamentar, entrada.casa, voto.registradoEm),
+        noInstante ?? (await this.mandatos.vigenteNoDia(voto.parlamentar, entrada.casa, dia.value)),
       );
       if (mandato) votos.push({ ...voto, mandato });
     }
