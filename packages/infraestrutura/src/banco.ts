@@ -25,10 +25,16 @@ export class BancoDoContexto {
   }
 
   static conectar(schema: string, url: string, maximoDeConexoes = 10): BancoDoContexto {
-    return new BancoDoContexto(
-      schema,
-      new pg.Pool({ connectionString: url, max: maximoDeConexoes, application_name: schema }),
-    );
+    const pool = new pg.Pool({
+      connectionString: url,
+      max: maximoDeConexoes,
+      application_name: schema,
+    });
+    // O servidor pode encerrar uma conexão ociosa (reinício, contêiner parado). O pool já a descarta
+    // e abre outra na próxima consulta; sem ouvinte, o erro derrubaria o processo inteiro. Erro em
+    // consulta em curso continua chegando a quem a fez.
+    pool.on('error', () => undefined);
+    return new BancoDoContexto(schema, pool);
   }
 
   /** A transação em curso, ou o banco quando não há transação. */

@@ -187,4 +187,24 @@ describe('infraestrutura de eventos contra PostgreSQL real', () => {
       await barramento.fechar();
     }
   });
+
+  it('conexão ociosa encerrada pelo servidor não derruba o processo, e a próxima consulta funciona', async () => {
+    const outro = BancoDoContexto.conectar(SCHEMA, postgres.urlDoContexto(SCHEMA));
+    try {
+      // Abre uma conexão no pool e a deixa ociosa.
+      await outro.drizzle.execute(sql`SELECT 1`);
+
+      // Como num reinício do banco: o servidor encerra as conexões ociosas do mesmo usuário.
+      await banco.drizzle.execute(sql`
+        SELECT pg_terminate_backend(pid) FROM pg_stat_activity
+        WHERE usename = current_user AND state = 'idle' AND pid <> pg_backend_pid()
+      `);
+      await new Promise((resolver) => setTimeout(resolver, 300));
+
+      const resultado = await outro.drizzle.execute(sql`SELECT 1 AS um`);
+      expect(resultado.rows).toEqual([{ um: 1 }]);
+    } finally {
+      await outro.fechar();
+    }
+  });
 });
