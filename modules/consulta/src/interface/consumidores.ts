@@ -7,9 +7,17 @@ import {
 
 import { inbox } from '../infrastructure/esquema.js';
 import {
+  EVENTOS_DE_CONVENIO,
+  type ProjetorDeConvenios,
+} from '../infrastructure/projetor-de-convenios.js';
+import {
   EVENTOS_DE_EMENDA,
   type ProjetorDeEmendas,
 } from '../infrastructure/projetor-de-emendas.js';
+import {
+  EVENTOS_DE_FAVORECIDOS,
+  type ProjetorDeFavorecidos,
+} from '../infrastructure/projetor-de-favorecidos.js';
 import {
   EVENTOS_DE_FREQUENCIA,
   type ProjetorDeFrequencia,
@@ -32,6 +40,8 @@ export const CONSUMIDOR_DE_FREQUENCIA = 'consulta.projetar_frequencia';
 export const CONSUMIDOR_DE_VOTACOES = 'consulta.projetar_votacoes';
 export const CONSUMIDOR_DE_PROPOSICOES = 'consulta.projetar_proposicoes';
 export const CONSUMIDOR_DE_EMENDAS = 'consulta.projetar_emendas';
+export const CONSUMIDOR_DE_FAVORECIDOS = 'consulta.projetar_favorecidos';
+export const CONSUMIDOR_DE_CONVENIOS = 'consulta.projetar_convenios';
 
 export interface Projetores {
   readonly parlamentares: ProjetorDeParlamentares;
@@ -39,6 +49,8 @@ export interface Projetores {
   readonly votacoes: ProjetorDeVotacoes;
   readonly proposicoes: ProjetorDeProposicoes;
   readonly emendas: ProjetorDeEmendas;
+  readonly favorecidos: ProjetorDeFavorecidos;
+  readonly convenios: ProjetorDeConvenios;
 }
 
 interface Projetor {
@@ -57,6 +69,8 @@ export async function assinarConsumidores(
     [CONSUMIDOR_DE_VOTACOES, EVENTOS_DE_VOTACAO, projetores.votacoes],
     [CONSUMIDOR_DE_PROPOSICOES, EVENTOS_DE_PROPOSICAO, projetores.proposicoes],
     [CONSUMIDOR_DE_EMENDAS, EVENTOS_DE_EMENDA, projetores.emendas],
+    [CONSUMIDOR_DE_FAVORECIDOS, EVENTOS_DE_FAVORECIDOS, projetores.favorecidos],
+    [CONSUMIDOR_DE_CONVENIOS, EVENTOS_DE_CONVENIO, projetores.convenios],
   ];
   for (const [consumidor, eventos, projetor] of assinaturas) {
     const consumir = consumidorIdempotente(banco, inbox, consumidor, (envelope) =>

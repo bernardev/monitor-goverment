@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { pagoAteAgora, reais } from './formatacao';
+import {
+  cnpj,
+  documentoDoFavorecido,
+  mes,
+  nomeDoFavorecido,
+  pagoAteAgora,
+  reais,
+} from './formatacao';
 
 // O Intl separa o símbolo com espaço inquebrável, que `\s` também casa.
 const semNbsp = (texto: string) => texto.replace(/\s/g, ' ');
@@ -21,5 +28,22 @@ describe('reais', () => {
 describe('pagoAteAgora', () => {
   it('soma o pago no ano e os restos pagos depois', () => {
     expect(pagoAteAgora({ pagoCentavos: '100', restosPagosCentavos: '250' })).toBe(350n);
+  });
+});
+
+describe('favorecidos', () => {
+  it('formata o mês e o CNPJ', () => {
+    expect(mes('2026-05')).toBe('mai/2026');
+    expect(cnpj('12345678000190')).toBe('12.345.678/0001-90');
+    expect(cnpj('250005')).toBe('250005');
+  });
+
+  it('o somado não tem nome nem documento: aparece pelo tipo', () => {
+    const somado = { tipo: 'pessoas_fisicas', nome: null, documento: null };
+    expect(nomeDoFavorecido(somado)).toBe('Pessoas físicas');
+    expect(documentoDoFavorecido(somado)).toBeNull();
+    expect(documentoDoFavorecido({ tipo: 'unidade_gestora', documento: '250005' })).toBe(
+      'unidade gestora 250005',
+    );
   });
 });

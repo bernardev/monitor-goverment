@@ -16,7 +16,7 @@ const filtro = paginacao.extend({
     .optional(),
 });
 
-/** Emendas parlamentares ao orçamento: autor, destino e execução (ADR-0008). */
+/** Emendas parlamentares ao orçamento: autor, destino, execução, favorecidos e convênios (ADR-0008). */
 @Controller('v1/emendas')
 export class EmendasController {
   constructor(@Inject(CONSULTA_DE_EMENDAS) private readonly emendas: ConsultaDeEmendas) {}

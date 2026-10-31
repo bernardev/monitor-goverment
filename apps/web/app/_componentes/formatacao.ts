@@ -151,6 +151,42 @@ export function reais(centavos: string | bigint): string {
   return REAIS.format(decimal as Intl.StringNumericLiteral);
 }
 
+const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+
+/** `2026-05` → `mai/2026`. */
+export function mes(aaaaMm: string): string {
+  const [ano, numero] = aaaaMm.split('-');
+  return `${MESES[Number(numero) - 1] ?? numero ?? ''}/${ano ?? ''}`;
+}
+
+/** `12345678000190` → `12.345.678/0001-90`. Outro formato volta como veio. */
+export function cnpj(digitos: string): string {
+  const partes = /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/.exec(digitos);
+  return partes ? `${partes[1]}.${partes[2]}.${partes[3]}/${partes[4]}-${partes[5]}` : digitos;
+}
+
+/** Os favorecidos que chegam somados, sem nome, pelo tipo. */
+const FAVORECIDOS_SOMADOS: Readonly<Record<string, string>> = {
+  pessoas_fisicas: 'Pessoas físicas',
+  inscricao_generica: 'Pessoas e empresas sem CPF ou CNPJ',
+  nao_informado: 'Favorecido não informado',
+};
+
+export function nomeDoFavorecido(f: { tipo: string; nome: string | null }): string {
+  return f.nome ?? FAVORECIDOS_SOMADOS[f.tipo] ?? f.tipo;
+}
+
+/** `CNPJ 12.345.678/0001-90`, `unidade gestora 250005`; `null` no somado. */
+export function documentoDoFavorecido(f: {
+  tipo: string;
+  documento: string | null;
+}): string | null {
+  if (f.documento === null) return null;
+  return f.tipo === 'unidade_gestora'
+    ? `unidade gestora ${f.documento}`
+    : `CNPJ ${cnpj(f.documento)}`;
+}
+
 /** O que já saiu do caixa: o pago no ano do orçamento mais o pago depois, como restos a pagar. */
 export function pagoAteAgora(execucao: {
   pagoCentavos: string;

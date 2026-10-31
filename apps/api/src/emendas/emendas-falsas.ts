@@ -33,6 +33,8 @@ export const emenda: EmendaDetalhada = {
   execucao,
   fonte: { capturaId: EMENDA, url: 'https://portal/emendas', coletadaEm: null },
   destinacoes: [],
+  favorecidos: null,
+  convenios: [],
 };
 
 export class EmendasFalsas implements ConsultaDeEmendas {

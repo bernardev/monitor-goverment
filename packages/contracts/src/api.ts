@@ -345,8 +345,68 @@ export interface DestinacaoDaEmenda {
   readonly execucao: ExecucaoDaEmenda;
 }
 
+/**
+ * Quem recebeu o dinheiro. Pessoa jurídica (CNPJ) e unidade gestora (órgão federal) vêm com nome;
+ * pessoas físicas, inscrições genéricas (sem CPF nem CNPJ) e favorecidos não informados vêm somados
+ * por município, sem nome nem documento.
+ */
+export type TipoDeFavorecido =
+  | 'pessoa_juridica'
+  | 'unidade_gestora'
+  | 'pessoas_fisicas'
+  | 'inscricao_generica'
+  | 'nao_informado';
+
+/** Um favorecido da emenda, com tudo o que recebeu dela. */
+export interface FavorecidoDaEmenda {
+  readonly tipo: TipoDeFavorecido;
+  /** CNPJ (14 dígitos) ou código da unidade gestora (6); `null` nos somados. */
+  readonly documento: string | null;
+  /** `null` nos somados. */
+  readonly nome: string | null;
+  readonly naturezaJuridica: string | null;
+  readonly uf: string | null;
+  /** Como a fonte escreve o município (`SÃO PAULO`): ela não dá o código IBGE. */
+  readonly municipio: string | null;
+  /** Soma dos recebimentos, em centavos como texto; estornos descontados. */
+  readonly recebidoCentavos: string;
+  /** Primeiro e último mês com recebimento, `aaaa-mm`. */
+  readonly primeiroMes: string;
+  readonly ultimoMes: string;
+}
+
+export interface FavorecidosDaEmenda {
+  /** O recebido por todos os favorecidos. */
+  readonly recebidoCentavos: string;
+  /** Do que mais recebeu para o que menos recebeu. */
+  readonly itens: readonly FavorecidoDaEmenda[];
+  readonly fonte: FonteDoDado;
+}
+
+/** Convênio que a emenda ajuda a pagar. */
+export interface ConvenioDaEmenda {
+  /** Número do convênio na fonte. */
+  readonly numero: string;
+  /** Quem recebe o dinheiro e executa o objeto; a fonte só dá o nome. */
+  readonly convenente: string;
+  readonly objeto: string | null;
+  /** `aaaa-mm-dd`. */
+  readonly publicadoEm: string;
+  /** O valor do convênio inteiro, não só a parte desta emenda. */
+  readonly valorCentavos: string;
+  /** Onde a fonte liga o convênio a esta emenda (`SÃO PAULO (UF)`, `Nacional`). */
+  readonly localidades: readonly string[];
+  /** Quantas emendas pagam o convênio, esta inclusa. */
+  readonly emendas: number;
+  readonly fonte: FonteDoDado;
+}
+
 export interface EmendaDetalhada extends EmendaResumo {
   readonly destinacoes: readonly DestinacaoDaEmenda[];
+  /** `null`: a fonte ainda não registrou pagamento a favorecidos. */
+  readonly favorecidos: FavorecidosDaEmenda | null;
+  /** Do mais recente para o mais antigo. */
+  readonly convenios: readonly ConvenioDaEmenda[];
 }
 
 /** Emendas de que o parlamentar é autor, da mais recente para a mais antiga. */

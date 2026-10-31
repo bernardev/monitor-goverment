@@ -17,7 +17,9 @@ import { ConsultaDeFrequenciaPostgres } from './infrastructure/consulta-de-frequ
 import { ConsultaDeParlamentaresPostgres } from './infrastructure/consulta-de-parlamentares-postgres.js';
 import { ConsultaDeProposicoesPostgres } from './infrastructure/consulta-de-proposicoes-postgres.js';
 import { ConsultaDeVotacoesPostgres } from './infrastructure/consulta-de-votacoes-postgres.js';
+import { ProjetorDeConvenios } from './infrastructure/projetor-de-convenios.js';
 import { ProjetorDeEmendas } from './infrastructure/projetor-de-emendas.js';
+import { ProjetorDeFavorecidos } from './infrastructure/projetor-de-favorecidos.js';
 import { ProjetorDeFrequencia } from './infrastructure/projetor-de-frequencia.js';
 import { ProjetorDeParlamentares } from './infrastructure/projetor-de-parlamentares.js';
 import { ProjetorDeProposicoes } from './infrastructure/projetor-de-proposicoes.js';
@@ -71,6 +73,8 @@ export function montarConsulta(
         votacoes: new ProjetorDeVotacoes(banco),
         proposicoes: new ProjetorDeProposicoes(banco),
         emendas: new ProjetorDeEmendas(banco),
+        favorecidos: new ProjetorDeFavorecidos(banco),
+        convenios: new ProjetorDeConvenios(banco),
       }),
   };
 }

@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 
 import { buscarEmenda } from '../../_api/cliente';
 import { identificacaoDaEmenda, tipoEModalidade } from '../../_componentes/emendas';
+import { Convenios, Favorecidos } from '../../_componentes/favorecidos';
 import { Fonte } from '../../_componentes/fonte';
 import { nomeDaModalidade, pagoAteAgora, reais } from '../../_componentes/formatacao';
 
@@ -115,6 +116,16 @@ export default async function PaginaDaEmenda({ params }: Props): Promise<ReactNo
               </li>
             ))}
           </ul>
+        </section>
+
+        <section>
+          <h2>Para quem o dinheiro foi</h2>
+          <Favorecidos favorecidos={emenda.favorecidos} />
+        </section>
+
+        <section>
+          <h2>Convênios</h2>
+          <Convenios convenios={emenda.convenios} />
         </section>
       </article>
     </main>

@@ -4,14 +4,22 @@ import type {
   EmendasDoParlamentar,
   ExecucaoDaEmenda,
   Pagina,
+  FonteDoDado,
   TipoDeEmenda,
+  TipoDeFavorecido,
 } from '@prometeu/contracts';
 import type { BancoDoContexto } from '@prometeu/infraestrutura';
 import { CodigoIbge } from '@prometeu/shared-kernel';
 import { and, arrayContains, count, desc, eq, sum } from 'drizzle-orm';
 
 import type { ConsultaDeEmendas, FiltroDeEmendas, Paginacao } from '../application/portas.js';
-import { captura, emenda, type ExecucaoProjetada } from './esquema.js';
+import {
+  captura,
+  convenio,
+  emenda,
+  type ExecucaoProjetada,
+  favorecidosDaEmenda,
+} from './esquema.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -62,8 +70,44 @@ export class ConsultaDeEmendasPostgres implements ConsultaDeEmendas {
       .leftJoin(captura, eq(captura.capturaId, emenda.capturaId))
       .where(eq(emenda.emendaId, emendaId.toLowerCase()));
     if (!linha) return undefined;
+    const codigo = linha.emenda.codigoNaFonte;
+    const [[favorecidos], convenios] = await Promise.all([
+      this.banco.drizzle
+        .select({ favorecidos: favorecidosDaEmenda, captura })
+        .from(favorecidosDaEmenda)
+        .leftJoin(captura, eq(captura.capturaId, favorecidosDaEmenda.capturaId))
+        .where(eq(favorecidosDaEmenda.codigoDaEmenda, codigo)),
+      this.banco.drizzle
+        .select({ convenio, captura })
+        .from(convenio)
+        .leftJoin(captura, eq(captura.capturaId, convenio.capturaId))
+        .where(arrayContains(convenio.codigosDasEmendas, [codigo]))
+        .orderBy(desc(convenio.publicadoEm), convenio.numero),
+    ]);
     return {
       ...paraResumo(linha.emenda, linha.captura),
+      favorecidos: favorecidos
+        ? {
+            recebidoCentavos: favorecidos.favorecidos.recebido.toString(),
+            itens: favorecidos.favorecidos.favorecidos.map((f) => ({
+              ...f,
+              tipo: f.tipo as TipoDeFavorecido,
+            })),
+            fonte: fonteDe(favorecidos.favorecidos.capturaId, favorecidos.captura),
+          }
+        : null,
+      convenios: convenios.map(({ convenio: c, captura: cc }) => ({
+        numero: c.numero,
+        convenente: c.convenente,
+        objeto: c.objeto,
+        publicadoEm: c.publicadoEm,
+        valorCentavos: c.valor.toString(),
+        localidades: [
+          ...new Set(c.emendas.filter((e) => e.codigoDaEmenda === codigo).map((e) => e.localidade)),
+        ],
+        emendas: c.codigosDasEmendas.length,
+        fonte: fonteDe(c.capturaId, cc),
+      })),
       destinacoes: linha.emenda.destinacoes.map((d) => ({
         localidade: d.localidade,
         municipioIbge: d.municipioIbge,
@@ -173,10 +217,10 @@ function paraResumo(e: LinhaDeEmenda, c: LinhaDeCaptura | null): EmendaResumo {
       restosCanceladosCentavos: e.restosCancelados.toString(),
       restosPagosCentavos: e.restosPagos.toString(),
     },
-    fonte: {
-      capturaId: e.capturaId,
-      url: c?.url ?? null,
-      coletadaEm: c?.coletadaEm.toISOString() ?? null,
-    },
+    fonte: fonteDe(e.capturaId, c),
   };
+}
+
+function fonteDe(capturaId: string, c: LinhaDeCaptura | null): FonteDoDado {
+  return { capturaId, url: c?.url ?? null, coletadaEm: c?.coletadaEm.toISOString() ?? null };
 }

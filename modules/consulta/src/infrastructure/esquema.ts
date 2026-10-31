@@ -259,6 +259,56 @@ export const emenda = schemaDaConsulta.table(
   ],
 );
 
+/** Um favorecido com tudo o que recebeu da emenda, somados os meses. */
+export interface FavorecidoProjetado {
+  tipo: string;
+  documento: string | null;
+  nome: string | null;
+  naturezaJuridica: string | null;
+  uf: string | null;
+  municipio: string | null;
+  recebidoCentavos: string;
+  primeiroMes: string;
+  ultimoMes: string;
+}
+
+/**
+ * Para quem foi o dinheiro de cada emenda, ligada pelo código da fonte: a lista pode chegar antes da
+ * emenda. Favorecidos do que mais recebeu para o que menos recebeu.
+ */
+export const favorecidosDaEmenda = schemaDaConsulta.table('favorecidos_da_emenda', {
+  codigoDaEmenda: text('codigo_da_emenda').primaryKey(),
+  favorecidos: jsonb('favorecidos').$type<FavorecidoProjetado[]>().notNull(),
+  recebido: centavos('recebido_centavos'),
+  capturaId: uuid('captura_id').notNull(),
+  ocorridoEm: instante('ocorrido_em').notNull(),
+});
+
+export interface EmendaDoConvenioProjetada {
+  codigoDaEmenda: string;
+  funcao: ClassificacaoProjetada;
+  subfuncao: ClassificacaoProjetada;
+  localidade: string;
+}
+
+/** Convênios pagos com emendas. `codigosDasEmendas` serve à busca pelos convênios de uma emenda. */
+export const convenio = schemaDaConsulta.table(
+  'convenio',
+  {
+    convenioId: uuid('convenio_id').primaryKey(),
+    numero: text('numero').notNull(),
+    convenente: text('convenente').notNull(),
+    objeto: text('objeto'),
+    publicadoEm: date('publicado_em', { mode: 'string' }).notNull(),
+    valor: centavos('valor_centavos'),
+    emendas: jsonb('emendas').$type<EmendaDoConvenioProjetada[]>().notNull(),
+    codigosDasEmendas: text('codigos_das_emendas').array().notNull(),
+    capturaId: uuid('captura_id').notNull(),
+    ocorridoEm: instante('ocorrido_em').notNull(),
+  },
+  (t) => [index('convenio_por_emenda').using('gin', t.codigosDasEmendas)],
+);
+
 export const captura = schemaDaConsulta.table('captura', {
   capturaId: uuid('captura_id').primaryKey(),
   fonte: text('fonte').notNull(),

@@ -271,4 +271,127 @@ describe('projeção de emendas', () => {
     const detalhe = await consulta.emendas.buscar(DA_ANA);
     expect(detalhe?.execucao.pagoCentavos).toBe('90000000');
   });
+
+  it('sem favorecidos nem convênios coletados, a emenda vem com lista vazia', async () => {
+    const detalhe = await consulta.emendas.buscar(DA_BANCADA);
+
+    expect(detalhe).toMatchObject({ favorecidos: null, convenios: [] });
+  });
+
+  it('soma os meses de cada favorecido, do que mais recebeu para o que menos recebeu', async () => {
+    const hospital = {
+      tipo: 'pessoa_juridica',
+      documento: '12345678000190',
+      nome: 'HOSPITAL EXEMPLO',
+      naturezaJuridica: 'Associação Privada',
+      uf: 'SP',
+      municipio: 'SÃO PAULO',
+    };
+    const bolsistas = {
+      tipo: 'pessoas_fisicas',
+      documento: null,
+      nome: null,
+      naturezaJuridica: null,
+      uf: 'SP',
+      municipio: 'CAMPINAS',
+    };
+    const recebimento = (mes: string, favorecido: object, valorCentavos: string) => ({
+      mes,
+      favorecido,
+      quantidade: 1,
+      valorCentavos,
+    });
+    const lista = (recebimentos: object[]) => ({
+      codigoDaEmenda: '202690010001',
+      recebimentos,
+      capturaId: CAPTURA,
+    });
+    const LISTA = '0192d5e0-7777-7000-8000-000000000001';
+
+    await publicar(
+      evento(
+        'FavorecidosDaEmendaAtualizados',
+        LISTA,
+        '2026-10-31T09:00:00.000Z',
+        lista([
+          recebimento('2026-05', hospital, '50000000'),
+          recebimento('2026-05', bolsistas, '180050'),
+          recebimento('2026-06', { ...hospital, nome: 'HOSPITAL EXEMPLO S.A.' }, '25000000'),
+          recebimento('2026-07', bolsistas, '-200'),
+        ]),
+      ),
+      // Atrasado: não desfaz a lista mais nova.
+      evento(
+        'FavorecidosDaEmendaRegistrados',
+        LISTA,
+        '2026-10-30T09:00:00.000Z',
+        lista([recebimento('2026-05', hospital, '50000000')]),
+      ),
+    );
+
+    const detalhe = await consulta.emendas.buscar(DA_ANA);
+    expect(detalhe?.favorecidos).toEqual({
+      recebidoCentavos: '75179850',
+      itens: [
+        {
+          ...hospital,
+          nome: 'HOSPITAL EXEMPLO S.A.',
+          recebidoCentavos: '75000000',
+          primeiroMes: '2026-05',
+          ultimoMes: '2026-06',
+        },
+        { ...bolsistas, recebidoCentavos: '179850', primeiroMes: '2026-05', ultimoMes: '2026-07' },
+      ],
+      fonte: {
+        capturaId: CAPTURA,
+        url: 'https://portaldatransparencia.gov.br/download-de-dados/emendas-parlamentares/UNICO',
+        coletadaEm: '2026-10-30T09:00:00.000Z',
+      },
+    });
+  });
+
+  it('traz os convênios que a emenda ajuda a pagar, com o lugar em que a fonte os liga', async () => {
+    const convenio = (numero: string, publicadoEm: string, emendas: string[]) =>
+      evento(
+        'ConvenioRegistrado',
+        `0192d5e0-8888-7000-8000-00000000${numero.slice(-4)}`,
+        publicadoEm,
+        {
+          numero,
+          convenente: 'HOSPITAL EXEMPLO',
+          objeto: null,
+          publicadoEm: publicadoEm.slice(0, 10),
+          valorCentavos: '145000000',
+          emendas: emendas.map((codigoDaEmenda, i) => ({
+            codigoDaEmenda,
+            funcao: classificacao('10'),
+            subfuncao: classificacao('302'),
+            localidade: i === 0 ? 'SÃO PAULO (UF)' : 'Nacional',
+          })),
+          capturaId: CAPTURA,
+        },
+      );
+
+    await publicar(
+      convenio('825378', '2026-01-06T00:00:00.000Z', ['202690010001', '202490010007']),
+      convenio('900001', '2026-03-01T00:00:00.000Z', ['202690010001']),
+      convenio('900002', '2026-04-01T00:00:00.000Z', ['202671060003']),
+    );
+
+    const detalhe = await consulta.emendas.buscar(DA_ANA);
+    expect(detalhe?.convenios.map((c) => [c.numero, c.localidades, c.emendas])).toEqual([
+      ['900001', ['SÃO PAULO (UF)'], 1],
+      ['825378', ['SÃO PAULO (UF)'], 2],
+    ]);
+    expect(detalhe?.convenios[1]).toMatchObject({
+      convenente: 'HOSPITAL EXEMPLO',
+      objeto: null,
+      publicadoEm: '2026-01-06',
+      valorCentavos: '145000000',
+    });
+    const de2024 = await consulta.emendas.buscar(DA_ANA_2024);
+    expect(de2024?.convenios.map((c) => [c.numero, c.localidades])).toEqual([
+      ['825378', ['Nacional']],
+    ]);
+  });
 });
