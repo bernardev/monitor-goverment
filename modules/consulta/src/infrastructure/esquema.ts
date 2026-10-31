@@ -1,4 +1,5 @@
 import { definirInbox } from '@prometeu/infraestrutura';
+import type { ObraPublicada } from '@prometeu/obras';
 import {
   bigint,
   boolean,
@@ -307,6 +308,32 @@ export const convenio = schemaDaConsulta.table(
     ocorridoEm: instante('ocorrido_em').notNull(),
   },
   (t) => [index('convenio_por_emenda').using('gin', t.codigosDasEmendas)],
+);
+
+/**
+ * Obras pagas com emendas. As colunas servem à lista e aos filtros; `estado` guarda o resto do que o
+ * evento traz, para a página da obra. `codigosDasEmendas` serve à busca pelas obras de uma emenda.
+ */
+export const obra = schemaDaConsulta.table(
+  'obra',
+  {
+    obraId: uuid('obra_id').primaryKey(),
+    idNaFonte: text('id_na_fonte').notNull(),
+    nome: text('nome').notNull(),
+    situacao: text('situacao').notNull(),
+    uf: char('uf', { length: 2 }),
+    percentualCentesimos: integer('percentual_centesimos'),
+    investimentoPrevisto: centavos('investimento_previsto_centavos'),
+    codigosDasEmendas: text('codigos_das_emendas').array().notNull(),
+    estado: jsonb('estado').$type<ObraPublicada>().notNull(),
+    capturaId: uuid('captura_id').notNull(),
+    ocorridoEm: instante('ocorrido_em').notNull(),
+  },
+  (t) => [
+    uniqueIndex('obra_por_id_na_fonte').on(t.idNaFonte),
+    index('obra_por_uf_e_situacao').on(t.uf, t.situacao),
+    index('obra_por_emenda').using('gin', t.codigosDasEmendas),
+  ],
 );
 
 export const captura = schemaDaConsulta.table('captura', {

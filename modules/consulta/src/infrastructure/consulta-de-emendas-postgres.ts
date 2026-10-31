@@ -12,7 +12,12 @@ import type { BancoDoContexto } from '@prometeu/infraestrutura';
 import { CodigoIbge } from '@prometeu/shared-kernel';
 import { and, arrayContains, count, desc, eq, sum } from 'drizzle-orm';
 
-import type { ConsultaDeEmendas, FiltroDeEmendas, Paginacao } from '../application/portas.js';
+import type {
+  ConsultaDeEmendas,
+  ConsultaDeObras,
+  FiltroDeEmendas,
+  Paginacao,
+} from '../application/portas.js';
 import {
   captura,
   convenio,
@@ -30,7 +35,10 @@ type LinhaDeEmenda = typeof emenda.$inferSelect;
 type LinhaDeCaptura = typeof captura.$inferSelect;
 
 export class ConsultaDeEmendasPostgres implements ConsultaDeEmendas {
-  constructor(private readonly banco: BancoDoContexto) {}
+  constructor(
+    private readonly banco: BancoDoContexto,
+    private readonly obras: Pick<ConsultaDeObras, 'daEmenda'>,
+  ) {}
 
   async listar(filtro: FiltroDeEmendas): Promise<Pagina<EmendaResumo>> {
     let uf: string | undefined;
@@ -71,7 +79,7 @@ export class ConsultaDeEmendasPostgres implements ConsultaDeEmendas {
       .where(eq(emenda.emendaId, emendaId.toLowerCase()));
     if (!linha) return undefined;
     const codigo = linha.emenda.codigoNaFonte;
-    const [[favorecidos], convenios] = await Promise.all([
+    const [[favorecidos], convenios, obras] = await Promise.all([
       this.banco.drizzle
         .select({ favorecidos: favorecidosDaEmenda, captura })
         .from(favorecidosDaEmenda)
@@ -83,6 +91,7 @@ export class ConsultaDeEmendasPostgres implements ConsultaDeEmendas {
         .leftJoin(captura, eq(captura.capturaId, convenio.capturaId))
         .where(arrayContains(convenio.codigosDasEmendas, [codigo]))
         .orderBy(desc(convenio.publicadoEm), convenio.numero),
+      this.obras.daEmenda(codigo),
     ]);
     return {
       ...paraResumo(linha.emenda, linha.captura),
@@ -108,6 +117,7 @@ export class ConsultaDeEmendasPostgres implements ConsultaDeEmendas {
         emendas: c.codigosDasEmendas.length,
         fonte: fonteDe(c.capturaId, cc),
       })),
+      obras,
       destinacoes: linha.emenda.destinacoes.map((d) => ({
         localidade: d.localidade,
         municipioIbge: d.municipioIbge,

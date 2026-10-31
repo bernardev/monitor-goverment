@@ -3,6 +3,7 @@ import { montarConsulta, SCHEMA_DA_CONSULTA } from '@prometeu/consulta';
 import { BancoDoContexto, urlDoBanco } from '@prometeu/infraestrutura';
 
 import { CONSULTA_DE_EMENDAS, EmendasController } from '../emendas/emendas.controller.js';
+import { CONSULTA_DE_OBRAS, ObrasController } from '../obras/obras.controller.js';
 import {
   CONSULTA_DE_PROPOSICOES,
   ProposicoesController,
@@ -18,8 +19,9 @@ import {
 const BANCO_DA_CONSULTA = Symbol('BancoDaConsulta');
 
 /**
- * Parlamentares, a atividade legislativa (votações e proposições) e as emendas ao orçamento. A API pública só lê projeções do contexto Consulta
- * (ADR-0008), com o usuário desse contexto.
+ * Parlamentares, a atividade legislativa (votações e proposições), as emendas ao orçamento e as obras
+ * que elas pagam. A API pública só lê projeções do contexto Consulta (ADR-0008), com o usuário desse
+ * contexto.
  */
 @Module({
   controllers: [
@@ -27,6 +29,7 @@ const BANCO_DA_CONSULTA = Symbol('BancoDaConsulta');
     VotacoesController,
     ProposicoesController,
     EmendasController,
+    ObrasController,
   ],
   providers: [
     {
@@ -58,6 +61,11 @@ const BANCO_DA_CONSULTA = Symbol('BancoDaConsulta');
       provide: CONSULTA_DE_EMENDAS,
       inject: [BANCO_DA_CONSULTA],
       useFactory: (banco: BancoDoContexto) => montarConsulta(banco).emendas,
+    },
+    {
+      provide: CONSULTA_DE_OBRAS,
+      inject: [BANCO_DA_CONSULTA],
+      useFactory: (banco: BancoDoContexto) => montarConsulta(banco).obras,
     },
   ],
 })

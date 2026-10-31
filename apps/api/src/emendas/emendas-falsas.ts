@@ -35,6 +35,7 @@ export const emenda: EmendaDetalhada = {
   destinacoes: [],
   favorecidos: null,
   convenios: [],
+  obras: [],
 };
 
 export class EmendasFalsas implements ConsultaDeEmendas {

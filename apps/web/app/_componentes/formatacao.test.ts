@@ -6,6 +6,7 @@ import {
   mes,
   nomeDoFavorecido,
   pagoAteAgora,
+  percentual,
   reais,
 } from './formatacao';
 
@@ -45,5 +46,16 @@ describe('favorecidos', () => {
     expect(documentoDoFavorecido({ tipo: 'unidade_gestora', documento: '250005' })).toBe(
       'unidade gestora 250005',
     );
+  });
+});
+
+describe('percentual', () => {
+  it.each([
+    [2335, '23,35%'],
+    [0, '0,00%'],
+    [10_000, '100,00%'],
+    [10_194, '101,94%'],
+  ])('%s centésimos → %s', (centesimos, esperado) => {
+    expect(percentual(centesimos)).toBe(esperado);
   });
 });

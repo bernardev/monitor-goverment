@@ -187,6 +187,26 @@ export function documentoDoFavorecido(f: {
     : `CNPJ ${cnpj(f.documento)}`;
 }
 
+const SITUACOES_DA_OBRA: Readonly<Record<string, string>> = {
+  planejada: 'Planejada',
+  em_execucao: 'Em execução',
+  paralisada: 'Paralisada',
+  concluida: 'Concluída',
+  cancelada: 'Cancelada',
+  inacabada: 'Inacabada',
+};
+
+export function nomeDaSituacaoDaObra(situacao: string): string {
+  return SITUACOES_DA_OBRA[situacao] ?? situacao;
+}
+
+/** Centésimos de ponto em percentual: `2335` → `23,35%`. Conta em inteiro. */
+export function percentual(centesimos: number): string {
+  const inteiro = Math.trunc(centesimos / 100);
+  const resto = String(centesimos % 100).padStart(2, '0');
+  return `${inteiro.toLocaleString('pt-BR')},${resto}%`;
+}
+
 /** O que já saiu do caixa: o pago no ano do orçamento mais o pago depois, como restos a pagar. */
 export function pagoAteAgora(execucao: {
   pagoCentavos: string;

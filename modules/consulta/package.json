@@ -27,6 +27,7 @@
     "@prometeu/contracts": "workspace:*",
     "@prometeu/financas-publicas": "workspace:*",
     "@prometeu/infraestrutura": "workspace:*",
+    "@prometeu/obras": "workspace:*",
     "@prometeu/shared-kernel": "workspace:*",
     "drizzle-orm": "^0.45.4"
   },

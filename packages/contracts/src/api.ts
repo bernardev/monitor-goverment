@@ -401,8 +401,79 @@ export interface ConvenioDaEmenda {
   readonly fonte: FonteDoDado;
 }
 
+/**
+ * Em que pé a obra está. `planejada`: cadastrada, sem execução iniciada. `inacabada`: parou e foi
+ * dada como não concluída.
+ */
+export type SituacaoDaObra =
+  'planejada' | 'em_execucao' | 'paralisada' | 'concluida' | 'cancelada' | 'inacabada';
+
+/** Percentual executado informado numa data. */
+export interface MedicaoDaObra {
+  /** Centésimos de ponto: 2335 é 23,35%. A fonte tem medição acima de 100%. */
+  readonly percentualCentesimos: number;
+  /** `aaaa-mm-dd`. */
+  readonly em: string | null;
+}
+
+export interface MunicipioDaObra {
+  readonly codigoIbge: string;
+  readonly nome: string | null;
+}
+
+export interface ObraResumo {
+  readonly obraId: string;
+  /** Projeto de investimento no Obrasgov.br (`151020.43-16`). */
+  readonly idNaFonte: string;
+  readonly nome: string;
+  readonly situacao: SituacaoDaObra;
+  readonly uf: string | null;
+  readonly municipios: readonly MunicipioDaObra[];
+  /** `null`: a fonte não informa execução física. */
+  readonly medicao: MedicaoDaObra | null;
+  /** Todas as fontes de recurso, em centavos como texto. */
+  readonly investimentoPrevistoCentavos: string;
+  readonly fonte: FonteDoDado;
+}
+
+/** Uma emenda que paga a obra, pelo empenho que traz o código dela. */
+export interface EmendaDaObra {
+  readonly codigoDaEmenda: string;
+  /** A emenda no Prometeu; `null` se ela ainda não foi coletada. */
+  readonly emendaId: string | null;
+  readonly autor: AutorDaEmenda | null;
+  readonly numeroDoEmpenho: string;
+  readonly acaoOrcamentaria: string | null;
+  readonly empenhadoCentavos: string;
+  readonly emitidoEm: string | null;
+}
+
+export interface ObraDetalhada extends ObraResumo {
+  readonly descricao: string | null;
+  readonly natureza: string | null;
+  readonly especie: string | null;
+  /** Como a fonte escreve a situação (`Cadastrada`, `Em execução`). */
+  readonly situacaoNaFonte: string;
+  readonly endereco: string | null;
+  readonly pontos: readonly { readonly latitude: string; readonly longitude: string }[];
+  readonly inicioPrevisto: string | null;
+  readonly fimPrevisto: string | null;
+  readonly inicioEfetivo: string | null;
+  readonly fimEfetivo: string | null;
+  readonly executores: readonly { readonly nome: string | null; readonly cnpj: string | null }[];
+  /** Paralisações, cancelamentos e declarações de obra inacabada, da mais recente à mais antiga. */
+  readonly interrupcoes: readonly {
+    readonly tipo: 'paralisada' | 'cancelada' | 'inacabada';
+    readonly em: string;
+    readonly justificativa: string | null;
+  }[];
+  readonly emendas: readonly EmendaDaObra[];
+}
+
 export interface EmendaDetalhada extends EmendaResumo {
   readonly destinacoes: readonly DestinacaoDaEmenda[];
+  /** Obras que a emenda paga, pelos empenhos do Obrasgov.br. */
+  readonly obras: readonly ObraResumo[];
   /** `null`: a fonte ainda não registrou pagamento a favorecidos. */
   readonly favorecidos: FavorecidosDaEmenda | null;
   /** Do mais recente para o mais antigo. */

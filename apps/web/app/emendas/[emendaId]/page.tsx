@@ -7,6 +7,7 @@ import type { ReactNode } from 'react';
 import { buscarEmenda } from '../../_api/cliente';
 import { identificacaoDaEmenda, tipoEModalidade } from '../../_componentes/emendas';
 import { Convenios, Favorecidos } from '../../_componentes/favorecidos';
+import { ItemDeObra } from '../../_componentes/obras';
 import { Fonte } from '../../_componentes/fonte';
 import { nomeDaModalidade, pagoAteAgora, reais } from '../../_componentes/formatacao';
 
@@ -126,6 +127,19 @@ export default async function PaginaDaEmenda({ params }: Props): Promise<ReactNo
         <section>
           <h2>Convênios</h2>
           <Convenios convenios={emenda.convenios} />
+        </section>
+
+        <section>
+          <h2>Obras</h2>
+          {emenda.obras.length === 0 ? (
+            <p>Nenhuma obra do Obrasgov.br tem empenho desta emenda.</p>
+          ) : (
+            <ul className="lista">
+              {emenda.obras.map((o) => (
+                <ItemDeObra key={o.obraId} obra={o} />
+              ))}
+            </ul>
+          )}
         </section>
       </article>
     </main>

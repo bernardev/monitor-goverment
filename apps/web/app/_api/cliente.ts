@@ -6,11 +6,14 @@ import type {
   EmendaResumo,
   EmendasDoParlamentar,
   FrequenciaDoParlamentar,
+  ObraDetalhada,
+  ObraResumo,
   Pagina,
   ParlamentarResumo,
   PerfilDeParlamentar,
   ProposicaoDetalhada,
   ProposicaoResumo,
+  SituacaoDaObra,
   TipoDeEmenda,
   TipoDeProposicao,
   VotacaoNominalDetalhada,
@@ -136,4 +139,23 @@ export function emendasDoParlamentar(pessoaId: string): Promise<EmendasDoParlame
   return obter<EmendasDoParlamentar>(
     `/v1/parlamentares/${encodeURIComponent(pessoaId)}/emendas?itens=10`,
   );
+}
+
+export interface FiltroDeObras {
+  readonly uf?: string | undefined;
+  readonly situacao?: SituacaoDaObra | undefined;
+  readonly pagina: number;
+}
+
+/** Obras pagas com emendas, da de maior investimento previsto para a de menor. */
+export async function listarObras(filtro: FiltroDeObras): Promise<Pagina<ObraResumo>> {
+  const busca = new URLSearchParams({ pagina: String(filtro.pagina), itens: '50' });
+  if (filtro.uf) busca.set('uf', filtro.uf);
+  if (filtro.situacao) busca.set('situacao', filtro.situacao);
+  const lista = await obter<Pagina<ObraResumo>>(`/v1/obras?${busca.toString()}`);
+  return lista ?? { itens: [], pagina: filtro.pagina, itensPorPagina: 50, total: 0 };
+}
+
+export function buscarObra(obraId: string): Promise<ObraDetalhada | undefined> {
+  return obter<ObraDetalhada>(`/v1/obras/${encodeURIComponent(obraId)}`);
 }
