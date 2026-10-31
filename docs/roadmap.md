@@ -251,8 +251,15 @@ orçamento, e chega à obra.
   como `Sem informação`, `-1` ou `-14` e ficam nulos.
 - **Autor:** o Portal identifica o parlamentar só pelo nome. Agentes Públicos, que decide quem é quem,
   oferece os parlamentares em exercício num período; a emenda é ligada quando o nome normalizado
-  corresponde a um único deputado ou senador em exercício no ano anterior ao do orçamento, quando a
-  emenda é proposta. Sem correspondência única, fica o nome da fonte, sem recusar a emenda.
+  corresponde a um único deputado ou senador em exercício quando as emendas são apresentadas: de 31
+  de agosto (prazo de envio do projeto de orçamento) ao fim do ano anterior ao do orçamento. Sem
+  correspondência única, fica o nome da fonte, sem recusar a emenda.
+- **Legislatura anterior:** o primeiro orçamento de cada legislatura é emendado pela que termina. Os
+  conectores de deputados e senadores coletam a legislatura em curso e a anterior (contratos prata
+  `camara` v2.1 e `senado` v1.1), e o importador da Câmara aplica as legislaturas do mesmo deputado de
+  uma vez, para que o reeleito que mudou de partido não troque de partido e volte a cada lote. A
+  janela de apresentação também evita que janeiro do ano de troca de legislatura traga duas vezes
+  quem passou da Câmara para o Senado.
 - **Domínio:** `Emenda`, com as destinações e a execução em `Dinheiro`. Valores novos da fonte viram
   `ExecucaoDaEmendaAtualizada`; outra correção (destino, classificação, modalidade, autor),
   `EmendaRetificada`. Só o estorno de restos a pagar cancelados pode ser negativo.
@@ -262,10 +269,12 @@ orçamento, e chega à obra.
   perfil; "pago até agora" soma o pago no ano e os restos a pagar pagos depois.
 
 Resultado: com a fonte real, a coleta levou 33 segundos e a importação, um minuto: 25.131 emendas, todas
-importadas sem recusa. As individuais somam cerca de R$ 24 bilhões empenhados por ano. Dos autores de
-emendas individuais, 99% ficaram ligados a pessoas nos orçamentos de 2024 a 2026 (18.086 de 18.279); no
-de 2023, só 522 de 5.575, porque quem as propôs em 2022 era da legislatura anterior, que Agentes Públicos
-ainda não conhece.
+importadas sem recusa. As individuais somam cerca de R$ 24 bilhões empenhados por ano. Com a legislatura
+anterior, Agentes Públicos ganhou 281 deputados e 51 senadores (0 recusados, nenhuma troca de partido
+falsa), e 99% dos autores de emendas individuais ficaram ligados a pessoas: 23.642 de 23.854, e no
+orçamento de 2023 5.556 de 5.575 (eram 522). As 19 que sobram em 2023 são de dois parlamentares cujo
+nome no Portal difere do nome parlamentar na Câmara.
 
-Fica para depois, de propósito: os parlamentares da legislatura 2019-2023 (para ligar os autores do
-orçamento de 2023), os favorecidos e convênios (fatia 4.2) e os orçamentos anteriores a 2023.
+Fica para depois, de propósito: os favorecidos e convênios (fatia 4.2), os orçamentos anteriores a
+2023 e juntar numa só pessoa quem passou da Câmara para o Senado (as fontes não têm um identificador
+em comum).
