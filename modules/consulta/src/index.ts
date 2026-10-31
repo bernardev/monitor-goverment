@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import type { BancoDoContexto, BarramentoDeEventos } from '@prometeu/infraestrutura';
 
 import type {
+  ConsultaDeCandidatos,
   ConsultaDeEmendas,
   ConsultaDeFontes,
   ConsultaDeFrequencia,
@@ -15,6 +16,7 @@ import type {
   ConsultaDeVotacoes,
   Relogio,
 } from './application/portas.js';
+import { ConsultaDeCandidatosPostgres } from './infrastructure/consulta-de-candidatos-postgres.js';
 import { ConsultaDeEmendasPostgres } from './infrastructure/consulta-de-emendas-postgres.js';
 import { ConsultaDeFontesPostgres } from './infrastructure/consulta-de-fontes-postgres.js';
 import { ConsultaDeFrequenciaPostgres } from './infrastructure/consulta-de-frequencia-postgres.js';
@@ -36,6 +38,8 @@ import { ProjetorDeVotacoes } from './infrastructure/projetor-de-votacoes.js';
 import { assinarConsumidores } from './interface/consumidores.js';
 
 export type {
+  CandidatoDoAutor,
+  ConsultaDeCandidatos,
   ConsultaDeEmendas,
   ConsultaDeFontes,
   ConsultaDeFrequencia,
@@ -66,6 +70,7 @@ export interface ModuloConsulta {
   readonly obras: ConsultaDeObras;
   readonly fontes: ConsultaDeFontes;
   readonly municipios: ConsultaDeMunicipios;
+  readonly candidatos: ConsultaDeCandidatos;
   assinarConsumidores(barramento: BarramentoDeEventos): Promise<void>;
 }
 
@@ -86,6 +91,7 @@ export function montarConsulta(
     obras,
     fontes: new ConsultaDeFontesPostgres(banco, relogio),
     municipios: new ConsultaDeMunicipiosPostgres(banco),
+    candidatos: new ConsultaDeCandidatosPostgres(banco),
     assinarConsumidores: (barramento) =>
       assinarConsumidores(barramento, banco, {
         parlamentares: new ProjetorDeParlamentares(banco),

@@ -225,6 +225,35 @@ describe('projeção de obras', () => {
     expect(daCidade.itens.map((e) => e.emendaId)).toEqual([DA_ANA]);
   });
 
+  it('os fatos da autora candidatos a vínculo, do mais relevante para a promessa ao menos', async () => {
+    const candidatos = await consulta.candidatos.doAutor(ANA, 'Obras de saúde em Sapucaia do Sul');
+
+    expect(candidatos).toEqual([
+      {
+        tipoDoAlvo: 'obra',
+        idDoAlvo: UBS,
+        titulo: 'OBRA 151020.43-16',
+        detalhe: 'Construção · Sapucaia do Sul · RS',
+        estagios: ['execucao', 'entrega'],
+        relevancia: 0.67,
+        termosEmComum: ['obras', 'sapucaia'],
+        capturaId: CAPTURA,
+      },
+      {
+        tipoDoAlvo: 'emenda',
+        idDoAlvo: DA_ANA,
+        titulo: 'Emenda 0001/2026',
+        detalhe: 'Item 2172 · Item 5119 · SAPUCAIA DO SUL - RS',
+        estagios: ['orcamento', 'execucao'],
+        relevancia: 0.33,
+        termosEmComum: ['sapucaia'],
+        capturaId: CAPTURA,
+      },
+    ]);
+    // A obra da ponte é paga por emenda de outra pessoa: não entra.
+    expect(await consulta.candidatos.doAutor(PONTE, 'qualquer')).toEqual([]);
+  });
+
   it('a obra mais nova vale; um evento atrasado não a desfaz', async () => {
     const paralisada = obra('151020.43-16', {
       situacao: 'paralisada',

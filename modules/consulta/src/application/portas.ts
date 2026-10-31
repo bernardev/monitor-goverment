@@ -1,5 +1,6 @@
 import type {
   AutoriaDoParlamentar,
+  CandidatoAVinculo,
   EmendaDetalhada,
   EmendaResumo,
   EmendasDoParlamentar,
@@ -87,6 +88,14 @@ export interface FiltroDeObras extends Paginacao {
   readonly municipio?: string | undefined;
   /** Parte do nome da obra, sem importar acento nem maiúsculas. */
   readonly nome?: string | undefined;
+}
+
+/** Candidato a vínculo antes de saber se a promessa já o tem: isso é com Compromissos. */
+export type CandidatoDoAutor = Omit<CandidatoAVinculo, 'vinculado'>;
+
+/** Fatos de uma pessoa que podem comprovar uma promessa dela, os mais relevantes primeiro. */
+export interface ConsultaDeCandidatos {
+  doAutor(pessoaId: string, textoDaPromessa: string): Promise<CandidatoDoAutor[]>;
 }
 
 /** Municípios que aparecem nas emendas e nas obras. */
