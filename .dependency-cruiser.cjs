@@ -20,7 +20,8 @@ module.exports = {
         '(bloqueado pelo campo "exports" do package.json).',
       severity: 'error',
       from: {},
-      to: { couldNotResolve: true },
+      // Referência de tipos do Next (`/// <reference types>`): só existe para o compilador.
+      to: { couldNotResolve: true, pathNot: '^next/image-types/' },
     },
     {
       name: 'modulo-so-pelo-ponto-de-entrada',
