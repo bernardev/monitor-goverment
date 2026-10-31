@@ -128,3 +128,57 @@ export async function recusarVeredito(
   if (resultado.erro) return resultado;
   redirect(`/promessas/${promessaId}`);
 }
+
+/** Sugere o vínculo com um fato do autor; a evidência é a captura do fato, buscada pela API. */
+export async function sugerirVinculo(
+  promessaId: string,
+  _estado: EstadoDoFormulario,
+  dados: FormData,
+): Promise<EstadoDoFormulario> {
+  await exigirSessao();
+  const resultado = await tentar(async () => {
+    await editorial.sugerirVinculo(promessaId, {
+      tipoDoAlvo: texto(dados, 'tipoDoAlvo'),
+      idDoAlvo: texto(dados, 'idDoAlvo'),
+      estagioQueComprova: texto(dados, 'estagioQueComprova'),
+    });
+  });
+  if (resultado.erro) return resultado;
+  redirect(`/promessas/${promessaId}`);
+}
+
+export async function confirmarVinculo(
+  promessaId: string,
+  vinculoId: string,
+): Promise<EstadoDoFormulario> {
+  await exigirSessao();
+  const resultado = await tentar(async () => {
+    await editorial.confirmarVinculo(promessaId, vinculoId);
+  });
+  if (resultado.erro) return resultado;
+  redirect(`/promessas/${promessaId}`);
+}
+
+export async function rejeitarVinculo(
+  promessaId: string,
+  vinculoId: string,
+  _estado: EstadoDoFormulario,
+  dados: FormData,
+): Promise<EstadoDoFormulario> {
+  await exigirSessao();
+  const resultado = await tentar(async () => {
+    await editorial.rejeitarVinculo(promessaId, vinculoId, texto(dados, 'motivo'));
+  });
+  if (resultado.erro) return resultado;
+  redirect(`/promessas/${promessaId}`);
+}
+
+/** A curadoria olhou os fatos que mudaram e fez o que cabia. */
+export async function concluirReavaliacao(promessaId: string): Promise<EstadoDoFormulario> {
+  await exigirSessao();
+  const resultado = await tentar(async () => {
+    await editorial.concluirReavaliacao(promessaId);
+  });
+  if (resultado.erro) return resultado;
+  redirect(`/promessas/${promessaId}`);
+}

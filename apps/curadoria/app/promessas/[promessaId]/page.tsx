@@ -3,10 +3,31 @@ import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 
 import { editorial, ErroDaApi } from '../../_api/cliente';
-import { FormularioDeVeredito, Revisao } from '../../_componentes/formularios';
-import { ESTAGIOS, rotulo, TIPOS_DE_FONTE, VEREDITOS } from '../../_componentes/rotulos';
+import {
+  ConclusaoDeReavaliacao,
+  DecisaoDeVinculo,
+  FormularioDeVeredito,
+  Revisao,
+  SugestaoDeVinculo,
+} from '../../_componentes/formularios';
+import {
+  ESTAGIOS,
+  rotulo,
+  SITUACOES_DE_VINCULO,
+  TIPOS_DE_ALVO,
+  TIPOS_DE_FONTE,
+  VEREDITOS,
+} from '../../_componentes/rotulos';
 import { exigirSessao } from '../../_sessao/sessao';
-import { proporVeredito, publicarVeredito, recusarVeredito } from '../acoes';
+import {
+  concluirReavaliacao,
+  confirmarVinculo,
+  proporVeredito,
+  publicarVeredito,
+  recusarVeredito,
+  rejeitarVinculo,
+  sugerirVinculo,
+} from '../acoes';
 
 interface Props {
   readonly params: Promise<{ promessaId: string }>;
@@ -25,7 +46,18 @@ export default async function Promessa({ params }: Props): Promise<ReactNode> {
     throw erro;
   });
   const revisa = sessao.papeis.includes('revisor') || sessao.papeis.includes('editor_chefe');
-  const capturas = [...new Set(promessa.fontes.map((f) => f.capturaId))];
+  const curador = sessao.papeis.includes('curador');
+  const candidatos = await editorial.candidatos(promessa.promessaId);
+  const titulos = new Map(candidatos.map((c) => [`${c.tipoDoAlvo}|${c.idDoAlvo}`, c.titulo]));
+  // As capturas das fontes, as dos vínculos confirmados e as dos fatos que mudaram servem de
+  // evidência do veredito.
+  const capturas = [
+    ...new Set([
+      ...promessa.fontes.map((f) => f.capturaId),
+      ...promessa.vinculos.filter((v) => v.situacao === 'confirmado').flatMap((v) => v.evidencias),
+      ...promessa.reavaliacoes.map((r) => r.capturaId),
+    ]),
+  ];
 
   return (
     <main>
@@ -51,6 +83,90 @@ export default async function Promessa({ params }: Props): Promise<ReactNode> {
           </li>
         ))}
       </ul>
+
+      {promessa.reavaliacoes.length > 0 && (
+        <section>
+          <h2>Fatos que mudaram desde a última análise</h2>
+          <p className="fonte">
+            Fatos com vínculo confirmado mudaram na fonte. Nada mudou sozinho na promessa: veja se o
+            vínculo ainda vale e se o veredito precisa de errata, depois marque como reavaliada.
+          </p>
+          <ul>
+            {promessa.reavaliacoes.map((r) => (
+              <li key={`${r.idDoAlvo}|${r.pedidoEm}|${r.motivo}`}>
+                <strong>
+                  {rotulo(TIPOS_DE_ALVO, r.tipoDoAlvo)}{' '}
+                  {titulos.get(`${r.tipoDoAlvo}|${r.idDoAlvo}`) ?? r.idDoAlvo}
+                </strong>
+                : {r.motivo}{' '}
+                <small>
+                  ({data(r.pedidoEm)}, captura {r.capturaId})
+                </small>
+              </li>
+            ))}
+          </ul>
+          <ConclusaoDeReavaliacao concluir={concluirReavaliacao.bind(null, promessa.promessaId)} />
+        </section>
+      )}
+
+      <h2>Vínculos com fatos</h2>
+      <p className="fonte">
+        Só o vínculo confirmado conta para o estágio. Sugerir não muda nada na promessa publicada.
+      </p>
+      {promessa.vinculos.length === 0 && <p>Nenhum vínculo ainda.</p>}
+      <ul>
+        {promessa.vinculos.map((v) => (
+          <li key={v.vinculoId}>
+            <strong>
+              {rotulo(TIPOS_DE_ALVO, v.tipoDoAlvo)}{' '}
+              {titulos.get(`${v.tipoDoAlvo}|${v.idDoAlvo}`) ?? v.idDoAlvo}
+            </strong>{' '}
+            comprova {rotulo(ESTAGIOS, v.estagioQueComprova)} ·{' '}
+            {rotulo(SITUACOES_DE_VINCULO, v.situacao)}
+            {v.situacao !== 'rejeitado' && (
+              <DecisaoDeVinculo
+                confirmavel={v.situacao === 'sugerido'}
+                confirmar={confirmarVinculo.bind(null, promessa.promessaId, v.vinculoId)}
+                rejeitar={rejeitarVinculo.bind(null, promessa.promessaId, v.vinculoId)}
+              />
+            )}
+          </li>
+        ))}
+      </ul>
+
+      {curador && (
+        <section>
+          <h2>Fatos do autor que podem comprovar a promessa</h2>
+          <p className="fonte">
+            Proposições de autoria, emendas que indicou e obras pagas por elas, das que têm mais
+            palavras em comum com a promessa para as que têm menos. Quem decide é a curadoria.
+          </p>
+          {candidatos.filter((c) => !c.vinculado).length === 0 && (
+            <p>Nenhum fato do autor coletado ainda.</p>
+          )}
+          <ul>
+            {candidatos
+              .filter((c) => !c.vinculado)
+              .map((c) => (
+                <li key={`${c.tipoDoAlvo}|${c.idDoAlvo}`}>
+                  <strong>
+                    {rotulo(TIPOS_DE_ALVO, c.tipoDoAlvo)} {c.titulo}
+                  </strong>{' '}
+                  · {Math.round(c.relevancia * 100)}% das palavras
+                  {c.termosEmComum.length > 0 ? ` (${c.termosEmComum.join(', ')})` : ''}
+                  <br />
+                  <small>{c.detalhe}</small>
+                  <SugestaoDeVinculo
+                    sugerir={sugerirVinculo.bind(null, promessa.promessaId)}
+                    tipoDoAlvo={c.tipoDoAlvo}
+                    idDoAlvo={c.idDoAlvo}
+                    estagios={c.estagios}
+                  />
+                </li>
+              ))}
+          </ul>
+        </section>
+      )}
 
       <h2>Histórico de vereditos</h2>
       {promessa.historico.length === 0 && <p>Nenhum veredito publicado.</p>}
@@ -84,7 +200,7 @@ export default async function Promessa({ params }: Props): Promise<ReactNode> {
           )}
         </section>
       ) : (
-        sessao.papeis.includes('curador') && (
+        curador && (
           <section>
             <h2>Propor veredito</h2>
             <FormularioDeVeredito

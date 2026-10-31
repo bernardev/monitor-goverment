@@ -1,6 +1,7 @@
 import 'server-only';
 
 import type {
+  CandidatoAVinculo,
   Pagina,
   ParlamentarResumo,
   PerfilDeParlamentar,
@@ -60,6 +61,11 @@ export const editorial: {
   propor(id: string, dados: unknown): Promise<undefined>;
   publicar(id: string): Promise<{ registroId: string }>;
   recusar(id: string, motivo: string): Promise<undefined>;
+  candidatos(id: string): Promise<CandidatoAVinculo[]>;
+  sugerirVinculo(id: string, dados: unknown): Promise<{ vinculoId: string }>;
+  confirmarVinculo(id: string, vinculoId: string): Promise<undefined>;
+  rejeitarVinculo(id: string, vinculoId: string, motivo: string): Promise<undefined>;
+  concluirReavaliacao(id: string): Promise<undefined>;
 } = {
   listar: () => chamar<ResumoDePromessaNaCuradoria[]>('GET', '/v1/editorial/promessas'),
   buscar: (id: string) =>
@@ -82,6 +88,33 @@ export const editorial: {
       {
         motivo,
       },
+    ),
+  candidatos: (id: string) =>
+    chamar<CandidatoAVinculo[]>(
+      'GET',
+      `/v1/editorial/promessas/${encodeURIComponent(id)}/candidatos`,
+    ),
+  sugerirVinculo: (id: string, dados: unknown) =>
+    chamar<{ vinculoId: string }>(
+      'POST',
+      `/v1/editorial/promessas/${encodeURIComponent(id)}/vinculos`,
+      dados,
+    ),
+  confirmarVinculo: (id: string, vinculoId: string) =>
+    chamar<undefined>(
+      'POST',
+      `/v1/editorial/promessas/${encodeURIComponent(id)}/vinculos/${encodeURIComponent(vinculoId)}/confirmacao`,
+    ),
+  rejeitarVinculo: (id: string, vinculoId: string, motivo: string) =>
+    chamar<undefined>(
+      'POST',
+      `/v1/editorial/promessas/${encodeURIComponent(id)}/vinculos/${encodeURIComponent(vinculoId)}/rejeicao`,
+      { motivo },
+    ),
+  concluirReavaliacao: (id: string) =>
+    chamar<undefined>(
+      'POST',
+      `/v1/editorial/promessas/${encodeURIComponent(id)}/reavaliacao/conclusao`,
     ),
 };
 

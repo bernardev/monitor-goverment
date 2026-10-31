@@ -2,11 +2,14 @@ import { Inject, Module, type OnApplicationShutdown, type OnModuleInit } from '@
 import { montarCapturaDeDocumentos, SCHEMA_DO_ACERVO } from '@prometeu/acervo';
 import { montarConsultaDeMandatos, SCHEMA_DE_AGENTES_PUBLICOS } from '@prometeu/agentes-publicos';
 import { montarCompromissos, SCHEMA_DE_COMPROMISSOS } from '@prometeu/compromissos';
+import { montarConsulta, SCHEMA_DA_CONSULTA } from '@prometeu/consulta';
 import { BancoDoContexto, urlDoBanco } from '@prometeu/infraestrutura';
 
 import {
   CAPTURAR_DOCUMENTO,
   EditorialController,
+  FATOS,
+  type FatosParaVinculo,
   MODULO_COMPROMISSOS,
 } from './editorial.controller.js';
 
@@ -17,6 +20,7 @@ interface Bancos {
   readonly compromissos: BancoDoContexto;
   readonly agentesPublicos: BancoDoContexto;
   readonly acervo: BancoDoContexto;
+  readonly consulta: BancoDoContexto;
 }
 
 function configuracaoDoS3(ambiente: NodeJS.ProcessEnv = process.env) {
@@ -30,7 +34,8 @@ function configuracaoDoS3(ambiente: NodeJS.ProcessEnv = process.env) {
 
 /**
  * Composição da API editorial: cada contexto com o próprio usuário de banco (ADR-0006). Agentes
- * Públicos só é lido (mandatos); o Acervo registra as capturas da curadoria.
+ * Públicos só é lido (mandatos); o Acervo registra as capturas da curadoria; a Consulta dá os fatos
+ * que a curadoria liga às promessas.
  */
 @Module({
   controllers: [EditorialController],
@@ -48,7 +53,24 @@ function configuracaoDoS3(ambiente: NodeJS.ProcessEnv = process.env) {
           2,
         ),
         acervo: BancoDoContexto.conectar(SCHEMA_DO_ACERVO, urlDoBanco(SCHEMA_DO_ACERVO), 2),
+        consulta: BancoDoContexto.conectar(SCHEMA_DA_CONSULTA, urlDoBanco(SCHEMA_DA_CONSULTA), 2),
       }),
+    },
+    {
+      provide: FATOS,
+      inject: [BANCOS],
+      useFactory: (bancos: Bancos): FatosParaVinculo => {
+        const consulta = montarConsulta(bancos.consulta);
+        const fontes = {
+          emenda: (id: string) => consulta.emendas.buscar(id),
+          obra: (id: string) => consulta.obras.buscar(id),
+          proposicao: (id: string) => consulta.proposicoes.buscar(id),
+        };
+        return {
+          candidatos: (pessoaId, texto) => consulta.candidatos.doAutor(pessoaId, texto),
+          capturaDoFato: async (tipo, id) => (await fontes[tipo](id))?.fonte.capturaId,
+        };
+      },
     },
     {
       provide: MODULO_COMPROMISSOS,
@@ -86,7 +108,12 @@ export class EditorialModule implements OnModuleInit, OnApplicationShutdown {
   }
 
   async onApplicationShutdown(): Promise<void> {
-    const { compromissos, agentesPublicos, acervo } = this.bancos;
-    await Promise.all([compromissos.fechar(), agentesPublicos.fechar(), acervo.fechar()]);
+    const { compromissos, agentesPublicos, acervo, consulta } = this.bancos;
+    await Promise.all([
+      compromissos.fechar(),
+      agentesPublicos.fechar(),
+      acervo.fechar(),
+      consulta.fechar(),
+    ]);
   }
 }

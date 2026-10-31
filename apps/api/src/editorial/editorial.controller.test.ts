@@ -4,6 +4,7 @@ import type { CapturarDocumento } from '@prometeu/acervo';
 import type { ConsultaDeMandatos } from '@prometeu/agentes-publicos';
 import {
   MIGRACOES_DE_COMPROMISSOS,
+  type ModuloCompromissos,
   montarCompromissos,
   SCHEMA_DE_COMPROMISSOS,
 } from '@prometeu/compromissos';
@@ -19,6 +20,8 @@ import { type Papel, VerificadorDeToken } from '../autenticacao/verificador-de-t
 import {
   CAPTURAR_DOCUMENTO,
   EditorialController,
+  FATOS,
+  type FatosParaVinculo,
   MODULO_COMPROMISSOS,
 } from './editorial.controller.js';
 
@@ -35,6 +38,26 @@ const capturaFalsa = {
   execute: () =>
     Promise.resolve(Result.ok({ capturaId: CAPTURA, sha256: 'a'.repeat(64), nova: true })),
 } as unknown as CapturarDocumento;
+
+const EMENDA = gerarUuidV7();
+const CAPTURA_DA_EMENDA = gerarUuidV7();
+const fatosFalsos: FatosParaVinculo = {
+  candidatos: () =>
+    Promise.resolve([
+      {
+        tipoDoAlvo: 'emenda',
+        idDoAlvo: EMENDA,
+        titulo: 'Emenda 0001/2026',
+        detalhe: 'CONSTRUÇÃO DE CRECHES · SÃO PAULO - SP',
+        estagios: ['orcamento', 'execucao'],
+        relevancia: 0.5,
+        termosEmComum: ['creches'],
+        capturaId: CAPTURA_DA_EMENDA,
+      },
+    ]),
+  capturaDoFato: (tipo, id) =>
+    Promise.resolve(tipo === 'emenda' && id === EMENDA ? CAPTURA_DA_EMENDA : undefined),
+};
 
 const novaPromessa = {
   pessoaId: gerarUuidV7(),
@@ -58,6 +81,7 @@ describe('API editorial com login', () => {
   let app: INestApplication;
   let servidor: Parameters<typeof request>[0];
   let chavePrivada: CryptoKey;
+  let compromissos: ModuloCompromissos;
 
   const token = (sub: string, papeis: Papel[], emissor = EMISSOR, expira = '5m') =>
     new SignJWT({ realm_access: { roles: papeis }, name: 'Pessoa de Teste' })
@@ -84,6 +108,7 @@ describe('API editorial com login', () => {
       postgres.urlDoContexto(SCHEMA_DE_COMPROMISSOS),
     );
     await migrar(banco, MIGRACOES_DE_COMPROMISSOS);
+    compromissos = montarCompromissos({ banco, mandatos: semMandatos });
 
     const modulo = await Test.createTestingModule({
       controllers: [EditorialController],
@@ -99,9 +124,10 @@ describe('API editorial com login', () => {
         },
         {
           provide: MODULO_COMPROMISSOS,
-          useValue: montarCompromissos({ banco, mandatos: semMandatos }),
+          useValue: compromissos,
         },
         { provide: CAPTURAR_DOCUMENTO, useValue: capturaFalsa },
+        { provide: FATOS, useValue: fatosFalsos },
       ],
     }).compile();
     app = modulo.createNestApplication();
@@ -193,6 +219,102 @@ describe('API editorial com login', () => {
       vereditoVigente: 'em_andamento',
       historico: [{ propostoPor: CURADORA, revisadoPor: REVISOR }],
     });
+  });
+
+  it('vínculo: candidatos do autor; curadora sugere com a captura do fato; revisor confirma', async () => {
+    const curadora = await como(CURADORA, ['curador']);
+    const revisor = await como(REVISOR, ['revisor']);
+    const registrada = await request(servidor)
+      .post('/v1/editorial/promessas')
+      .set(curadora)
+      .send(novaPromessa)
+      .expect(201);
+    const promessaId = (registrada.body as { promessaId: string }).promessaId;
+    const candidatos = async () =>
+      (
+        await request(servidor)
+          .get(`/v1/editorial/promessas/${promessaId}/candidatos`)
+          .set(curadora)
+      ).body as { idDoAlvo: string; vinculado: boolean }[];
+
+    expect((await candidatos()).map((c) => [c.idDoAlvo, c.vinculado])).toEqual([[EMENDA, false]]);
+    const vinculo = { tipoDoAlvo: 'emenda', idDoAlvo: EMENDA, estagioQueComprova: 'orcamento' };
+    await request(servidor)
+      .post(`/v1/editorial/promessas/${promessaId}/vinculos`)
+      .set(revisor)
+      .send(vinculo)
+      .expect(403);
+    await request(servidor)
+      .post(`/v1/editorial/promessas/${promessaId}/vinculos`)
+      .set(curadora)
+      .send({ ...vinculo, idDoAlvo: gerarUuidV7() })
+      .expect(404);
+    const sugerido = await request(servidor)
+      .post(`/v1/editorial/promessas/${promessaId}/vinculos`)
+      .set(curadora)
+      .send(vinculo)
+      .expect(201);
+    const vinculoId = (sugerido.body as { vinculoId: string }).vinculoId;
+    expect((await candidatos()).map((c) => c.vinculado)).toEqual([true]);
+    await request(servidor)
+      .post(`/v1/editorial/promessas/${promessaId}/vinculos`)
+      .set(curadora)
+      .send(vinculo)
+      .expect(422);
+
+    await request(servidor)
+      .post(`/v1/editorial/promessas/${promessaId}/vinculos/${vinculoId}/confirmacao`)
+      .set(revisor)
+      .expect(204);
+    const vista = await request(servidor)
+      .get(`/v1/editorial/promessas/${promessaId}`)
+      .set(curadora)
+      .expect(200);
+    expect(vista.body).toMatchObject({
+      estagio: 'orcamento',
+      vinculos: [
+        { vinculoId, situacao: 'confirmado', origem: 'curador', evidencias: [CAPTURA_DA_EMENDA] },
+      ],
+    });
+
+    const conclusao = () =>
+      request(servidor)
+        .post(`/v1/editorial/promessas/${promessaId}/reavaliacao/conclusao`)
+        .set(curadora);
+    await conclusao().expect(422);
+    const pedido = await compromissos.solicitarReavaliacao.execute({
+      tipoDoAlvo: 'emenda',
+      idDoAlvo: EMENDA,
+      motivo: 'A execução da emenda mudou.',
+      capturaId: CAPTURA_DA_EMENDA,
+    });
+    expect(pedido.ok && pedido.value.promessas).toEqual([promessaId]);
+    const aReavaliar = await request(servidor)
+      .get(`/v1/editorial/promessas/${promessaId}`)
+      .set(curadora)
+      .expect(200);
+    expect(aReavaliar.body).toMatchObject({
+      reavaliacoesPendentes: 1,
+      reavaliacoes: [
+        { tipoDoAlvo: 'emenda', idDoAlvo: EMENDA, motivo: 'A execução da emenda mudou.' },
+      ],
+    });
+    await conclusao().expect(204);
+
+    await request(servidor)
+      .post(`/v1/editorial/promessas/${promessaId}/vinculos/${vinculoId}/rejeicao`)
+      .set(curadora)
+      .send({ motivo: 'A emenda foi para outra cidade.' })
+      .expect(204);
+    const depois = await request(servidor)
+      .get(`/v1/editorial/promessas/${promessaId}`)
+      .set(curadora)
+      .expect(200);
+    expect(depois.body).toMatchObject({
+      estagio: 'prometida',
+      vinculos: [{ situacao: 'rejeitado' }],
+    });
+    expect((await candidatos()).map((c) => c.vinculado)).toEqual([false]);
   });
 
   it('regra dos quatro olhos vale mesmo para quem tem papel de editora-chefe', async () => {

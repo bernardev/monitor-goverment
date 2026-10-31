@@ -51,7 +51,7 @@ export default async function PainelEditorial({ searchParams }: Props): Promise<
             <th>Promessa</th>
             <th>Estágio</th>
             <th>Veredito</th>
-            <th>Revisão</th>
+            <th>Pendências</th>
           </tr>
         </thead>
         <tbody>
@@ -62,7 +62,16 @@ export default async function PainelEditorial({ searchParams }: Props): Promise<
               </td>
               <td>{rotulo(ESTAGIOS, p.estagio)}</td>
               <td>{rotulo(VEREDITOS, p.vereditoVigente)}</td>
-              <td>{p.aguardandoRevisao ? 'Aguardando' : ''}</td>
+              <td>
+                {[
+                  p.aguardandoRevisao ? 'Veredito aguardando revisão' : '',
+                  p.reavaliacoesPendentes > 0
+                    ? `${String(p.reavaliacoesPendentes)} ${p.reavaliacoesPendentes === 1 ? 'fato mudou' : 'fatos mudaram'}`
+                    : '',
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </td>
             </tr>
           ))}
         </tbody>

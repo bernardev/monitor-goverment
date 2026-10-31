@@ -20,6 +20,7 @@ import {
   type RegistrarPromessaOutput,
 } from '@prometeu/compromissos';
 import type {
+  CandidatoAVinculo,
   ErroDeNegocio,
   PromessaNaCuradoria,
   ResumoDePromessaNaCuradoria,
@@ -32,6 +33,18 @@ import * as entradas from './entradas.js';
 
 export const MODULO_COMPROMISSOS = Symbol('ModuloCompromissos');
 export const CAPTURAR_DOCUMENTO = Symbol('CapturarDocumento');
+export const FATOS = Symbol('FatosParaVinculo');
+
+/** Os fatos que a curadoria liga às promessas, lidos das projeções da Consulta (ADR-0008). */
+export interface FatosParaVinculo {
+  /** Fatos da pessoa que podem comprovar a promessa, os mais relevantes primeiro. */
+  candidatos(
+    pessoaId: string,
+    textoDaPromessa: string,
+  ): Promise<Omit<CandidatoAVinculo, 'vinculado'>[]>;
+  /** A captura que prova o fato; `undefined` se o fato não existe. */
+  capturaDoFato(tipo: CandidatoAVinculo['tipoDoAlvo'], id: string): Promise<string | undefined>;
+}
 
 /**
  * API do painel de curadoria (ADR-0014). Toda rota exige login; cada uma declara os papéis aceitos.
@@ -44,6 +57,7 @@ export class EditorialController {
   constructor(
     @Inject(MODULO_COMPROMISSOS) private readonly compromissos: ModuloCompromissos,
     @Inject(CAPTURAR_DOCUMENTO) private readonly capturarDocumento: CapturarDocumento,
+    @Inject(FATOS) private readonly fatos: FatosParaVinculo,
   ) {}
 
   @Get('promessas')
@@ -58,6 +72,102 @@ export class EditorialController {
     const promessa = await this.compromissos.consultaEditorial.buscar(promessaId);
     if (!promessa) throw new NotFoundException({ mensagem: 'Promessa não encontrada.' });
     return promessa;
+  }
+
+  /** Fatos do autor que podem comprovar a promessa, marcando os que já têm vínculo ativo. */
+  @Get('promessas/:promessaId/candidatos')
+  @Header('Cache-Control', 'no-store')
+  async candidatos(@Param('promessaId') promessaId: string): Promise<CandidatoAVinculo[]> {
+    const promessa = await this.compromissos.consultaEditorial.buscar(promessaId);
+    if (!promessa) throw new NotFoundException({ mensagem: 'Promessa não encontrada.' });
+    const ativos = new Set(
+      promessa.vinculos
+        .filter((v) => v.situacao !== 'rejeitado')
+        .map((v) => `${v.tipoDoAlvo}|${v.idDoAlvo}`),
+    );
+    const candidatos = await this.fatos.candidatos(promessa.pessoaId, promessa.texto);
+    return candidatos.map((c) => ({
+      ...c,
+      vinculado: ativos.has(`${c.tipoDoAlvo}|${c.idDoAlvo}`),
+    }));
+  }
+
+  /** Sugere o vínculo com a captura do próprio fato como evidência: quem sugere não a digita. */
+  @Post('promessas/:promessaId/vinculos')
+  @Papeis('curador')
+  async sugerirVinculo(
+    @Param('promessaId') promessaId: string,
+    @Body() corpo: unknown,
+  ): Promise<{ vinculoId: string }> {
+    const vinculo = entradas.ler(entradas.novoVinculo, corpo);
+    const captura = await this.fatos.capturaDoFato(vinculo.tipoDoAlvo, vinculo.idDoAlvo);
+    if (!captura) throw new NotFoundException({ mensagem: 'Fato não encontrado.' });
+    return emConflito(async () =>
+      resultado(
+        await this.compromissos.sugerirVinculo.execute({
+          promessaId,
+          ...vinculo,
+          origem: 'curador',
+          evidencias: [captura],
+        }),
+      ),
+    );
+  }
+
+  @Post('promessas/:promessaId/vinculos/:vinculoId/confirmacao')
+  @HttpCode(204)
+  async confirmarVinculo(
+    @Param('promessaId') promessaId: string,
+    @Param('vinculoId') vinculoId: string,
+    @UsuarioAtual() usuario: Usuario,
+  ): Promise<void> {
+    await emConflito(async () => {
+      resultado(
+        await this.compromissos.confirmarVinculo.execute({
+          promessaId,
+          vinculoId,
+          confirmadoPor: usuario.id,
+        }),
+      );
+    });
+  }
+
+  @Post('promessas/:promessaId/vinculos/:vinculoId/rejeicao')
+  @HttpCode(204)
+  async rejeitarVinculo(
+    @Param('promessaId') promessaId: string,
+    @Param('vinculoId') vinculoId: string,
+    @Body() corpo: unknown,
+    @UsuarioAtual() usuario: Usuario,
+  ): Promise<void> {
+    const { motivo } = entradas.ler(entradas.recusa, corpo);
+    await emConflito(async () => {
+      resultado(
+        await this.compromissos.rejeitarVinculo.execute({
+          promessaId,
+          vinculoId,
+          motivo,
+          rejeitadoPor: usuario.id,
+        }),
+      );
+    });
+  }
+
+  /** A curadoria olhou os fatos que mudaram e fez o que cabia (vínculo, veredito). */
+  @Post('promessas/:promessaId/reavaliacao/conclusao')
+  @HttpCode(204)
+  async concluirReavaliacao(
+    @Param('promessaId') promessaId: string,
+    @UsuarioAtual() usuario: Usuario,
+  ): Promise<void> {
+    await emConflito(async () => {
+      resultado(
+        await this.compromissos.concluirReavaliacao.execute({
+          promessaId,
+          concluidaPor: usuario.id,
+        }),
+      );
+    });
   }
 
   @Post('capturas')

@@ -4,7 +4,14 @@ import type { ParlamentarResumo } from '@prometeu/contracts';
 import { type ReactNode, useActionState, useState } from 'react';
 
 import { type EstadoDoFormulario, registrarPromessa } from '../promessas/acoes';
-import { COMPETENCIAS, MENSURABILIDADES, TIPOS_DE_FONTE, VEREDITOS } from './rotulos';
+import {
+  COMPETENCIAS,
+  ESTAGIOS,
+  MENSURABILIDADES,
+  rotulo,
+  TIPOS_DE_FONTE,
+  VEREDITOS,
+} from './rotulos';
 
 const INICIAL: EstadoDoFormulario = {};
 
@@ -218,5 +225,87 @@ export function Revisao({
         </button>
       </form>
     </div>
+  );
+}
+
+/** Sugere o vínculo de um fato com a promessa, no estágio escolhido (o primeiro é o sugerido). */
+export function SugestaoDeVinculo({
+  sugerir: acao,
+  tipoDoAlvo,
+  idDoAlvo,
+  estagios,
+}: {
+  sugerir: AcaoDoFormulario;
+  tipoDoAlvo: string;
+  idDoAlvo: string;
+  estagios: readonly string[];
+}): ReactNode {
+  const [estado, sugerir, sugerindo] = useActionState(acao, INICIAL);
+  return (
+    <form action={sugerir} className="em-linha">
+      <input type="hidden" name="tipoDoAlvo" value={tipoDoAlvo} />
+      <input type="hidden" name="idDoAlvo" value={idDoAlvo} />
+      <label>
+        Comprova o estágio{' '}
+        <select name="estagioQueComprova" defaultValue={estagios[0]}>
+          {estagios.map((e) => (
+            <option key={e} value={e}>
+              {rotulo(ESTAGIOS, e)}
+            </option>
+          ))}
+        </select>
+      </label>{' '}
+      <button type="submit" disabled={sugerindo}>
+        {sugerindo ? 'Sugerindo…' : 'Sugerir vínculo'}
+      </button>
+      <Erro estado={estado} />
+    </form>
+  );
+}
+
+/** Confirma um vínculo sugerido, ou rejeita (desfaz) com motivo. */
+export function DecisaoDeVinculo({
+  confirmar: acaoDeConfirmar,
+  rejeitar: acaoDeRejeitar,
+  confirmavel,
+}: {
+  confirmar: AcaoDoFormulario;
+  rejeitar: AcaoDoFormulario;
+  confirmavel: boolean;
+}): ReactNode {
+  const [confirmacao, confirmar, confirmando] = useActionState(acaoDeConfirmar, INICIAL);
+  const [rejeicao, rejeitar, rejeitando] = useActionState(acaoDeRejeitar, INICIAL);
+  return (
+    <div className="revisao">
+      {confirmavel && (
+        <form action={confirmar}>
+          <Erro estado={confirmacao} />
+          <button type="submit" disabled={confirmando}>
+            Confirmar vínculo
+          </button>
+        </form>
+      )}
+      <form action={rejeitar} className="em-linha">
+        <label>
+          Motivo <input name="motivo" required />
+        </label>{' '}
+        <button type="submit" disabled={rejeitando}>
+          {confirmavel ? 'Rejeitar' : 'Desfazer'}
+        </button>
+        <Erro estado={rejeicao} />
+      </form>
+    </div>
+  );
+}
+
+export function ConclusaoDeReavaliacao({ concluir }: { concluir: AcaoDoFormulario }): ReactNode {
+  const [estado, acao, concluindo] = useActionState(concluir, INICIAL);
+  return (
+    <form action={acao}>
+      <Erro estado={estado} />
+      <button type="submit" disabled={concluindo}>
+        Marcar como reavaliada
+      </button>
+    </form>
   );
 }

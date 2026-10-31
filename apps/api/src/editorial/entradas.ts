@@ -51,6 +51,13 @@ export const propostaDeVeredito = z.object({
 
 export const recusa = z.object({ motivo: z.string().max(2000) });
 
+/** O fato e o estágio que ele comprova; a evidência é a captura do próprio fato. */
+export const novoVinculo = z.object({
+  tipoDoAlvo: z.enum(['proposicao', 'emenda', 'obra']),
+  idDoAlvo: uuid,
+  estagioQueComprova: z.enum(['ato', 'orcamento', 'execucao', 'entrega']),
+});
+
 export const captura = z.object({ url: z.url({ protocol: /^https$/ }).max(2000) });
 
 /** Confere o corpo da requisição; fora do formato, 400 com a lista de problemas. */

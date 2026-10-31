@@ -17,6 +17,20 @@ export const ESTAGIOS: Readonly<Record<string, string>> = {
   entrega: 'Entrega',
 };
 
+export const TIPOS_DE_ALVO: Readonly<Record<string, string>> = {
+  proposicao: 'Proposição',
+  ato_normativo: 'Ato normativo',
+  acao_orcamentaria: 'Ação orçamentária',
+  emenda: 'Emenda',
+  obra: 'Obra',
+};
+
+export const SITUACOES_DE_VINCULO: Readonly<Record<string, string>> = {
+  sugerido: 'Sugerido',
+  confirmado: 'Confirmado',
+  rejeitado: 'Rejeitado',
+};
+
 export const TIPOS_DE_FONTE: Readonly<Record<string, string>> = {
   plano_de_governo: 'Plano de governo (TSE)',
   debate: 'Debate',
