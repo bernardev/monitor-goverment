@@ -11,17 +11,24 @@ import {
 } from '@prometeu/infraestrutura';
 
 import type { Relogio } from './application/portas.js';
+import { RegistrarConvenio } from './application/registrar-convenio.js';
 import { RegistrarEmenda } from './application/registrar-emenda.js';
+import { RegistrarFavorecidosDaEmenda } from './application/registrar-favorecidos-da-emenda.js';
 import { AutoresEmAgentesPublicos } from './infrastructure/autores-em-agentes-publicos.js';
+import { ConvenioRepositoryPostgres } from './infrastructure/convenio-repository-postgres.js';
 import { EmendaRepositoryPostgres } from './infrastructure/emenda-repository-postgres.js';
 import { outbox } from './infrastructure/esquema.js';
+import { FavorecidosDaEmendaRepositoryPostgres } from './infrastructure/favorecidos-da-emenda-repository-postgres.js';
+import { ImportadorDeConveniosDoPortal } from './infrastructure/importador-de-convenios-do-portal.js';
 import { ImportadorDeEmendasDoPortal } from './infrastructure/importador-de-emendas-do-portal.js';
+import { ImportadorDeFavorecidosDoPortal } from './infrastructure/importador-de-favorecidos-do-portal.js';
 import { RegistroDeCapturasNoAcervo } from './infrastructure/registro-de-capturas-no-acervo.js';
 import type { ResumoDaImportacao } from './infrastructure/resumo-da-importacao.js';
 import { assinarConsumidores } from './interface/consumidores.js';
 
 export type * from './domain/eventos.js';
 export type { Modalidade, TipoDeEmenda } from './domain/tipo-de-emenda.js';
+export type { TipoDeFavorecido } from './domain/tipo-de-favorecido.js';
 export type { Relogio } from './application/portas.js';
 export type {
   RegistrarEmenda,
@@ -49,6 +56,8 @@ export interface DependenciasDeFinancasPublicas {
 export interface ModuloFinancasPublicas {
   readonly registrarEmenda: RegistrarEmenda;
   importarEmendasDoPortal(loteId: string): Promise<ResumoDaImportacao>;
+  importarFavorecidosDoPortal(loteId: string): Promise<ResumoDaImportacao>;
+  importarConveniosDoPortal(loteId: string): Promise<ResumoDaImportacao>;
   assinarConsumidores(
     barramento: BarramentoDeEventos,
     aoImportar: (resumo: ResumoDaImportacao) => void,
@@ -61,18 +70,35 @@ export function montarFinancasPublicas(
 ): ModuloFinancasPublicas {
   const { banco } = dependencias;
   const relogio = dependencias.relogio ?? { agora: () => new Date() };
+  const capturas = new RegistroDeCapturasNoAcervo(dependencias.registrarCaptura);
   const registrarEmenda = new RegistrarEmenda(
     new EmendaRepositoryPostgres(banco),
     new AutoresEmAgentesPublicos(dependencias.pessoas, relogio),
-    new RegistroDeCapturasNoAcervo(dependencias.registrarCaptura),
+    capturas,
     relogio,
   );
-  const importador = new ImportadorDeEmendasDoPortal(banco, registrarEmenda);
+  const importadores = {
+    emendas: new ImportadorDeEmendasDoPortal(banco, registrarEmenda),
+    favorecidos: new ImportadorDeFavorecidosDoPortal(
+      banco,
+      new RegistrarFavorecidosDaEmenda(
+        new FavorecidosDaEmendaRepositoryPostgres(banco),
+        capturas,
+        relogio,
+      ),
+    ),
+    convenios: new ImportadorDeConveniosDoPortal(
+      banco,
+      new RegistrarConvenio(new ConvenioRepositoryPostgres(banco), capturas, relogio),
+    ),
+  };
   return {
     registrarEmenda,
-    importarEmendasDoPortal: (loteId) => importador.importar(loteId),
+    importarEmendasDoPortal: (loteId) => importadores.emendas.importar(loteId),
+    importarFavorecidosDoPortal: (loteId) => importadores.favorecidos.importar(loteId),
+    importarConveniosDoPortal: (loteId) => importadores.convenios.importar(loteId),
     assinarConsumidores: (barramento, aoImportar) =>
-      assinarConsumidores(barramento, banco, importador, aoImportar),
+      assinarConsumidores(barramento, banco, importadores, aoImportar),
     criarRelay: (barramento) => new RelayDaOutbox(banco, outbox, barramento),
   };
 }

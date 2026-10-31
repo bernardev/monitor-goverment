@@ -14,6 +14,32 @@ export class EmendaId extends Identificador {
   }
 }
 
+export class FavorecidosDaEmendaId extends Identificador {
+  declare private readonly marca: 'FavorecidosDaEmendaId';
+
+  static gerar(): FavorecidosDaEmendaId {
+    return new FavorecidosDaEmendaId(gerarUuidV7());
+  }
+
+  static de(valor: string): Result<FavorecidosDaEmendaId, DomainError> {
+    const validado = FavorecidosDaEmendaId.validar(valor);
+    return validado.ok ? Result.ok(new FavorecidosDaEmendaId(validado.value)) : validado;
+  }
+}
+
+export class ConvenioId extends Identificador {
+  declare private readonly marca: 'ConvenioId';
+
+  static gerar(): ConvenioId {
+    return new ConvenioId(gerarUuidV7());
+  }
+
+  static de(valor: string): Result<ConvenioId, DomainError> {
+    const validado = ConvenioId.validar(valor);
+    return validado.ok ? Result.ok(new ConvenioId(validado.value)) : validado;
+  }
+}
+
 /** Pessoa do contexto Agentes Públicos. Só referenciada, nunca criada aqui. */
 export class PessoaId extends Identificador {
   declare private readonly marca: 'PessoaId';

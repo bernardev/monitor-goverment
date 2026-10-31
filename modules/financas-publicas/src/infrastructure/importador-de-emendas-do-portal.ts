@@ -83,7 +83,7 @@ export class ImportadorDeEmendasDoPortal {
         });
       }
     }
-    return { loteId, lidos: porEmenda.size, novos, falhas };
+    return { loteId, importacao: 'emendas', lidos: porEmenda.size, novos, falhas };
   }
 }
 

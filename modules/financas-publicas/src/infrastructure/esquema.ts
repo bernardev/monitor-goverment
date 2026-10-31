@@ -1,5 +1,5 @@
 import { definirInbox, definirOutbox } from '@prometeu/infraestrutura';
-import { integer, jsonb, pgSchema, text, unique, uuid } from 'drizzle-orm/pg-core';
+import { bigint, date, integer, jsonb, pgSchema, text, unique, uuid } from 'drizzle-orm/pg-core';
 
 export const schemaDeFinancasPublicas = pgSchema('financas_publicas');
 
@@ -44,6 +44,57 @@ export const emenda = schemaDeFinancasPublicas.table(
     versao: integer('versao').notNull(),
   },
   (t) => [unique('emenda_por_codigo').on(t.codigoNaFonte)],
+);
+
+/** Recebimento como guardado na lista de favorecidos: parte do agregado. Valor em centavos, texto. */
+export interface RecebimentoGravado {
+  mes: string;
+  favorecido: {
+    tipo: string;
+    documento: string | null;
+    nome: string | null;
+    naturezaJuridica: string | null;
+    uf: string | null;
+    municipio: string | null;
+  };
+  quantidade: number;
+  valor: string;
+}
+
+export const favorecidosDaEmenda = schemaDeFinancasPublicas.table(
+  'favorecidos_da_emenda',
+  {
+    id: uuid('id').primaryKey(),
+    /** A emenda pelo código da fonte: a lista pode chegar antes da emenda. */
+    codigoDaEmenda: text('codigo_da_emenda').notNull(),
+    recebimentos: jsonb('recebimentos').$type<RecebimentoGravado[]>().notNull(),
+    capturaId: uuid('captura_id').notNull(),
+    versao: integer('versao').notNull(),
+  },
+  (t) => [unique('favorecidos_por_emenda').on(t.codigoDaEmenda)],
+);
+
+export interface EmendaDoConvenioGravada {
+  codigoDaEmenda: string;
+  funcao: ClassificacaoGravada;
+  subfuncao: ClassificacaoGravada;
+  localidade: string;
+}
+
+export const convenio = schemaDeFinancasPublicas.table(
+  'convenio',
+  {
+    id: uuid('id').primaryKey(),
+    numero: text('numero').notNull(),
+    convenente: text('convenente').notNull(),
+    objeto: text('objeto'),
+    publicadoEm: date('publicado_em', { mode: 'string' }).notNull(),
+    valor: bigint('valor_centavos', { mode: 'bigint' }).notNull(),
+    emendas: jsonb('emendas').$type<EmendaDoConvenioGravada[]>().notNull(),
+    capturaId: uuid('captura_id').notNull(),
+    versao: integer('versao').notNull(),
+  },
+  (t) => [unique('convenio_por_numero').on(t.numero)],
 );
 
 export const outbox = definirOutbox(schemaDeFinancasPublicas);

@@ -51,6 +51,13 @@ const UNIDADES: Readonly<Record<ResumoDeAtividadeLegislativa['importacao'], stri
   proposicoes_do_senado: 'proposições novas',
 };
 
+/** O que cada importação de Finanças Públicas conta como novo, para o log. */
+const UNIDADES_DE_FINANCAS: Readonly<Record<ResumoDeFinancasPublicas['importacao'], string>> = {
+  emendas: 'emendas novas',
+  favorecidos: 'listas de favorecidos novas',
+  convenios: 'convênios novos',
+};
+
 @Injectable()
 export class Orquestrador implements OnApplicationBootstrap, OnApplicationShutdown {
   private readonly logger = new Logger(Orquestrador.name);
@@ -120,7 +127,7 @@ export class Orquestrador implements OnApplicationBootstrap, OnApplicationShutdo
       this.relatar(resumo, `${String(resumo.novos)} ${unidade}`);
     });
     await financasPublicas.assinarConsumidores(barramento, (resumo) => {
-      this.relatar(resumo, `${String(resumo.novos)} emendas novas`);
+      this.relatar(resumo, `${String(resumo.novos)} ${UNIDADES_DE_FINANCAS[resumo.importacao]}`);
     });
     await consulta.assinarConsumidores(barramento);
 

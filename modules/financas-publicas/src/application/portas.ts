@@ -1,12 +1,26 @@
 import type { DomainError, Result } from '@prometeu/shared-kernel';
 
+import type { Convenio } from '../domain/convenio.js';
 import type { Emenda } from '../domain/emenda.js';
+import type { FavorecidosDaEmenda } from '../domain/favorecidos-da-emenda.js';
 import type { CapturaId, PessoaId } from '../domain/identificadores.js';
 
 export interface EmendaRepository {
   buscar(codigoNaFonte: string): Promise<Emenda | undefined>;
   /** Grava a emenda e seus eventos na mesma transação (ADR-0007). */
   salvar(emenda: Emenda): Promise<void>;
+}
+
+export interface FavorecidosDaEmendaRepository {
+  buscar(codigoDaEmenda: string): Promise<FavorecidosDaEmenda | undefined>;
+  /** Grava a lista e seus eventos na mesma transação (ADR-0007). */
+  salvar(favorecidos: FavorecidosDaEmenda): Promise<void>;
+}
+
+export interface ConvenioRepository {
+  buscar(numero: string): Promise<Convenio | undefined>;
+  /** Grava o convênio e seus eventos na mesma transação (ADR-0007). */
+  salvar(convenio: Convenio): Promise<void>;
 }
 
 /**
