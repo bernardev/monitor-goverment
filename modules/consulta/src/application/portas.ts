@@ -88,6 +88,8 @@ export interface FiltroDeObras extends Paginacao {
   readonly municipio?: string | undefined;
   /** Parte do nome da obra, sem importar acento nem maiúsculas. */
   readonly nome?: string | undefined;
+  /** Pessoa autora de ao menos uma emenda que paga a obra. */
+  readonly autor?: string | undefined;
 }
 
 /** Candidato a vínculo antes de saber se a promessa já o tem: isso é com Compromissos. */

@@ -156,6 +156,8 @@ export interface FiltroDeObras {
   readonly situacao?: SituacaoDaObra | undefined;
   readonly municipio?: string | undefined;
   readonly nome?: string | undefined;
+  /** Obras pagas por emendas desta pessoa. */
+  readonly autor?: string | undefined;
   readonly pagina: number;
   readonly itens?: number;
 }
@@ -168,6 +170,7 @@ export async function listarObras(filtro: FiltroDeObras): Promise<Pagina<ObraRes
   if (filtro.situacao) busca.set('situacao', filtro.situacao);
   if (filtro.municipio) busca.set('municipio', filtro.municipio);
   if (filtro.nome) busca.set('nome', filtro.nome);
+  if (filtro.autor) busca.set('autor', filtro.autor);
   const lista = await obter<Pagina<ObraResumo>>(`/v1/obras?${busca.toString()}`);
   return lista ?? { itens: [], pagina: filtro.pagina, itensPorPagina: itens, total: 0 };
 }

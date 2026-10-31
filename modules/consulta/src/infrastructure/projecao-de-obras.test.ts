@@ -209,6 +209,9 @@ describe('projeção de obras', () => {
     expect(await nomes({ nome: 'obra 151020' })).toEqual(['151020.43-16']);
     expect(await nomes({ municipio: '4320008' })).toEqual(['72343.33-91', '151020.43-16']);
     expect(await nomes({ municipio: '3550308' })).toEqual([]);
+    expect(await nomes({ autor: ANA })).toEqual(['151020.43-16']);
+    expect(await nomes({ autor: PONTE })).toEqual([]);
+    expect(await nomes({ autor: 'nao-e-uuid' })).toEqual([]);
   });
 
   it('o município vem da emenda e da obra, com o nome escrito pela obra', async () => {

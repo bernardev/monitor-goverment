@@ -3,7 +3,7 @@ import type { ConsultaDeObras } from '@prometeu/consulta';
 import type { ObraDetalhada, ObraResumo, Pagina } from '@prometeu/contracts';
 import { z } from 'zod';
 
-import { CACHE_PUBLICO, ler, municipio, nome, paginacao } from '../dados-abertos.js';
+import { CACHE_PUBLICO, ler, municipio, nome, paginacao, UUID } from '../dados-abertos.js';
 
 export const CONSULTA_DE_OBRAS = Symbol('ConsultaDeObras');
 
@@ -17,6 +17,7 @@ const filtro = paginacao.extend({
     .optional(),
   municipio: municipio.optional(),
   nome: nome.optional(),
+  autor: z.string().regex(UUID, 'use o identificador da pessoa').optional(),
 });
 
 /** Obras pagas com emendas parlamentares: situação, medição e as emendas que as pagam (ADR-0008). */
@@ -28,12 +29,21 @@ export class ObrasController {
   @Get()
   @Header('Cache-Control', CACHE_PUBLICO)
   async listar(@Query() query: Record<string, unknown>): Promise<Pagina<ObraResumo>> {
-    const { uf, situacao, municipio: local, nome: parteDoNome, pagina, itens } = ler(filtro, query);
+    const {
+      uf,
+      situacao,
+      municipio: local,
+      nome: parteDoNome,
+      autor,
+      pagina,
+      itens,
+    } = ler(filtro, query);
     return this.obras.listar({
       uf,
       situacao,
       municipio: local,
       nome: parteDoNome,
+      autor,
       pagina,
       itensPorPagina: itens,
     });

@@ -7,7 +7,7 @@ import type {
 } from '@prometeu/contracts';
 import type { BancoDoContexto } from '@prometeu/infraestrutura';
 import { CodigoIbge } from '@prometeu/shared-kernel';
-import { and, arrayContains, count, desc, eq, inArray, like } from 'drizzle-orm';
+import { and, arrayContains, count, desc, eq, inArray, like, sql } from 'drizzle-orm';
 
 import type { ConsultaDeObras, FiltroDeObras } from '../application/portas.js';
 import { paraBusca } from './busca.js';
@@ -26,6 +26,7 @@ export class ConsultaDeObrasPostgres implements ConsultaDeObras {
 
   async listar(filtro: FiltroDeObras): Promise<Pagina<ObraResumo>> {
     const vazia = { itens: [], pagina: filtro.pagina, itensPorPagina: filtro.itensPorPagina };
+    if (filtro.autor !== undefined && !UUID.test(filtro.autor)) return { ...vazia, total: 0 };
     let uf: string | undefined;
     if (filtro.uf !== undefined) {
       const ente = CodigoIbge.daUf(filtro.uf);
@@ -39,6 +40,12 @@ export class ConsultaDeObrasPostgres implements ConsultaDeObras {
         ? undefined
         : arrayContains(obra.municipios, [filtro.municipio]),
       filtro.nome === undefined ? undefined : like(obra.nomeBusca, `%${paraBusca(filtro.nome)}%`),
+      filtro.autor === undefined
+        ? undefined
+        : sql`${obra.codigosDasEmendas} && ARRAY(
+            SELECT ${emenda.codigoNaFonte} FROM ${emenda}
+            WHERE ${emenda.autorPessoaId} = ${filtro.autor.toLowerCase()}
+          )`,
     );
     const [linhas, [total]] = await Promise.all([
       this.banco.drizzle
