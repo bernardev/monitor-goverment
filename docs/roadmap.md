@@ -344,3 +344,46 @@ com identificadores diferentes: o importador fica com uma.
 
 Fica para depois, de propósito: o painel de obras paralisadas do TCU, as fotos e contratos das obras,
 as emendas que só aparecem na descrição do empenho (texto livre) e as obras de emendas anteriores a 2023.
+
+## Antes da etapa 5: história, operação e busca
+
+O balanço depois da etapa 4 apontou três lacunas antes de ligar as promessas aos fatos: o legislativo
+raso (duas semanas de frequência ao lado de três anos de emendas), nada rodando sozinho e nenhuma busca
+por nome ou lugar.
+
+- **Carga histórica do legislativo:** o job `carga_historica` do Dagster coleta um período em partes do
+  tamanho que cada fonte aceita, uma parte por lote (votações da Câmara: até 3 meses por consulta; do
+  Senado: até 1 ano; a frequência da Câmara devolve a legislatura inteira de cada deputado numa
+  consulta). Recomeçar uma parte não muda nada: a prata é gravada por chave e os importadores são
+  idempotentes.
+- **O que a fonte ensinou:** a lista de votações da Câmara traz votação que a própria API diz não
+  existir (404 nos votos e no detalhe): ela fica de fora sem parar a coleta. E a Câmara registra voto
+  de suplente minutos depois do afastamento automático lançado no mesmo dia (27/04/2023: afastamento às
+  12h53, voto às 13h27). O voto passa a ser conferido pelo mandato que toca o dia da votação, como a
+  frequência; a pessoa repetida continua recusada.
+- **Operação:** as agendas nascem ligadas (o Dagster as deixa paradas até alguém ligar à mão); o daemon
+  e a interface do Dagster sobem no perfil `dados` do compose; cada coleta que falha avisa por um
+  webhook de chat (`ALERTA_WEBHOOK_URL`). A página pública `/fontes` (e `GET /v1/fontes`) mostra a
+  última coleta de cada tabela de cada fonte e se a agenda está em dia. O comando `reentregar` do worker
+  devolve eventos à fila para um consumidor: importar de novo um lote depois de corrigir o importador,
+  ou alimentar desde o começo uma projeção nova, sem mexer no banco à mão.
+- **Busca:** parlamentar e obra pelo nome, sem importar acento nem maiúsculas (a busca por nome de
+  parlamentar acha também quem já deixou o cargo); emendas e obras por município (código IBGE); e os
+  municípios pelo nome, a partir dos que aparecem como destino de emenda ou local de obra. No site, a
+  busca única na página inicial (`/busca`) e a página de cada município, com as obras e as emendas
+  destinadas a ele.
+
+Resultado: com as fontes reais, a carga levou 30 segundos no Senado (16 partes), 35 minutos na
+frequência da Câmara (uma consulta por deputado) e pouco mais de uma hora nas votações da Câmara (46
+partes, retomada da parte 30 depois de a API ficar fora do ar). Desde fevereiro de 2023 entraram 1.060
+votações nominais da Câmara e 426 do Senado, com 462.680 votos, e 184.413 dias de frequência de 513
+deputados (10.736 ausências justificadas, com o motivo). A carga revelou que o conector de deputados
+perdia períodos de exercício: a Câmara lança a volta do suplente com a situação `CONVOCADO` e a
+descrição `Entrada - Reassunção`, e 309 de 704 votações eram recusadas por falta de mandato. Corrigido
+o conector, recusadas ficaram 19 votações e 3 dias de frequência, de 4 deputados em 5 dias em que o
+histórico da própria Câmara não registra exercício. A busca por município cobre 4.209 municípios.
+
+Fica para depois, de propósito: a carga histórica das proposições (milhares por ano na Câmara, e o
+Senado só aceita os últimos 30 dias), a frequência de quem saiu da Câmara antes da coleta (o serviço só
+lista quem está no cargo), a lista oficial de municípios do IBGE (hoje só os que aparecem nos dados) e
+um painel de métricas das coletas.

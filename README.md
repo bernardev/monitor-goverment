@@ -107,8 +107,9 @@ subir o Docker e ao rodar API e worker.
    ```
 
 4. Suba a API e o site; as listas ficam em `http://localhost:3001/parlamentares`,
-   `http://localhost:3001/votacoes`, `http://localhost:3001/proposicoes` e
-   `http://localhost:3001/emendas`:
+   `http://localhost:3001/votacoes`, `http://localhost:3001/proposicoes`,
+   `http://localhost:3001/emendas` e `http://localhost:3001/obras`, a busca em
+   `http://localhost:3001/busca` e a situação das fontes em `http://localhost:3001/fontes`:
 
    ```bash
    node apps/api/dist/main.js
@@ -117,6 +118,38 @@ subir o Docker e ao rodar API e worker.
    ```bash
    API_URL=http://localhost:3000 pnpm --filter @prometeu/web exec next start -p 3001
    ```
+
+### Operação das coletas
+
+As agendas e o aviso de falha rodam no daemon do Dagster, em contêiner, no perfil `dados` do compose
+(a interface fica em `http://localhost:3070`). Com `ALERTA_WEBHOOK_URL` (Slack, Mattermost, Discord ou
+Teams), cada coleta que falha manda um aviso:
+
+```bash
+docker compose -f infra/docker/docker-compose.yml --profile dados up -d
+```
+
+Carga histórica do legislativo, em partes do tamanho que cada fonte aceita. Escreva um `carga.yaml` na
+pasta `data-platform` (`fonte` é `camara_frequencia`, `camara_votacoes` ou `senado_votacoes`; `ate` é
+opcional e, sem ele, a carga vai até agora):
+
+```yaml
+ops:
+  carregar_historico:
+    config: { fonte: camara_votacoes, de: '2023-02-01' }
+```
+
+```bash
+uv run dagster job execute -m prometeu_dados.definicoes -j carga_historica -c carga.yaml
+```
+
+Depois de corrigir um importador, ou para alimentar uma projeção nova, reentregue os eventos ao
+consumidor com o worker no ar (o consumidor diz o schema: `obras.importar_...` está em `obras`):
+
+```bash
+node apps/worker/dist/reentregar.js obras.importar_obras_do_obrasgov <id-do-lote>
+node apps/worker/dist/reentregar.js consulta.projetar_municipios --origem obras --tipo ObraRegistrada
+```
 
 ### Painel de curadoria
 
