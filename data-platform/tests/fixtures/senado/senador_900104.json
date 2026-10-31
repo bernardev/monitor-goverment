@@ -1,0 +1,16 @@
+{
+  "DetalheParlamentar": {
+    "Metadados": {},
+    "Parlamentar": {
+      "IdentificacaoParlamentar": {
+        "CodigoParlamentar": "900104",
+        "NomeParlamentar": "Diego Antigo",
+        "NomeCompletoParlamentar": "Diego Antigo da Silva",
+        "SexoParlamentar": "Masculino",
+        "UrlFotoParlamentar": "",
+        "SiglaPartidoParlamentar": "PEX"
+      },
+      "DadosBasicosParlamentar": {}
+    }
+  }
+}

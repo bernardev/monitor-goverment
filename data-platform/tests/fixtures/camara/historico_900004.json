@@ -1,0 +1,37 @@
+{
+  "dados": [
+    {
+      "id": 900004,
+      "uri": "https://dadosabertos.camara.leg.br/api/v2/deputados/900004",
+      "nome": "Davi Antigo",
+      "nomeEleitoral": "DAVI ANTIGO",
+      "siglaPartido": "PEX",
+      "uriPartido": "https://dadosabertos.camara.leg.br/api/v2/partidos/1",
+      "siglaUf": "PE",
+      "idLegislatura": 56,
+      "email": null,
+      "urlFoto": "https://www.camara.leg.br/internet/deputado/bandep/900004.jpg",
+      "dataHora": "2019-02-01T10:00",
+      "situacao": "Exercício",
+      "condicaoEleitoral": "Titular",
+      "descricaoStatus": "Entrada - Posse de Eleito Titular"
+    },
+    {
+      "id": 900004,
+      "uri": "https://dadosabertos.camara.leg.br/api/v2/deputados/900004",
+      "nome": "Davi Antigo",
+      "nomeEleitoral": "DAVI ANTIGO",
+      "siglaPartido": "PEX",
+      "uriPartido": "https://dadosabertos.camara.leg.br/api/v2/partidos/1",
+      "siglaUf": "PE",
+      "idLegislatura": 56,
+      "email": null,
+      "urlFoto": "https://www.camara.leg.br/internet/deputado/bandep/900004.jpg",
+      "dataHora": "2023-01-31T23:59",
+      "situacao": "FIM_MANDATO",
+      "condicaoEleitoral": "Titular",
+      "descricaoStatus": "Saída - Fim de Mandato"
+    }
+  ],
+  "links": []
+}

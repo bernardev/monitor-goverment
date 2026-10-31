@@ -1,0 +1,40 @@
+{
+  "dados": [
+    {
+      "id": 900001,
+      "uri": "https://dadosabertos.camara.leg.br/api/v2/deputados/900001",
+      "nome": "Ana Exemplo",
+      "siglaPartido": "PEX",
+      "uriPartido": "https://dadosabertos.camara.leg.br/api/v2/partidos/1",
+      "siglaUf": "SP",
+      "idLegislatura": 56,
+      "urlFoto": "https://www.camara.leg.br/internet/deputado/bandep/900001.jpg",
+      "email": null
+    },
+    {
+      "id": 900004,
+      "uri": "https://dadosabertos.camara.leg.br/api/v2/deputados/900004",
+      "nome": "Davi Antigo",
+      "siglaPartido": "PEX",
+      "uriPartido": "https://dadosabertos.camara.leg.br/api/v2/partidos/1",
+      "siglaUf": "PE",
+      "idLegislatura": 56,
+      "urlFoto": "https://www.camara.leg.br/internet/deputado/bandep/900004.jpg",
+      "email": null
+    }
+  ],
+  "links": [
+    {
+      "rel": "self",
+      "href": "https://dadosabertos.camara.leg.br/api/v2/deputados?idLegislatura=56&itens=2&ordem=ASC&ordenarPor=nome&pagina=1"
+    },
+    {
+      "rel": "first",
+      "href": "https://dadosabertos.camara.leg.br/api/v2/deputados?idLegislatura=56&itens=2&ordem=ASC&ordenarPor=nome&pagina=1"
+    },
+    {
+      "rel": "last",
+      "href": "https://dadosabertos.camara.leg.br/api/v2/deputados?idLegislatura=56&itens=2&ordem=ASC&ordenarPor=nome&pagina=1"
+    }
+  ]
+}

@@ -98,8 +98,8 @@ def _executar(
 @asset(
     group_name="camara",
     description=(
-        "Deputados federais da legislatura atual e seus períodos de exercício, inclusive suplentes "
-        "que já saíram (prata: camara_deputado)."
+        "Deputados federais da legislatura atual e da anterior e seus períodos de exercício, "
+        "inclusive suplentes que já saíram (prata: camara_deputado)."
     ),
 )
 def camara_deputados(context: AssetExecutionContext) -> MaterializeResult[None]:
@@ -138,8 +138,8 @@ def camara_votacoes(context: AssetExecutionContext) -> MaterializeResult[None]:
 @asset(
     group_name="senado",
     description=(
-        "Senadores da legislatura atual e seus períodos de exercício, inclusive suplentes que já "
-        "saíram (prata: senado_senador, senado_exercicios)."
+        "Senadores da legislatura atual e da anterior e seus períodos de exercício, inclusive "
+        "suplentes que já saíram (prata: senado_senador, senado_exercicios)."
     ),
 )
 def senado_senadores(context: AssetExecutionContext) -> MaterializeResult[None]:

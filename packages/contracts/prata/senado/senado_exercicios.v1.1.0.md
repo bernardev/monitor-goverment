@@ -1,4 +1,4 @@
-# `ingestao.senado_exercicios` v1.0.0
+# `ingestao.senado_exercicios` v1.1.0
 
 Os exercícios de cada senador, de todos os mandatos dele, numa linha por senador. Fonte:
 `GET /senador/{codigo}/mandatos` nos [Dados Abertos do Senado](https://legis.senado.leg.br/dadosabertos/docs/).
@@ -31,3 +31,8 @@ Mais as [colunas de origem](../colunas-de-origem.md).
 As datas são dias, sem hora. O Senado às vezes encerra um exercício e começa o seguinte no mesmo dia
 (o titular renuncia e o suplente, que já estava no cargo, continua); quem consome decide como juntar
 exercícios que se tocam.
+
+## Mudanças desde a v1.0
+
+Acompanha `senado_senador` v1.1: entram os exercícios dos senadores da legislatura anterior. O
+formato não mudou.

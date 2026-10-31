@@ -1,10 +1,13 @@
-"""Senadores da legislatura atual e os períodos em que exerceram mandato.
+"""Senadores da legislatura atual e da anterior, e os períodos em que exerceram mandato.
 
 Produz as tabelas prata `senado_senador` e `senado_exercicios`, descritas em
 `packages/contracts/prata/senado/`. Como na Câmara, a lista de quem está em exercício não basta: o
 suplente que assumiu por alguns meses vota, e some da lista quando o titular volta. O conector
 percorre todos os senadores da legislatura e lê os mandatos de cada um, que trazem os exercícios
 (início, fim e a causa do afastamento).
+
+A legislatura anterior entra porque o primeiro orçamento de cada legislatura é emendado pela que
+termina: os autores das emendas ao orçamento de 2023 são os senadores de 2019 a 2023.
 
 A API do Senado recusa conexões quando recebe muitas consultas ao mesmo tempo; as consultas vão uma
 de cada vez (menos de um minuto no total, com a conexão reaproveitada).
@@ -40,23 +43,34 @@ def _agora() -> datetime:
 
 class ConectorSenadoresDoSenado:
     nome = "senado"
-    versao_do_contrato = "1.0.0"
+    versao_do_contrato = "1.1.0"
 
-    def __init__(self, cliente: ClienteHttp, relogio: Callable[[], datetime] = _agora) -> None:
+    def __init__(
+        self,
+        cliente: ClienteHttp,
+        relogio: Callable[[], datetime] = _agora,
+        legislaturas_anteriores: int = 1,
+    ) -> None:
         self._cliente = cliente
         self._relogio = relogio
+        self._legislaturas_anteriores = legislaturas_anteriores
 
     def coletar(self, janela: JanelaDeColeta) -> Iterator[RespostaBruta]:
-        """Acha a legislatura do fim da janela, lê os mandatos de cada senador dela e, de quem
-        exerceu mandato na legislatura, o detalhe com nome, partido e foto."""
+        """Acha a legislatura do fim da janela e as anteriores, lê os mandatos de cada senador
+        delas e, de quem exerceu mandato no período que elas cobrem, o detalhe com nome, partido e
+        foto. Quem esteve nas duas legislaturas é lido uma vez."""
         dia = janela.fim.astimezone(BRASILIA).date()
         atual = self._buscar(f"{API}/senador/lista/atual")
         yield atual
-        numero, inicio, fim = self._legislatura_em(atual, dia)
+        legislaturas = self._legislaturas_ate(atual, dia)
+        inicio, fim = legislaturas[0][1], legislaturas[-1][2]
 
-        lista = self._buscar(f"{API}/senador/lista/legislatura/{numero}")
-        yield lista
-        for codigo in self._codigos(lista):
+        codigos: set[int] = set()
+        for numero, _, _ in legislaturas:
+            lista = self._buscar(f"{API}/senador/lista/legislatura/{numero}")
+            yield lista
+            codigos.update(self._codigos(lista))
+        for codigo in sorted(codigos):
             mandatos = self._buscar(f"{API}/senador/{codigo}/mandatos")
             yield mandatos
             exercicios = self._exercicios(mandatos)
@@ -108,7 +122,9 @@ class ConectorSenadoresDoSenado:
         )
 
     def _legislaturas(self, resposta: RespostaBruta) -> list[tuple[int, date, date]]:
-        """Legislaturas citadas nos mandatos de quem está em exercício: a atual está entre elas."""
+        """Legislaturas citadas nos mandatos de quem está em exercício. A atual está entre elas, e
+        também a anterior: o mandato de senador cobre duas legislaturas, e quem foi eleito na
+        eleição anterior está na segunda."""
         parlamentares = j.lista(
             j.caminho(
                 j.corpo(resposta),
@@ -134,11 +150,23 @@ class ConectorSenadoresDoSenado:
                 )
         return sorted(legislaturas)
 
-    def _legislatura_em(self, resposta: RespostaBruta, dia: date) -> tuple[int, date, date]:
-        for numero, inicio, fim in self._legislaturas(resposta):
-            if inicio <= dia <= fim:
-                return numero, inicio, fim
-        raise FonteMudouDeFormatoError(f"Nenhuma legislatura em curso em {dia} em {resposta.url}")
+    def _legislaturas_ate(self, resposta: RespostaBruta, dia: date) -> list[tuple[int, date, date]]:
+        """A legislatura em curso no dia e as anteriores a coletar, da mais antiga para a atual."""
+        conhecidas = {
+            numero: (numero, inicio, fim) for numero, inicio, fim in self._legislaturas(resposta)
+        }
+        em_curso = next((n for n, i, f in conhecidas.values() if i <= dia <= f), None)
+        if em_curso is None:
+            raise FonteMudouDeFormatoError(
+                f"Nenhuma legislatura em curso em {dia} em {resposta.url}"
+            )
+        numeros = range(em_curso - self._legislaturas_anteriores, em_curso + 1)
+        faltando = [n for n in numeros if n not in conhecidas]
+        if faltando:
+            raise FonteMudouDeFormatoError(
+                f"Legislaturas {faltando} não aparecem nos mandatos em {resposta.url}"
+            )
+        return [conhecidas[n] for n in numeros]
 
     def _codigos(self, resposta: RespostaBruta) -> list[int]:
         parlamentares = j.lista(

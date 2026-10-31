@@ -1,8 +1,9 @@
-# `ingestao.senado_senador` v1.0.0
+# `ingestao.senado_senador` v1.1.0
 
-Senadores que exerceram mandato na legislatura em curso, inclusive suplentes que já saíram. Fontes:
-`GET /senador/lista/atual` (para achar a legislatura), `GET /senador/lista/legislatura/{numero}` e
-`GET /senador/{codigo}` nos [Dados Abertos do Senado](https://legis.senado.leg.br/dadosabertos/docs/).
+Senadores que exerceram mandato na legislatura em curso ou na anterior, inclusive suplentes que já
+saíram. Fontes: `GET /senador/lista/atual` (para achar as legislaturas),
+`GET /senador/lista/legislatura/{numero}` e `GET /senador/{codigo}` nos
+[Dados Abertos do Senado](https://legis.senado.leg.br/dadosabertos/docs/).
 
 - **Conector:** `prometeu_dados.conectores.senado.ConectorSenadoresDoSenado`
 - **Chave natural:** `codigo`
@@ -21,3 +22,10 @@ Mais as [colunas de origem](../colunas-de-origem.md).
 
 O detalhe só traz a UF de quem está em exercício; a UF de cada exercício vem do mandato, em
 `senado_exercicios`. Detalhe de outro senador faz o conector falhar.
+
+## Mudanças desde a v1.0
+
+A v1.0 percorria só os senadores da legislatura em curso; a v1.1 percorre também os da anterior,
+achada nos mandatos de quem está em exercício (o mandato de senador cobre duas legislaturas). Entram
+os senadores cujo mandato terminou com a legislatura anterior. As colunas não mudaram. O motivo: as
+emendas ao primeiro orçamento de cada legislatura são propostas pela que termina.

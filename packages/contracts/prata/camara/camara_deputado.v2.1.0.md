@@ -1,7 +1,7 @@
-# `ingestao.camara_deputado` v2.0.0
+# `ingestao.camara_deputado` v2.1.0
 
-Deputados federais da legislatura atual, um por legislatura em que exerceram mandato, com os períodos
-de exercício. Fontes: `GET /api/v2/deputados?idLegislatura={id}` para achar os deputados e
+Deputados federais da legislatura atual e da anterior, um por legislatura em que exerceram mandato,
+com os períodos de exercício. Fontes: `GET /api/v2/deputados?idLegislatura={id}` para achar os deputados e
 `GET /api/v2/deputados/{id}/historico` para os dados de cada um, na
 [API de Dados Abertos da Câmara](https://dadosabertos.camara.leg.br/swagger/api.html).
 
@@ -47,3 +47,10 @@ assumiu não aparece.
   A v2 traz todos os que exerceram mandato na legislatura, e também as legislaturas anteriores deles.
 - Coluna nova `exercicios`.
 - Sai `email`: o histórico não o informa, e nenhum consumidor usava.
+
+## Mudanças desde a v2.0
+
+A v2.0 percorria só os deputados da legislatura em curso; a v2.1 percorre também os da anterior
+(ver `camara_legislatura`). Entram os deputados que saíram ao fim da legislatura anterior. As colunas
+não mudaram. O motivo: o primeiro orçamento de cada legislatura é emendado pela que termina, e as
+emendas ao orçamento de 2023 têm como autores os deputados de 2019 a 2023.

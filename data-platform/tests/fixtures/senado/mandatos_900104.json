@@ -1,0 +1,35 @@
+{
+  "MandatoParlamentar": {
+    "Metadados": {},
+    "Parlamentar": {
+      "Codigo": "900104",
+      "Nome": "Diego Antigo",
+      "Mandatos": {
+        "Mandato": {
+          "CodigoMandato": "804",
+          "UfParlamentar": "PE",
+          "PrimeiraLegislaturaDoMandato": {
+            "NumeroLegislatura": "55",
+            "DataInicio": "2015-02-01",
+            "DataFim": "2019-01-31"
+          },
+          "SegundaLegislaturaDoMandato": {
+            "NumeroLegislatura": "56",
+            "DataInicio": "2019-02-01",
+            "DataFim": "2023-01-31"
+          },
+          "DescricaoParticipacao": "Titular",
+          "Exercicios": {
+            "Exercicio": {
+              "CodigoExercicio": "2804",
+              "DataInicio": "2015-02-01",
+              "DataFim": "2023-01-31",
+              "SiglaCausaAfastamento": "TER",
+              "DescricaoCausaAfastamento": "Término do mandato"
+            }
+          }
+        }
+      }
+    }
+  }
+}

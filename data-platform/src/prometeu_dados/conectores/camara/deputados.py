@@ -1,10 +1,13 @@
-"""Deputados federais da legislatura atual e os períodos em que exerceram mandato.
+"""Deputados federais da legislatura atual e da anterior, e os períodos em que exerceram mandato.
 
 Produz as tabelas prata `camara_deputado` e `camara_legislatura`, descritas em
 `packages/contracts/prata/camara/`. A lista de deputados em exercício não basta: o suplente que
 assumiu por alguns meses vota e tem frequência apurada, mas some da lista quando sai. Por isso
 o conector percorre todos os deputados da legislatura e lê o histórico de cada um, que traz as datas
 de posse, licença, reassunção e afastamento.
+
+A legislatura anterior entra porque o primeiro orçamento de cada legislatura é emendado pela que
+termina: os autores das emendas ao orçamento de 2023 são os deputados de 2019 a 2023.
 
 O histórico cobre também as legislaturas anteriores do deputado. A prata guarda todas em que ele
 exerceu mandato; quem consome escolhe as que interessam pela `camara_legislatura`.
@@ -51,7 +54,7 @@ def _agora() -> datetime:
 
 class ConectorDeputadosDaCamara:
     nome = "camara"
-    versao_do_contrato = "2.0.0"
+    versao_do_contrato = "2.1.0"
 
     def __init__(
         self,
@@ -59,33 +62,42 @@ class ConectorDeputadosDaCamara:
         relogio: Callable[[], datetime] = _agora,
         itens_por_pagina: int = 100,
         consultas_simultaneas: int = 8,
+        legislaturas_anteriores: int = 1,
     ) -> None:
         self._cliente = cliente
         self._relogio = relogio
         self._itens_por_pagina = itens_por_pagina
         self._consultas_simultaneas = consultas_simultaneas
+        self._legislaturas_anteriores = legislaturas_anteriores
 
     def coletar(self, janela: JanelaDeColeta) -> Iterator[RespostaBruta]:
-        """Acha a legislatura do fim da janela, percorre seus deputados e lê o histórico de cada um.
+        """Acha a legislatura do fim da janela e as anteriores, percorre os deputados de cada uma e
+        lê o histórico de cada deputado.
 
-        A lista da legislatura repete o deputado que mudou de partido; o histórico é buscado uma vez
-        por deputado, em ordem de id.
+        A legislatura anterior é a do dia antes do início da seguinte. A lista da legislatura repete
+        o deputado que mudou de partido, e quem foi reeleito aparece nas duas; o histórico é
+        buscado uma vez por deputado, em ordem de id.
         """
-        dia = janela.fim.astimezone(BRASILIA).date().isoformat()
-        legislaturas = self._buscar(f"{API}/legislaturas?data={dia}")
-        yield legislaturas
-        legislatura = self._legislatura(legislaturas)["id"]
+        dia = janela.fim.astimezone(BRASILIA).date()
+        legislaturas: list[int] = []
+        for _ in range(self._legislaturas_anteriores + 1):
+            resposta = self._buscar(f"{API}/legislaturas?data={dia.isoformat()}")
+            yield resposta
+            legislatura = self._legislatura(resposta)
+            legislaturas.append(legislatura["id"])
+            dia = date.fromisoformat(legislatura["dataInicio"]) - timedelta(days=1)
 
-        url: str | None = (
-            f"{API}/deputados?idLegislatura={legislatura}&itens={self._itens_por_pagina}"
-            "&ordem=ASC&ordenarPor=nome"
-        )
         deputados: set[int] = set()
-        while url is not None:
-            pagina = self._buscar(url)
-            yield pagina
-            deputados.update(int(deputado["id"]) for deputado in self._deputados(pagina))
-            url = _proxima_pagina(_json(pagina))
+        for legislatura_id in legislaturas:
+            url: str | None = (
+                f"{API}/deputados?idLegislatura={legislatura_id}&itens={self._itens_por_pagina}"
+                "&ordem=ASC&ordenarPor=nome"
+            )
+            while url is not None:
+                pagina = self._buscar(url)
+                yield pagina
+                deputados.update(int(deputado["id"]) for deputado in self._deputados(pagina))
+                url = _proxima_pagina(_json(pagina))
 
         urls = [f"{API}/deputados/{id_deputado}/historico" for id_deputado in sorted(deputados)]
         with ThreadPoolExecutor(max_workers=self._consultas_simultaneas) as executor:

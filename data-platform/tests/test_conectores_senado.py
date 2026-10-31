@@ -37,18 +37,25 @@ def fixture(nome: str) -> bytes:
 def cliente_padrao() -> ClienteGravado:
     respostas = {
         f"{API}/senador/lista/atual": (200, fixture("lista_atual.json")),
+        f"{API}/senador/lista/legislatura/56": (200, fixture("lista_legislatura_56.json")),
         f"{API}/senador/lista/legislatura/57": (200, fixture("lista_legislatura_57.json")),
         VOTACOES: (200, fixture("votacoes.json")),
     }
-    for codigo in (900101, 900102, 900103):
+    for codigo in (900101, 900102, 900103, 900104):
         respostas[f"{API}/senador/{codigo}/mandatos"] = (200, fixture(f"mandatos_{codigo}.json"))
-    for codigo in (900101, 900102):
+    for codigo in (900101, 900102, 900104):
         respostas[f"{API}/senador/{codigo}"] = (200, fixture(f"senador_{codigo}.json"))
     return ClienteGravado(respostas)
 
 
-def senadores(cliente: ClienteGravado | None = None) -> ConectorSenadoresDoSenado:
-    return ConectorSenadoresDoSenado(cliente or cliente_padrao(), relogio=lambda: AGORA)
+def senadores(
+    cliente: ClienteGravado | None = None, legislaturas_anteriores: int = 1
+) -> ConectorSenadoresDoSenado:
+    return ConectorSenadoresDoSenado(
+        cliente or cliente_padrao(),
+        relogio=lambda: AGORA,
+        legislaturas_anteriores=legislaturas_anteriores,
+    )
 
 
 def registros(conector: Any, janela: JanelaDeColeta) -> list[RegistroPrata]:
@@ -60,7 +67,7 @@ def resposta(url: str, corpo: Any) -> RespostaBruta:
 
 
 class TestSenadores:
-    def test_le_os_mandatos_de_todos_e_o_detalhe_so_de_quem_exerceu_na_legislatura(self) -> None:
+    def test_le_os_mandatos_de_todos_e_o_detalhe_so_de_quem_exerceu_nas_legislaturas(self) -> None:
         cliente = cliente_padrao()
 
         respostas = list(senadores(cliente).coletar(HOJE))
@@ -70,14 +77,29 @@ class TestSenadores:
             == cliente.chamadas
             == [
                 f"{API}/senador/lista/atual",
+                f"{API}/senador/lista/legislatura/56",
                 f"{API}/senador/lista/legislatura/57",
                 f"{API}/senador/900101/mandatos",
                 f"{API}/senador/900101",
                 f"{API}/senador/900102/mandatos",
                 f"{API}/senador/900102",
                 f"{API}/senador/900103/mandatos",
+                f"{API}/senador/900104/mandatos",
+                f"{API}/senador/900104",
             ]
         )
+
+    def test_sem_legislaturas_anteriores_fica_so_a_em_curso(self) -> None:
+        cliente = cliente_padrao()
+
+        urls = [r.url for r in senadores(cliente, legislaturas_anteriores=0).coletar(HOJE)]
+
+        assert f"{API}/senador/lista/legislatura/56" not in urls
+        assert f"{API}/senador/900104/mandatos" not in urls
+
+    def test_legislatura_anterior_que_nao_aparece_nos_mandatos_e_mudanca_de_formato(self) -> None:
+        with pytest.raises(FonteMudouDeFormatoError):
+            list(senadores(legislaturas_anteriores=2).coletar(HOJE))
 
     def test_exercicios_de_todos_os_mandatos_com_uf_fim_do_mandato_e_causa(self) -> None:
         exercicios = {
@@ -86,7 +108,17 @@ class TestSenadores:
             if r.tabela == "senado_exercicios"
         }
 
-        assert set(exercicios) == {900101, 900102}
+        assert set(exercicios) == {900101, 900102, 900104}
+        assert exercicios[900104] == [
+            {
+                "codigo_exercicio": 2804,
+                "uf": "PE",
+                "inicio": "2015-02-01",
+                "fim": "2023-01-31",
+                "fim_do_mandato": "2023-01-31",
+                "causa_do_afastamento": "TER",
+            }
+        ]
         assert exercicios[900101] == [
             {
                 "codigo_exercicio": 3101,
@@ -116,6 +148,7 @@ class TestSenadores:
                 "url_foto": "http://www.senado.leg.br/senadores/img/fotos-oficiais/senador900101.jpg",
             },
             {"codigo": 900102, "nome": "Bruno Suplente", "sigla_partido": "PMO", "url_foto": None},
+            {"codigo": 900104, "nome": "Diego Antigo", "sigla_partido": "PEX", "url_foto": None},
         ]
         assert detalhes[0].origem.url == f"{API}/senador/900101"
 

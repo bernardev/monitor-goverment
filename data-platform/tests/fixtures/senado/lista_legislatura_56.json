@@ -1,0 +1,27 @@
+{
+  "ListaParlamentarLegislatura": {
+    "Metadados": {},
+    "Parlamentares": {
+      "Parlamentar": [
+        {
+          "IdentificacaoParlamentar": {
+            "CodigoParlamentar": "900102",
+            "NomeParlamentar": "Bruno Suplente",
+            "NomeCompletoParlamentar": "Bruno Suplente da Silva",
+            "SexoParlamentar": "Masculino",
+            "FormaTratamento": "Senador "
+          }
+        },
+        {
+          "IdentificacaoParlamentar": {
+            "CodigoParlamentar": "900104",
+            "NomeParlamentar": "Diego Antigo",
+            "NomeCompletoParlamentar": "Diego Antigo da Silva",
+            "SexoParlamentar": "Masculino",
+            "FormaTratamento": "Senador "
+          }
+        }
+      ]
+    }
+  }
+}
