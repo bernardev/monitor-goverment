@@ -29,7 +29,7 @@ O que a v1 entrega e quais módulos cada entrega envolve está em
 | 2   | Compromissos no banco e acesso editorial    | Repositório da `Promessa` com outbox; login e papéis (aceitar ADR-0014); painel mínimo de curadoria para cadastrar promessa e propor veredito.                                    | Concluída |
 | 3   | Atividade Legislativa                       | Proposições, votações e presença com o motivo da ausência (Câmara e Senado).                                                                                                      | Concluída |
 | 4   | Finanças Públicas e Obras                   | Emenda até a obra: empenho, pagamento, situação e medição da obra.                                                                                                                | Concluída |
-| 5   | Compromissos ligado aos fatos               | Sugestão de vínculos a partir dos eventos de Legislativo, Finanças e Obras; reavaliação do estágio.                                                                               | A fazer   |
+| 5   | Compromissos ligado aos fatos               | Sugestão de vínculos a partir dos eventos de Legislativo, Finanças e Obras; reavaliação do estágio.                                                                               | Concluída |
 | 6   | Engajamento                                 | "Meu governo" por município, acompanhar político ou promessa, alertas.                                                                                                            | A fazer   |
 
 Cada etapa só termina com CI verde, testes de integração contra Postgres real e documentação de domínio
@@ -387,3 +387,46 @@ Fica para depois, de propósito: a carga histórica das proposições (milhares 
 Senado só aceita os últimos 30 dias), a frequência de quem saiu da Câmara antes da coleta (o serviço só
 lista quem está no cargo), a lista oficial de municípios do IBGE (hoje só os que aparecem nos dados) e
 um painel de métricas das coletas.
+
+## Etapa 5 em detalhe
+
+A promessa encontra os fatos. A plataforma aponta e avisa; quem liga a promessa ao fato e quem julga é
+a curadoria (ADR-0010).
+
+| Fatia | Entrega                                                                                                       | Situação  |
+| ----- | ------------------------------------------------------------------------------------------------------------- | --------- |
+| 5.1   | Vínculos pelo painel: candidatos do autor ordenados pelas palavras em comum, sugerir, confirmar e rejeitar.   | Concluída |
+| 5.2   | Reavaliação: fato com vínculo confirmado que muda na fonte abre pedido na promessa, até a curadoria concluir. | Concluída |
+
+### Fatia 5.1: vínculos na curadoria
+
+- **Consulta:** `candidatos.doAutor` lê as proposições de autoria da pessoa, as emendas que ela indicou e
+  as obras pagas por essas emendas, e ordena pelas palavras em comum com o texto da promessa: sem
+  acento, sem palavras vazias, sem o plural e pela raiz de seis letras ("asfaltar" encontra
+  "pavimentação asfáltica"). Até 15 de cada tipo, com os estágios que cada fato pode comprovar.
+- **API editorial:** `GET promessas/:id/candidatos` (marca o que já está vinculado), `POST
+promessas/:id/vinculos` (só curador; a evidência é a captura do próprio fato na Consulta), e
+  `POST .../vinculos/:id/confirmacao` e `.../rejeicao`.
+- **Painel:** a promessa mostra os vínculos, com confirmar, rejeitar e desfazer, e os fatos do autor que
+  ainda não foram ligados. As capturas dos vínculos confirmados entram como evidência do veredito.
+
+### Fatia 5.2: reavaliação
+
+- **Domínio:** a promessa guarda os pedidos de reavaliação (`ReavaliacaoSolicitada`), só para fato com
+  vínculo confirmado, sem repetir o mesmo motivo pendente e sem mexer em estágio ou veredito; a curadoria
+  conclui todos de uma vez (`ReavaliacaoConcluida`).
+- **Política:** o consumidor `compromissos.reavaliar_promessas` traduz `TramitacaoAvancou` (último passo
+  da tramitação), `ExecucaoDaEmendaAtualizada` (total pago até agora), `ObraParalisada` (data e
+  justificativa) e `ObraAtualizada` em situação final (concluída, cancelada, inacabada) em um motivo de
+  uma frase, com a captura do estado novo.
+- **API e painel:** `POST promessas/:id/reavaliacao/conclusao`; a promessa mostra os fatos que mudaram e
+  o botão "Marcar como reavaliada", e a lista inicial conta as pendências de cada promessa.
+
+Resultado: com os dados reais, uma promessa de "asfaltar as vias urbanas dos municípios gaúchos" traz,
+entre as 221 obras pagas por emendas de um senador do Rio Grande do Sul, primeiro as de pavimentação
+asfáltica em vias urbanas (80% das palavras em comum).
+
+Fica para depois, de propósito: a sugestão automática de vínculo (`sugestao_ia`) quando chega uma
+proposição, emenda ou obra nova do autor, que pede um critério de semelhança melhor que palavras em
+comum; a tarefa de veredito final quando o mandato termina; e ações orçamentárias e atos normativos
+como candidatos (ainda não há fonte para eles).

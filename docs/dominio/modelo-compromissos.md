@@ -139,6 +139,9 @@ stateDiagram-v2
 5. O histórico de vereditos é **append-only**. Corrigir significa publicar um novo registro com referência à errata, nunca apagar.
 6. Promessa `generica` pode receber estágio, mas não recebe `cumprida` (não há como verificar). Ela é exibida como "genérica, não verificável".
 7. `fora_da_competencia` não impede o acompanhamento; é exibido como contexto educativo.
+8. **Pedido de reavaliação** só existe para fato com vínculo `confirmado` e não mexe em estágio nem
+   veredito. O mesmo fato com o mesmo motivo não abre um segundo pedido enquanto o primeiro estiver
+   pendente; a curadoria conclui todos de uma vez.
 
 ## Eventos de domínio
 
@@ -152,14 +155,26 @@ stateDiagram-v2
 | `VereditoProposto`                                     | Curador propõe. Gera tarefa de revisão no Editorial.                  |
 | `VereditoRecusado`                                     | Revisor devolve a proposta com motivo (ou o curador a retira).        |
 | `VereditoPublicado`                                    | Revisor aprova. Vai para projeções e alertas.                         |
+| `ReavaliacaoSolicitada`                                | Um fato com vínculo confirmado mudou na fonte (política abaixo).      |
+| `ReavaliacaoConcluida`                                 | A curadoria olhou os fatos que mudaram e fez o que cabia.             |
 
 ## Políticas (reações automáticas a eventos de outros contextos)
 
-| Ao receber                                                      | Compromissos faz                                                                          |
-| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `ProposicaoApresentada`                                         | Busca promessas semanticamente próximas do mesmo autor/governo e cria `VinculoSugerido`.  |
-| `TramitacaoAvancou` (sanção, arquivamento)                      | Se houver vínculo confirmado, recalcula estágio e abre tarefa de reavaliação de veredito. |
-| `ExecucaoDaEmendaAtualizada`, `ObraParalisada`, `ObraConcluida` | Idem, para vínculos de orçamento, execução e entrega.                                     |
-| `MandatoEncerrado`                                              | Abre tarefa de veredito final para todas as promessas não concluídas do mandato.          |
+| Ao receber                                                         | Compromissos faz                                                                                | Situação |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- | -------- |
+| `TramitacaoAvancou`                                                | Pedido de reavaliação em cada promessa com vínculo confirmado à proposição, com o último passo. | Feita    |
+| `ExecucaoDaEmendaAtualizada`                                       | Idem para a emenda, com o total pago até agora (no ano e em restos a pagar).                    | Feita    |
+| `ObraParalisada`; `ObraAtualizada` concluída, cancelada, inacabada | Idem para a obra, com a data e a justificativa da paralisação ou a situação final na fonte.     | Feita    |
+| `ProposicaoRegistrada`, `EmendaRegistrada`, `ObraRegistrada`       | Sugestão automática de vínculo (`sugestao_ia`) para promessas próximas do mesmo autor.          | A fazer  |
+| `MandatoEncerrado`                                                 | Abre tarefa de veredito final para todas as promessas não concluídas do mandato.                | A fazer  |
+
+O consumidor é `compromissos.reavaliar_promessas`, idempotente pela inbox do contexto (ADR-0007). O
+estágio não muda com o pedido: ele só muda quando a curadoria confirma ou rejeita um vínculo.
+
+Enquanto a sugestão automática não existe, o painel mostra os **candidatos a vínculo**: as proposições
+de autoria da pessoa, as emendas que ela indicou e as obras pagas por essas emendas, ordenados pelas
+palavras que têm em comum com o texto da promessa (sem acento, sem palavras vazias, pela raiz). É uma
+lista para a curadoria olhar, não uma decisão: quem sugere o vínculo é a curadora, com a captura do
+fato como evidência.
 
 > Políticas **nunca** publicam veredito sozinhas. No máximo sugerem e abrem tarefa. Quem decide é uma pessoa.
