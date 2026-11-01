@@ -28,16 +28,18 @@ export class ConsultaEditorialPostgres {
   ) {}
 
   async listar(limite = 50): Promise<ResumoDePromessaNaCuradoria[]> {
+    // `${promessa}.id`, e não `${promessa.id}`: dentro da subconsulta, a coluna sem a tabela vira
+    // `"id"`, e o Postgres a liga ao `id` da tabela de dentro (o registro), não ao da promessa.
     const vigente = sql<string | null>`(
       SELECT r.veredito FROM ${registroDeVeredito} r
-      WHERE r.promessa_id = ${promessa.id}
+      WHERE r.promessa_id = ${promessa}.id
       ORDER BY r.publicado_em DESC, r.id DESC LIMIT 1
     )`;
     const pendente = sql<boolean>`EXISTS (
-      SELECT 1 FROM ${propostaDeVeredito} p WHERE p.promessa_id = ${promessa.id}
+      SELECT 1 FROM ${propostaDeVeredito} p WHERE p.promessa_id = ${promessa}.id
     )`;
     const reavaliacoes = sql<number>`(
-      SELECT count(*)::int FROM ${pedidoDeReavaliacao} q WHERE q.promessa_id = ${promessa.id}
+      SELECT count(*)::int FROM ${pedidoDeReavaliacao} q WHERE q.promessa_id = ${promessa}.id
     )`;
     const linhas = await this.banco.drizzle
       .select({

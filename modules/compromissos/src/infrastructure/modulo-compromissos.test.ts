@@ -99,6 +99,12 @@ describe('módulo Compromissos montado sobre o PostgreSQL', () => {
       true,
     );
 
+    // A lista do painel mostra o mesmo veredito vigente que a promessa.
+    const naLista = (await modulo.consultaEditorial.listar()).find(
+      (p) => p.promessaId === promessaId,
+    );
+    expect(naLista).toMatchObject({ vereditoVigente: 'nao_cumprida', aguardandoRevisao: false });
+
     const vista = await modulo.consultaEditorial.buscar(promessaId);
     expect(vista).toMatchObject({
       vereditoVigente: 'nao_cumprida',
