@@ -1258,3 +1258,40 @@ main:not(.capitulos) button {
   font-size: var(--t-titulo);
   white-space: nowrap;
 }
+
+.retrato__titulo {
+  font-size: var(--t-titulo);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  max-width: 20ch;
+}
+
+.nomes__detalhe {
+  display: block;
+}
+
+/* O que é longo demais para ficar à vista: recolhido, com o tamanho dito no rótulo. */
+.recolhido > summary {
+  cursor: pointer;
+  font-weight: 700;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.recolhido[open] > summary {
+  margin-bottom: 12px;
+}
+
+.retrato__titulo--longo {
+  font-size: clamp(28px, 3.2vw, 44px);
+  line-height: 1.05;
+  max-width: 36ch;
+}
+
+.resumo > dd.resumo__texto {
+  font-size: var(--t-texto);
+  font-weight: 500;
+  text-align: left;
+}

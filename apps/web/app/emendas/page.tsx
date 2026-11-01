@@ -44,9 +44,6 @@ export default async function PaginaDeEmendas({ searchParams }: Props): Promise<
 
   return (
     <main>
-      <p>
-        <Link href="/">← Início</Link>
-      </p>
       <h1>Emendas parlamentares</h1>
       <p>
         O dinheiro do orçamento federal que deputados, senadores, bancadas e comissões indicam para

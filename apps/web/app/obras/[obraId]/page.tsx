@@ -1,3 +1,4 @@
+import { Capitulo, Cifra, Proporcao } from '@prometeu/ui';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -5,8 +6,16 @@ import type { ReactNode } from 'react';
 
 import { buscarObra } from '../../_api/cliente';
 import { Fonte } from '../../_componentes/fonte';
-import { cnpj, dia, reais } from '../../_componentes/formatacao';
+import {
+  cnpj,
+  dia,
+  nomeDaSituacaoDaObra,
+  percentual,
+  reais,
+  reaisResumidos,
+} from '../../_componentes/formatacao';
 import { lugarDaObra, situacaoEMedicao } from '../../_componentes/obras';
+import { Topo } from '../../_componentes/topo';
 
 interface Props {
   readonly params: Promise<{ obraId: string }>;
@@ -31,119 +40,167 @@ function periodo(inicio: string | null, fim: string | null): string {
 export default async function PaginaDaObra({ params }: Props): Promise<ReactNode> {
   const obra = await buscarObra((await params).obraId);
   if (!obra) notFound();
+  const { medicao, interrupcoes, emendas, executores } = obra;
 
   return (
-    <main>
-      <p>
-        <Link href="/obras">← Obras</Link>
-      </p>
-      <article>
-        <h1>{obra.nome}</h1>
-        <p>
-          {[obra.natureza, obra.especie].filter((parte) => parte !== null).join(' · ')} ·{' '}
-          {lugarDaObra(obra)}
-          {obra.endereco ? ` · ${obra.endereco}` : ''}
+    <main className="capitulos">
+      <Topo
+        titulo={obra.nome}
+        voltar={{ href: '/obras', texto: 'Todas as obras' }}
+        aoLado={
+          medicao === null ? (
+            <Cifra
+              valor={nomeDaSituacaoDaObra(obra.situacao)}
+              legenda="O Obrasgov ainda não registra execução física desta obra."
+            />
+          ) : (
+            <Cifra
+              valor={percentual(medicao.percentualCentesimos)}
+              legenda={`executado${medicao.em ? ` na medição de ${dia(medicao.em)}` : ''}, segundo o Obrasgov.`}
+            />
+          )
+        }
+      >
+        <p className="destaque">
+          {[obra.natureza, obra.especie].filter((parte) => parte !== null).join(' · ')} em{' '}
+          {obra.municipios.length === 0
+            ? lugarDaObra(obra)
+            : obra.municipios.map((m, n) => (
+                <span key={m.codigoIbge}>
+                  {n > 0 ? ', ' : ''}
+                  <Link href={`/municipios/${m.codigoIbge}`}>{m.nome ?? m.codigoIbge}</Link>
+                </span>
+              ))}
+          {obra.uf && obra.municipios.length > 0 ? ` - ${obra.uf}` : ''}.
         </p>
-        {obra.municipios.length > 0 && (
-          <p>
-            {obra.municipios.length === 1 ? 'Município: ' : 'Municípios: '}
-            {obra.municipios.map((m, n) => (
-              <span key={m.codigoIbge}>
-                {n > 0 ? ', ' : ''}
-                <Link href={`/municipios/${m.codigoIbge}`}>{m.nome ?? m.codigoIbge}</Link>
-              </span>
-            ))}
-            .
-          </p>
-        )}
         {obra.descricao && obra.descricao !== obra.nome && <p>{obra.descricao}</p>}
-        <p>
+        <p className="nota">
           Projeto {obra.idNaFonte} no Obrasgov.br, o cadastro federal de obras e projetos de
-          investimento.
+          investimento.{obra.endereco ? ` Endereço: ${obra.endereco}.` : ''}
         </p>
         <Fonte fonte={obra.fonte} />
+      </Topo>
 
-        <section>
-          <h2>Situação</h2>
-          <dl className="resumo">
-            <dt>Situação</dt>
-            <dd>{situacaoEMedicao(obra)}</dd>
-            <dt>Como a fonte escreve</dt>
-            <dd>{obra.situacaoNaFonte}</dd>
-            <dt>Prazo previsto</dt>
-            <dd>{periodo(obra.inicioPrevisto, obra.fimPrevisto)}</dd>
-            <dt>Execução</dt>
-            <dd>{periodo(obra.inicioEfetivo, obra.fimEfetivo)}</dd>
-            <dt>Investimento previsto</dt>
-            <dd>{reais(obra.investimentoPrevistoCentavos)}</dd>
-          </dl>
-          {obra.medicao === null && (
-            <p className="fonte">O Obrasgov.br ainda não registra execução física desta obra.</p>
+      <Capitulo
+        id="executou"
+        campo="aco"
+        verbo="Executou."
+        frase={`${situacaoEMedicao(obra)}. Investimento previsto de ${reaisResumidos(obra.investimentoPrevistoCentavos)}.`}
+        aoLado={
+          medicao === null ? undefined : (
+            <Proporcao
+              partes={[
+                {
+                  rotulo: 'executado',
+                  valor: medicao.percentualCentesimos,
+                  tom: 'forte',
+                  texto: `${percentual(medicao.percentualCentesimos)} executado`,
+                },
+                {
+                  rotulo: 'por executar',
+                  valor: Math.max(0, 10000 - medicao.percentualCentesimos),
+                  tom: 'vazio',
+                  texto: 'por executar',
+                },
+              ]}
+            />
+          )
+        }
+        nota={
+          <p>
+            A fonte escreve a situação como “{obra.situacaoNaFonte}”. A medição é a execução física
+            informada ao Obrasgov, não o dinheiro pago.
+          </p>
+        }
+      >
+        <dl className="resumo">
+          <dt>Prazo previsto</dt>
+          <dd>{periodo(obra.inicioPrevisto, obra.fimPrevisto)}</dd>
+          <dt>Execução</dt>
+          <dd>{periodo(obra.inicioEfetivo, obra.fimEfetivo)}</dd>
+          <dt>Investimento previsto</dt>
+          <dd>{reais(obra.investimentoPrevistoCentavos)}</dd>
+          {executores.length > 0 && (
+            <>
+              <dt>{executores.length === 1 ? 'Executora' : 'Executoras'}</dt>
+              <dd className="resumo__texto">
+                {executores
+                  .map((e) =>
+                    [e.nome, e.cnpj ? `CNPJ ${cnpj(e.cnpj)}` : null].filter(Boolean).join(', '),
+                  )
+                  .join('; ')}
+              </dd>
+            </>
           )}
-          {obra.executores.length > 0 && (
-            <p>
-              Executada por{' '}
-              {obra.executores
-                .map((e) =>
-                  [e.nome, e.cnpj ? `CNPJ ${cnpj(e.cnpj)}` : null].filter(Boolean).join(', '),
-                )
-                .join('; ')}
-              .
-            </p>
-          )}
-        </section>
+        </dl>
+      </Capitulo>
 
-        {obra.interrupcoes.length > 0 && (
-          <section>
-            <h2>Paralisações e cancelamentos</h2>
-            <ul className="lista">
-              {obra.interrupcoes.map((i) => (
-                <li key={`${i.em}|${i.tipo}|${i.justificativa ?? ''}`}>
-                  <strong>
-                    {INTERRUPCOES[i.tipo] ?? i.tipo} em {dia(i.em)}
-                  </strong>
-                  {i.justificativa && <span>{i.justificativa}</span>}
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        <section>
-          <h2>Emendas que pagam a obra</h2>
-          <ul className="lista">
-            {obra.emendas.map((e) => (
-              <li key={`${e.codigoDaEmenda}|${e.numeroDoEmpenho}`}>
-                {e.emendaId ? (
-                  <Link href={`/emendas/${e.emendaId}`}>Emenda {e.codigoDaEmenda}</Link>
-                ) : (
-                  `Emenda ${e.codigoDaEmenda}`
-                )}
-                {e.autor && (
-                  <>
-                    {' '}
-                    de{' '}
-                    {e.autor.pessoaId ? (
-                      <Link href={`/parlamentares/${e.autor.pessoaId}`}>{e.autor.nome}</Link>
-                    ) : (
-                      e.autor.nome
-                    )}
-                  </>
-                )}
-                <span>
-                  Empenho {e.numeroDoEmpenho}: {reais(e.empenhadoCentavos)}
-                  {e.emitidoEm ? ` em ${dia(e.emitidoEm)}` : ''}
-                  {e.acaoOrcamentaria ? ` · ação ${e.acaoOrcamentaria}` : ''}
-                </span>
+      {interrupcoes.length > 0 && (
+        <Capitulo
+          id="parou"
+          campo="papel"
+          verbo="Parou."
+          frase={`${String(interrupcoes.length)} ${interrupcoes.length === 1 ? 'interrupção registrada' : 'interrupções registradas'}, da mais recente para a mais antiga.`}
+        >
+          <ul className="linhas">
+            {interrupcoes.map((i) => (
+              <li key={`${i.em}|${i.tipo}|${i.justificativa ?? ''}`} className="linha">
+                <p className="linha__chave">{INTERRUPCOES[i.tipo] ?? i.tipo}</p>
+                <div className="linha__corpo">
+                  <p>{dia(i.em)}</p>
+                  <p className="nota">{i.justificativa ?? 'Sem justificativa na fonte.'}</p>
+                </div>
               </li>
             ))}
           </ul>
-          <p className="fonte">
+        </Capitulo>
+      )}
+
+      <Capitulo
+        id="foi-paga"
+        campo="areia"
+        verbo="Foi paga."
+        frase={`Por ${String(emendas.length)} ${emendas.length === 1 ? 'empenho de emenda parlamentar' : 'empenhos de emendas parlamentares'}.`}
+        nota={
+          <p>
             A ligação vem do próprio empenho, que traz o código da emenda no Portal da
             Transparência.
           </p>
-        </section>
-      </article>
+        }
+      >
+        <ul className="linhas">
+          {emendas.map((e) => (
+            <li key={`${e.codigoDaEmenda}|${e.numeroDoEmpenho}`} className="linha">
+              <p className="linha__chave">{reaisResumidos(e.empenhadoCentavos)}</p>
+              <div className="linha__corpo">
+                <p>
+                  {e.emendaId ? (
+                    <Link href={`/emendas/${e.emendaId}`}>Emenda {e.codigoDaEmenda}</Link>
+                  ) : (
+                    `Emenda ${e.codigoDaEmenda}`
+                  )}
+                  {e.autor && (
+                    <>
+                      {' '}
+                      de{' '}
+                      {e.autor.pessoaId ? (
+                        <Link href={`/parlamentares/${e.autor.pessoaId}`}>{e.autor.nome}</Link>
+                      ) : (
+                        e.autor.nome
+                      )}
+                    </>
+                  )}
+                </p>
+                <p className="nota">
+                  Empenho {e.numeroDoEmpenho}: {reais(e.empenhadoCentavos)}
+                  {e.emitidoEm ? ` em ${dia(e.emitidoEm)}` : ''}
+                  {e.acaoOrcamentaria ? ` · ação ${e.acaoOrcamentaria}` : ''}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </Capitulo>
     </main>
   );
 }

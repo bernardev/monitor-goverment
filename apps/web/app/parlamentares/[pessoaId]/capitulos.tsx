@@ -3,7 +3,6 @@ import type {
   EmendasDoParlamentar,
   FrequenciaDoParlamentar,
   ObraResumo,
-  OpcaoDeVoto,
   Pagina,
   ParticipacaoEmVotacao,
   VotosDoParlamentar,
@@ -16,7 +15,6 @@ import {
   type Marca,
   type Parte,
   Proporcao,
-  type Tom,
 } from '@prometeu/ui';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
@@ -35,6 +33,7 @@ import {
   reaisResumidos,
 } from '../../_componentes/formatacao';
 import { lugarDaObra, situacaoEMedicao } from '../../_componentes/obras';
+import { ROTULO_DA_OPCAO, TOM_DA_OPCAO } from '../../_componentes/placar';
 
 const NUMERO = new Intl.NumberFormat('pt-BR');
 
@@ -149,24 +148,6 @@ export function Presenca({ frequencia }: { frequencia: FrequenciaDoParlamentar }
   );
 }
 
-const TOM_DO_VOTO: Readonly<Record<OpcaoDeVoto, Tom>> = {
-  sim: 'forte',
-  nao: 'medio',
-  abstencao: 'fraco',
-  obstrucao: 'fraco',
-  presidente_da_sessao: 'fraco',
-  secreto: 'fraco',
-};
-
-const ROTULO_CURTO: Readonly<Record<OpcaoDeVoto, string>> = {
-  sim: 'sim',
-  nao: 'não',
-  abstencao: 'abstenção',
-  obstrucao: 'obstrução',
-  presidente_da_sessao: 'presidindo',
-  secreto: 'secreto',
-};
-
 export function Votos({ votos }: { votos: VotosDoParlamentar }): ReactNode {
   const { resumo } = votos;
   const periodo = `de ${dia(votos.de)} a ${dia(votos.ate)}`;
@@ -189,9 +170,9 @@ export function Votos({ votos }: { votos: VotosDoParlamentar }): ReactNode {
   }
   const partes: Parte[] = [
     ...resumo.porOpcao.map((o) => ({
-      rotulo: ROTULO_CURTO[o.opcao],
+      rotulo: ROTULO_DA_OPCAO[o.opcao],
       valor: o.votos,
-      tom: TOM_DO_VOTO[o.opcao],
+      tom: TOM_DA_OPCAO[o.opcao],
     })),
     { rotulo: 'sem voto', valor: resumo.semVotoRegistrado, tom: 'vazio' },
   ];

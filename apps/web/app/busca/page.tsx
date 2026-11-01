@@ -30,9 +30,6 @@ export default async function PaginaDeBusca({ searchParams }: Props): Promise<Re
 
   return (
     <main>
-      <p>
-        <Link href="/">← Início</Link>
-      </p>
       <h1>Busca</h1>
       <form method="get" action="/busca" role="search">
         <label htmlFor="q">Parlamentar, município ou obra</label>{' '}

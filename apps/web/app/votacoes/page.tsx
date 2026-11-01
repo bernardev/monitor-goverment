@@ -31,9 +31,6 @@ export default async function PaginaDeVotacoes({ searchParams }: Props): Promise
 
   return (
     <main>
-      <p>
-        <Link href="/">← Início</Link>
-      </p>
       <h1>Votações nominais</h1>
       <p>
         Votações do plenário em que cada parlamentar registra o voto, nos últimos 90 dias. As

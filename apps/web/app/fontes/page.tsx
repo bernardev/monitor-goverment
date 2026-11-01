@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import { situacaoDasFontes } from '../_api/cliente';
@@ -27,9 +26,6 @@ export default async function PaginaDasFontes(): Promise<ReactNode> {
 
   return (
     <main>
-      <p>
-        <Link href="/">← Início</Link>
-      </p>
       <h1>Situação das fontes</h1>
       <p>
         Tudo o que o Prometeu publica vem de fontes oficiais, coletadas numa agenda. Quando uma

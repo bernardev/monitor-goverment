@@ -35,9 +35,6 @@ export default async function PaginaDeProposicoes({ searchParams }: Props): Prom
 
   return (
     <main>
-      <p>
-        <Link href="/">← Início</Link>
-      </p>
       <h1>Proposições</h1>
       <p>
         Propostas que podem virar norma, da que se moveu por último à mais parada. Requerimentos,

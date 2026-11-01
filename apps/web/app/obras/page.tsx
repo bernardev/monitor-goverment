@@ -42,9 +42,6 @@ export default async function PaginaDeObras({ searchParams }: Props): Promise<Re
 
   return (
     <main>
-      <p>
-        <Link href="/">← Início</Link>
-      </p>
       <h1>Obras pagas com emendas</h1>
       <p>
         Obras do cadastro federal (Obrasgov.br) com empenho de emenda parlamentar de 2023 em diante.
