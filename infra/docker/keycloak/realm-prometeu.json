@@ -3,7 +3,7 @@
   "displayName": "Prometeu",
   "enabled": true,
   "sslRequired": "external",
-  "registrationAllowed": false,
+  "registrationAllowed": true,
   "loginWithEmailAllowed": true,
   "accessTokenLifespan": 300,
   "ssoSessionIdleTimeout": 1800,
@@ -30,6 +30,14 @@
       {
         "name": "administrador",
         "description": "Administra contas e configurações."
+      },
+      {
+        "name": "default-roles-prometeu",
+        "description": "Papéis de toda conta nova: cidadão.",
+        "composite": true,
+        "composites": {
+          "realm": ["cidadao"]
+        }
       }
     ]
   },
@@ -57,6 +65,37 @@
       "attributes": {
         "pkce.code.challenge.method": "S256",
         "post.logout.redirect.uris": "http://localhost:3002/*"
+      },
+      "protocolMappers": [
+        {
+          "name": "audiencia-prometeu-api",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "prometeu-api",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "site",
+      "name": "Site público",
+      "enabled": true,
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "desenvolvimento",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": ["http://localhost:3001/*"],
+      "webOrigins": ["http://localhost:3001"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:3001/*"
       },
       "protocolMappers": [
         {
@@ -145,6 +184,27 @@
         }
       ],
       "realmRoles": ["editor_chefe", "curador"]
+    },
+    {
+      "id": "5a1f2b3c-4d5e-4f60-8a7b-9c0d1e2f3a4b",
+      "username": "cidada@prometeu.local",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Clara",
+      "lastName": "Cidadã",
+      "email": "cidada@prometeu.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "desenvolvimento",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["cidadao"]
     }
-  ]
+  ],
+  "registrationEmailAsUsername": true,
+  "defaultRole": {
+    "name": "default-roles-prometeu"
+  }
 }
