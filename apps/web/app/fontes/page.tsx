@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 
 import { situacaoDasFontes } from '../_api/cliente';
 import { dataEHora } from '../_componentes/formatacao';
+import { PaginaDeLista } from '../_componentes/pagina-de-lista';
 
 export const metadata: Metadata = {
   title: 'Situação das fontes | Prometeu',
@@ -25,31 +26,30 @@ export default async function PaginaDasFontes(): Promise<ReactNode> {
   const fontes = await situacaoDasFontes();
 
   return (
-    <main>
-      <h1>Situação das fontes</h1>
-      <p>
-        Tudo o que o Prometeu publica vem de fontes oficiais, coletadas numa agenda. Quando uma
-        coleta atrasa, o dado da fonte pode estar mais velho do que parece: esta página diz quando
-        foi a última de cada uma.
-      </p>
-      <ul className="lista">
+    <PaginaDeLista
+      titulo="Situação das fontes"
+      descricao="Tudo o que o Prometeu publica vem de fontes oficiais, coletadas numa agenda. Quando uma coleta atrasa, o dado pode estar mais velho do que parece: aqui está a última coleta de cada fonte."
+    >
+      <ul className="linhas">
         {fontes.map((f) => (
-          <li key={f.fonte}>
-            <strong>{f.nome}</strong> · {SITUACOES[f.situacao]}
-            <span>
-              Coletada {PERIODICIDADES[f.periodicidade]}
-              {f.ultimaColetaEm ? `; última coleta em ${dataEHora(f.ultimaColetaEm)}` : ''}.
-            </span>
-            {f.tabelas.length > 0 && (
-              <span>
-                {f.tabelas
-                  .map((t) => `${t.tabela}: ${t.registros.toLocaleString('pt-BR')} registros`)
-                  .join(' · ')}
-              </span>
-            )}
+          <li key={f.fonte} className="linha">
+            <p className="linha__chave">{SITUACOES[f.situacao]}</p>
+            <div className="linha__corpo">
+              <p>
+                <strong>{f.nome}</strong>, coletada {PERIODICIDADES[f.periodicidade]}
+                {f.ultimaColetaEm ? `; última coleta em ${dataEHora(f.ultimaColetaEm)}` : ''}.
+              </p>
+              {f.tabelas.length > 0 && (
+                <p className="nota">
+                  {f.tabelas
+                    .map((t) => `${t.tabela}: ${t.registros.toLocaleString('pt-BR')} registros`)
+                    .join(' · ')}
+                </p>
+              )}
+            </div>
           </li>
         ))}
       </ul>
-    </main>
+    </PaginaDeLista>
   );
 }

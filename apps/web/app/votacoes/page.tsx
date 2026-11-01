@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 
 import { listarVotacoes } from '../_api/cliente';
 import { dia, nomeDaCasa, nomeDoResultado } from '../_componentes/formatacao';
+import { Abas, PaginaDeLista } from '../_componentes/pagina-de-lista';
 
 export const metadata: Metadata = {
   title: 'Votações nominais | Prometeu',
@@ -30,30 +31,23 @@ export default async function PaginaDeVotacoes({ searchParams }: Props): Promise
     }).toString()}`;
 
   return (
-    <main>
-      <h1>Votações nominais</h1>
-      <p>
-        Votações do plenário em que cada parlamentar registra o voto, nos últimos 90 dias. As
-        votações simbólicas, sem voto por parlamentar, não aparecem.
-      </p>
-      <nav aria-label="Casa">
-        {casa ? <Link href="/votacoes">Todas</Link> : <strong>Todas</strong>} ·{' '}
-        {casa === 'camara' ? (
-          <strong>Câmara</strong>
-        ) : (
-          <Link href={endereco(1, 'camara')}>Câmara</Link>
-        )}{' '}
-        ·{' '}
-        {casa === 'senado' ? (
-          <strong>Senado</strong>
-        ) : (
-          <Link href={endereco(1, 'senado')}>Senado</Link>
-        )}
-      </nav>
-      <p>
-        {resultado.total} {resultado.total === 1 ? 'votação coletada' : 'votações coletadas'}.
-      </p>
-
+    <PaginaDeLista
+      campo="aco"
+      titulo="Votações nominais"
+      descricao="Votações do plenário em que cada parlamentar registra o voto, nos últimos 90 dias. As simbólicas, sem voto por parlamentar, não aparecem."
+      filtros={
+        <Abas
+          rotulo="Casa"
+          opcoes={[
+            { texto: 'Todas', href: '/votacoes', atual: casa === undefined },
+            { texto: 'Câmara', href: endereco(1, 'camara'), atual: casa === 'camara' },
+            { texto: 'Senado', href: endereco(1, 'senado'), atual: casa === 'senado' },
+          ]}
+        />
+      }
+      contagem={`${String(resultado.total)} ${resultado.total === 1 ? 'votação coletada' : 'votações coletadas'}`}
+      paginacao={{ pagina, ultima: ultimaPagina, endereco: (outra) => endereco(outra) }}
+    >
       <ul className="lista">
         {resultado.itens.map((v) => (
           <li key={v.votacaoId}>
@@ -68,14 +62,6 @@ export default async function PaginaDeVotacoes({ searchParams }: Props): Promise
           </li>
         ))}
       </ul>
-
-      <nav aria-label="Paginação">
-        {pagina > 1 && <Link href={endereco(pagina - 1)}>Anterior</Link>}{' '}
-        <span>
-          Página {pagina} de {ultimaPagina}
-        </span>{' '}
-        {pagina < ultimaPagina && <Link href={endereco(pagina + 1)}>Próxima</Link>}
-      </nav>
-    </main>
+    </PaginaDeLista>
   );
 }

@@ -1,11 +1,11 @@
 import type { SituacaoDaObra } from '@prometeu/contracts';
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import { listarObras } from '../_api/cliente';
 import { nomeDaSituacaoDaObra, UFS } from '../_componentes/formatacao';
 import { ItemDeObra } from '../_componentes/obras';
+import { PaginaDeLista } from '../_componentes/pagina-de-lista';
 
 export const metadata: Metadata = {
   title: 'Obras pagas com emendas | Prometeu',
@@ -41,50 +41,42 @@ export default async function PaginaDeObras({ searchParams }: Props): Promise<Re
     }).toString()}`;
 
   return (
-    <main>
-      <h1>Obras pagas com emendas</h1>
-      <p>
-        Obras do cadastro federal (Obrasgov.br) com empenho de emenda parlamentar de 2023 em diante.
-        Da de maior investimento previsto para a de menor.
-      </p>
-      <form method="get" action="/obras">
-        <label htmlFor="situacao">Situação</label>{' '}
-        <select id="situacao" name="situacao" defaultValue={situacao ?? ''}>
-          <option value="">Todas</option>
-          {SITUACOES.map((s) => (
-            <option key={s} value={s}>
-              {nomeDaSituacaoDaObra(s)}
-            </option>
-          ))}
-        </select>{' '}
-        <label htmlFor="uf">UF</label>{' '}
-        <select id="uf" name="uf" defaultValue={uf ?? ''}>
-          <option value="">Todas</option>
-          {UFS.map((u) => (
-            <option key={u} value={u}>
-              {u}
-            </option>
-          ))}
-        </select>{' '}
-        <button type="submit">Filtrar</button>
-      </form>
-      <p>
-        {resultado.total} {resultado.total === 1 ? 'obra' : 'obras'}.
-      </p>
-
+    <PaginaDeLista
+      titulo="Obras pagas com emendas"
+      descricao="Obras do cadastro federal (Obrasgov.br) com empenho de emenda parlamentar de 2023 em diante, da de maior investimento previsto para a de menor."
+      filtros={
+        <form method="get" action="/obras" className="filtros">
+          <label htmlFor="situacao">Situação</label>
+          <select id="situacao" name="situacao" defaultValue={situacao ?? ''}>
+            <option value="">Todas</option>
+            {SITUACOES.map((s) => (
+              <option key={s} value={s}>
+                {nomeDaSituacaoDaObra(s)}
+              </option>
+            ))}
+          </select>
+          <label htmlFor="uf">UF</label>
+          <select id="uf" name="uf" defaultValue={uf ?? ''}>
+            <option value="">Todas</option>
+            {UFS.map((u) => (
+              <option key={u} value={u}>
+                {u}
+              </option>
+            ))}
+          </select>
+          <button type="submit" className="botao">
+            Filtrar
+          </button>
+        </form>
+      }
+      contagem={`${String(resultado.total)} ${resultado.total === 1 ? 'obra' : 'obras'}`}
+      paginacao={{ pagina, ultima: ultimaPagina, endereco }}
+    >
       <ul className="lista">
         {resultado.itens.map((o) => (
           <ItemDeObra key={o.obraId} obra={o} />
         ))}
       </ul>
-
-      <nav aria-label="Paginação">
-        {pagina > 1 && <Link href={endereco(pagina - 1)}>Anterior</Link>}{' '}
-        <span>
-          Página {pagina} de {ultimaPagina}
-        </span>{' '}
-        {pagina < ultimaPagina && <Link href={endereco(pagina + 1)}>Próxima</Link>}
-      </nav>
-    </main>
+    </PaginaDeLista>
   );
 }

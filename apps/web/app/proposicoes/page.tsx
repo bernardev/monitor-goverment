@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 
 import { listarProposicoes } from '../_api/cliente';
 import { data, dataEHora, identificacao, nomeDaCasa, nomeDoTipo } from '../_componentes/formatacao';
+import { PaginaDeLista } from '../_componentes/pagina-de-lista';
 
 export const metadata: Metadata = {
   title: 'Proposições | Prometeu',
@@ -34,34 +35,35 @@ export default async function PaginaDeProposicoes({ searchParams }: Props): Prom
     }).toString()}`;
 
   return (
-    <main>
-      <h1>Proposições</h1>
-      <p>
-        Propostas que podem virar norma, da que se moveu por último à mais parada. Requerimentos,
-        pareceres e outros documentos de trâmite não aparecem.
-      </p>
-      <form method="get" action="/proposicoes">
-        <label htmlFor="casa">Casa</label>{' '}
-        <select id="casa" name="casa" defaultValue={casa ?? ''}>
-          <option value="">As duas</option>
-          <option value="camara">Câmara</option>
-          <option value="senado">Senado</option>
-        </select>{' '}
-        <label htmlFor="tipo">Tipo</label>{' '}
-        <select id="tipo" name="tipo" defaultValue={tipo ?? ''}>
-          <option value="">Todos</option>
-          {TIPOS.map((t) => (
-            <option key={t} value={t}>
-              {nomeDoTipo(t)}
-            </option>
-          ))}
-        </select>{' '}
-        <button type="submit">Filtrar</button>
-      </form>
-      <p>
-        {resultado.total} {resultado.total === 1 ? 'proposição coletada' : 'proposições coletadas'}.
-      </p>
-
+    <PaginaDeLista
+      campo="aco"
+      titulo="Proposições"
+      descricao="Propostas que podem virar norma, da que se moveu por último à mais parada. Requerimentos, pareceres e outros documentos de trâmite não aparecem."
+      filtros={
+        <form method="get" action="/proposicoes" className="filtros">
+          <label htmlFor="casa">Casa</label>
+          <select id="casa" name="casa" defaultValue={casa ?? ''}>
+            <option value="">As duas</option>
+            <option value="camara">Câmara</option>
+            <option value="senado">Senado</option>
+          </select>
+          <label htmlFor="tipo">Tipo</label>
+          <select id="tipo" name="tipo" defaultValue={tipo ?? ''}>
+            <option value="">Todos</option>
+            {TIPOS.map((t) => (
+              <option key={t} value={t}>
+                {nomeDoTipo(t)}
+              </option>
+            ))}
+          </select>
+          <button type="submit" className="botao">
+            Filtrar
+          </button>
+        </form>
+      }
+      contagem={`${String(resultado.total)} ${resultado.total === 1 ? 'proposição coletada' : 'proposições coletadas'}`}
+      paginacao={{ pagina, ultima: ultimaPagina, endereco }}
+    >
       <ul className="lista">
         {resultado.itens.map((p) => (
           <li key={p.proposicaoId}>
@@ -77,14 +79,6 @@ export default async function PaginaDeProposicoes({ searchParams }: Props): Prom
           </li>
         ))}
       </ul>
-
-      <nav aria-label="Paginação">
-        {pagina > 1 && <Link href={endereco(pagina - 1)}>Anterior</Link>}{' '}
-        <span>
-          Página {pagina} de {ultimaPagina}
-        </span>{' '}
-        {pagina < ultimaPagina && <Link href={endereco(pagina + 1)}>Próxima</Link>}
-      </nav>
-    </main>
+    </PaginaDeLista>
   );
 }

@@ -1,11 +1,11 @@
 import type { TipoDeEmenda } from '@prometeu/contracts';
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import { listarEmendas } from '../_api/cliente';
 import { ItemDeEmenda } from '../_componentes/emendas';
 import { nomeDoTipoDeEmenda, UFS } from '../_componentes/formatacao';
+import { PaginaDeLista } from '../_componentes/pagina-de-lista';
 
 export const metadata: Metadata = {
   title: 'Emendas parlamentares | Prometeu',
@@ -43,60 +43,52 @@ export default async function PaginaDeEmendas({ searchParams }: Props): Promise<
     }).toString()}`;
 
   return (
-    <main>
-      <h1>Emendas parlamentares</h1>
-      <p>
-        O dinheiro do orçamento federal que deputados, senadores, bancadas e comissões indicam para
-        onde vai. Do orçamento mais recente para o mais antigo; no mesmo ano, a de maior empenho
-        primeiro.
-      </p>
-      <form method="get" action="/emendas">
-        <label htmlFor="ano">Orçamento</label>{' '}
-        <select id="ano" name="ano" defaultValue={ano ?? ''}>
-          <option value="">Todos</option>
-          {anos.map((a) => (
-            <option key={a} value={a}>
-              {a}
-            </option>
-          ))}
-        </select>{' '}
-        <label htmlFor="tipo">Tipo</label>{' '}
-        <select id="tipo" name="tipo" defaultValue={tipo ?? ''}>
-          <option value="">Todos</option>
-          {TIPOS.map((t) => (
-            <option key={t} value={t}>
-              {nomeDoTipoDeEmenda(t)}
-            </option>
-          ))}
-        </select>{' '}
-        <label htmlFor="uf">Destino</label>{' '}
-        <select id="uf" name="uf" defaultValue={uf ?? ''}>
-          <option value="">Todas as UFs</option>
-          {UFS.map((u) => (
-            <option key={u} value={u}>
-              {u}
-            </option>
-          ))}
-        </select>{' '}
-        <button type="submit">Filtrar</button>
-      </form>
-      <p>
-        {resultado.total} {resultado.total === 1 ? 'emenda coletada' : 'emendas coletadas'}.
-      </p>
-
+    <PaginaDeLista
+      campo="areia"
+      titulo="Emendas parlamentares"
+      descricao="O dinheiro do orçamento federal que deputados, senadores, bancadas e comissões indicam para onde vai. Do orçamento mais recente para o mais antigo; no mesmo ano, a de maior empenho primeiro."
+      filtros={
+        <form method="get" action="/emendas" className="filtros">
+          <label htmlFor="ano">Orçamento</label>
+          <select id="ano" name="ano" defaultValue={ano ?? ''}>
+            <option value="">Todos</option>
+            {anos.map((a) => (
+              <option key={a} value={a}>
+                {a}
+              </option>
+            ))}
+          </select>
+          <label htmlFor="tipo">Tipo</label>
+          <select id="tipo" name="tipo" defaultValue={tipo ?? ''}>
+            <option value="">Todos</option>
+            {TIPOS.map((t) => (
+              <option key={t} value={t}>
+                {nomeDoTipoDeEmenda(t)}
+              </option>
+            ))}
+          </select>
+          <label htmlFor="uf">Destino</label>
+          <select id="uf" name="uf" defaultValue={uf ?? ''}>
+            <option value="">Todas as UFs</option>
+            {UFS.map((u) => (
+              <option key={u} value={u}>
+                {u}
+              </option>
+            ))}
+          </select>
+          <button type="submit" className="botao">
+            Filtrar
+          </button>
+        </form>
+      }
+      contagem={`${String(resultado.total)} ${resultado.total === 1 ? 'emenda coletada' : 'emendas coletadas'}`}
+      paginacao={{ pagina, ultima: ultimaPagina, endereco }}
+    >
       <ul className="lista">
         {resultado.itens.map((e) => (
           <ItemDeEmenda key={e.emendaId} emenda={e} />
         ))}
       </ul>
-
-      <nav aria-label="Paginação">
-        {pagina > 1 && <Link href={endereco(pagina - 1)}>Anterior</Link>}{' '}
-        <span>
-          Página {pagina} de {ultimaPagina}
-        </span>{' '}
-        {pagina < ultimaPagina && <Link href={endereco(pagina + 1)}>Próxima</Link>}
-      </nav>
-    </main>
+    </PaginaDeLista>
   );
 }

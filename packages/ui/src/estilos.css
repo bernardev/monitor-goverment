@@ -1363,3 +1363,137 @@ button.botao--texto {
   width: 22px;
   height: 22px;
 }
+
+/* ── Páginas de lista ───────────────────────────────────────────────────────────────────────── */
+.topo-da-lista {
+  padding: clamp(40px, 6vw, 88px) var(--margem) clamp(32px, 4vw, 56px);
+}
+
+.topo-da-lista__miolo,
+.corpo-da-lista {
+  width: 100%;
+  max-width: var(--largura);
+  margin: 0 auto;
+}
+
+.topo-da-lista__miolo {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.topo-da-lista .destaque {
+  max-width: 60ch;
+}
+
+.corpo-da-lista {
+  /* A margem fica dentro da largura, para o texto alinhar com o do topo. */
+  max-width: calc(var(--largura) + 2 * var(--margem));
+  padding: 40px var(--margem) var(--entre-secoes);
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.contagem {
+  font-size: var(--t-destaque);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.corpo-da-lista h2 {
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+/* Filtros: rótulo em cima, campo embaixo, o botão alinhado aos campos. */
+form.filtros {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: auto auto;
+  justify-content: start;
+  align-items: end;
+  gap: 6px 14px;
+}
+
+form.filtros label {
+  font-size: var(--t-nota);
+  font-weight: 500;
+}
+
+form.filtros select,
+form.filtros input {
+  min-height: 48px;
+  min-width: 140px;
+  padding: 0 16px;
+  border: 2px solid var(--tinta);
+  border-radius: var(--raio-botao);
+  background: var(--branco);
+  color: var(--grafite);
+  font: inherit;
+}
+
+form.filtros button {
+  grid-row: 2;
+}
+
+.abas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vao);
+}
+
+.abas a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 20px;
+  border-radius: var(--raio-botao);
+  background: var(--superficie);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.abas a[aria-current='page'] {
+  background: var(--forte);
+  color: var(--fundo);
+}
+
+.paginacao .botao {
+  min-height: 44px;
+}
+
+@media (max-width: 640px) {
+  form.filtros {
+    grid-auto-flow: row;
+    grid-template-rows: none;
+    justify-content: stretch;
+  }
+
+  form.filtros button {
+    grid-row: auto;
+    margin-top: 8px;
+  }
+}
+
+/* Aviso de tela cheia: não encontrado, erro. */
+.aviso {
+  min-height: min(80svh, 820px);
+  padding: clamp(56px, 9vw, 128px) var(--margem);
+  display: flex;
+  align-items: center;
+}
+
+.aviso__miolo {
+  width: 100%;
+  max-width: var(--largura);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.aviso .destaque {
+  max-width: 44ch;
+}

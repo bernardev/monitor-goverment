@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 
 import { listarParlamentares } from '../_api/cliente';
 import { nomeDoCargo, UFS } from '../_componentes/formatacao';
+import { PaginaDeLista } from '../_componentes/pagina-de-lista';
 
 export const metadata: Metadata = {
   title: 'Parlamentares | Prometeu',
@@ -25,26 +26,29 @@ export default async function PaginaDeParlamentares({ searchParams }: Props): Pr
     `/parlamentares?${new URLSearchParams({ ...(uf ? { uf } : {}), pagina: String(outra) }).toString()}`;
 
   return (
-    <main>
-      <h1>Parlamentares</h1>
-      <form method="get" action="/parlamentares">
-        <label htmlFor="uf">Estado</label>{' '}
-        <select id="uf" name="uf" defaultValue={uf ?? ''}>
-          <option value="">Todos</option>
-          {UFS.map((sigla) => (
-            <option key={sigla} value={sigla}>
-              {sigla}
-            </option>
-          ))}
-        </select>{' '}
-        <button type="submit">Filtrar</button>
-      </form>
-
-      <p>
-        {resultado.total} {resultado.total === 1 ? 'parlamentar' : 'parlamentares'}
-        {uf ? ` em ${uf}` : ''}.
-      </p>
-
+    <PaginaDeLista
+      campo="aco"
+      titulo="Parlamentares"
+      descricao="Os deputados federais e senadores em exercício, com partido e estado. Cada um tem a presença, os votos, as proposições e as emendas."
+      filtros={
+        <form method="get" action="/parlamentares" className="filtros">
+          <label htmlFor="uf">Estado</label>
+          <select id="uf" name="uf" defaultValue={uf ?? ''}>
+            <option value="">Todos</option>
+            {UFS.map((sigla) => (
+              <option key={sigla} value={sigla}>
+                {sigla}
+              </option>
+            ))}
+          </select>
+          <button type="submit" className="botao">
+            Filtrar
+          </button>
+        </form>
+      }
+      contagem={`${String(resultado.total)} ${resultado.total === 1 ? 'parlamentar' : 'parlamentares'}${uf ? ` em ${uf}` : ''}`}
+      paginacao={{ pagina, ultima: ultimaPagina, endereco }}
+    >
       <ul className="lista">
         {resultado.itens.map((p) => (
           <li key={p.pessoaId}>
@@ -56,14 +60,6 @@ export default async function PaginaDeParlamentares({ searchParams }: Props): Pr
           </li>
         ))}
       </ul>
-
-      <nav aria-label="Paginação">
-        {pagina > 1 && <Link href={endereco(pagina - 1)}>Anterior</Link>}{' '}
-        <span>
-          Página {pagina} de {ultimaPagina}
-        </span>{' '}
-        {pagina < ultimaPagina && <Link href={endereco(pagina + 1)}>Próxima</Link>}
-      </nav>
-    </main>
+    </PaginaDeLista>
   );
 }

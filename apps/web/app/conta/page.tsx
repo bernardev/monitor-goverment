@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 
 import { acompanhamentos } from '../_api/conta';
 import { data } from '../_componentes/formatacao';
+import { PaginaDeLista } from '../_componentes/pagina-de-lista';
 import { sessaoDoCidadao } from '../_sessao/sessao';
 import { alternarAcompanhamento, apagarMeusDados } from './acoes';
 
@@ -28,24 +29,24 @@ export default async function MinhaConta({ searchParams }: Props): Promise<React
 
   if (sessao === null) {
     return (
-      <main>
-        <h1>Minha conta</h1>
+      <PaginaDeLista titulo="Minha conta">
         <p>
           Você entrou com uma conta da equipe, sem o papel de cidadão, e por isso ela não acompanha
           políticos nem cidades no site. Saia e entre com uma conta de cidadão, ou peça à
           administração que dê esse papel à sua conta.
         </p>
         <form method="post" action="/sair">
-          <button type="submit">Sair</button>
+          <button type="submit" className="botao botao--secundario">
+            Sair
+          </button>
         </form>
-      </main>
+      </PaginaDeLista>
     );
   }
 
   if (!sessao) {
     return (
-      <main>
-        <h1>Minha conta</h1>
+      <PaginaDeLista titulo="Minha conta">
         <p>
           Com uma conta gratuita, você acompanha os políticos e as cidades que quiser e encontra
           todos em um lugar só. A conta guarda só o que você acompanha: nada de nome, CPF ou
@@ -56,7 +57,7 @@ export default async function MinhaConta({ searchParams }: Props): Promise<React
             Entrar ou criar conta
           </a>
         </p>
-      </main>
+      </PaginaDeLista>
     );
   }
 
@@ -65,8 +66,7 @@ export default async function MinhaConta({ searchParams }: Props): Promise<React
   const cidades = itens.filter((a) => a.tipo === 'municipio');
 
   return (
-    <main>
-      <h1>Minha conta</h1>
+    <PaginaDeLista titulo="Minha conta">
       <p>Você entrou como {sessao.nome}.</p>
       {apagado && <p role="status">Pronto: apagamos tudo o que você acompanhava.</p>}
 
@@ -109,14 +109,18 @@ export default async function MinhaConta({ searchParams }: Props): Promise<React
             acompanho
           </label>
           <p>
-            <button type="submit">Apagar meus dados</button>
+            <button type="submit" className="botao">
+              Apagar meus dados
+            </button>
           </p>
         </form>
         <form method="post" action="/sair">
-          <button type="submit">Sair</button>
+          <button type="submit" className="botao botao--secundario">
+            Sair
+          </button>
         </form>
       </section>
-    </main>
+    </PaginaDeLista>
   );
 }
 
