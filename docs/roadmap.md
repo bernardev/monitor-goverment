@@ -450,9 +450,16 @@ pretérito (_Prometeu. Compareceu. Votou. Propôs. Indicou. Financiou._).
 - **Verificado no navegador**, em 1440, 768 e 390 px, com o inspetor da skill de direção de arte: títulos em até duas linhas, uma família carregada, contraste dos textos, nada vazando
   para o lado.
 
-Fica para depois, de propósito: o painel de curadoria no mesmo sistema; o modo escuro (os campos de
-cor são a identidade, e um tema escuro pede outra escolha de campos); a busca no telefone dentro da
-barra; e fotos próprias dos municípios e das obras, que não existem em acervo aberto.
+Depois, as páginas de detalhe também viraram capítulos: a votação (_Aprovou._ ou _Rejeitou._ com o
+placar, _Votaram._ com os nomes em colunas), a proposição (_Propuseram._, _Tramitou._ com os atos
+antigos recolhidos, _Foi votada._), a emenda (_Pagou._ com as fases da despesa, _Destinou._,
+_Chegou a._ com o ranking dos favorecidos, _Virou obra._) e a obra (_Executou._, _Parou._, _Foi
+paga._). O painel de curadoria passou a usar o mesmo pacote, e a promessa mostra a cadeia de entrega
+acesa até o estágio confirmado.
+
+Fica para depois, de propósito: o modo escuro (os campos de cor são a identidade, e um tema escuro
+pede outra escolha de campos); a busca no telefone dentro da barra; e fotos próprias dos municípios e
+das obras, que não existem em acervo aberto.
 
 ## Etapa 6 em detalhe
 
