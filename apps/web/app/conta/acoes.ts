@@ -26,7 +26,8 @@ export async function alternarAcompanhamento(
 ): Promise<void> {
   const destino = caminhoDeVolta(volta);
   const sessao = await sessaoDoCidadao();
-  if (!sessao) redirect(`/entrar?volta=${encodeURIComponent(destino)}`);
+  if (sessao === undefined) redirect(`/entrar?volta=${encodeURIComponent(destino)}`);
+  if (sessao === null) redirect('/conta');
   await (acompanhando ? conta.deixarDeAcompanhar : conta.acompanhar)(sessao, lerTipo(tipo), id);
   redirect(destino);
 }
@@ -34,7 +35,7 @@ export async function alternarAcompanhamento(
 /** Apaga tudo o que a plataforma guarda sobre a pessoa; a conta de login continua sendo dela. */
 export async function apagarMeusDados(dados: FormData): Promise<void> {
   const sessao = await sessaoDoCidadao();
-  if (!sessao) redirect('/entrar?volta=/conta');
+  if (!sessao) redirect(sessao === null ? '/conta' : '/entrar?volta=/conta');
   // A caixa de confirmação já é obrigatória no formulário; aqui é a garantia sem JavaScript.
   if (dados.get('confirmo') !== 'sim') redirect('/conta?erro=confirmacao');
   await conta.apagarMeusDados(sessao);

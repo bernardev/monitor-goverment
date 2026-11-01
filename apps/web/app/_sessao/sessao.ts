@@ -37,8 +37,13 @@ export const acesso = criarAcesso({
   cookie: 'prometeu_site',
 });
 
-/** A sessão de quem tem conta de cidadão; outra conta (só editorial) conta como sem login aqui. */
-export async function sessaoDoCidadao(): Promise<Sessao | undefined> {
+/**
+ * A sessão de quem tem conta de cidadão. `undefined`: sem login. `null`: com login, mas numa conta sem
+ * o papel `cidadao` (só editorial); mandar essa pessoa entrar de novo daria uma volta sem fim, porque
+ * o provedor a reconhece e devolve a mesma conta.
+ */
+export async function sessaoDoCidadao(): Promise<Sessao | null | undefined> {
   const sessao = await acesso.sessaoAtual();
-  return sessao?.papeis.includes('cidadao') ? sessao : undefined;
+  if (!sessao) return undefined;
+  return sessao.papeis.includes('cidadao') ? sessao : null;
 }

@@ -26,6 +26,22 @@ export default async function MinhaConta({ searchParams }: Props): Promise<React
   const { erro, apagado } = await searchParams;
   const sessao = await sessaoDoCidadao();
 
+  if (sessao === null) {
+    return (
+      <main>
+        <h1>Minha conta</h1>
+        <p>
+          Você entrou com uma conta da equipe, sem o papel de cidadão, e por isso ela não acompanha
+          políticos nem cidades no site. Saia e entre com uma conta de cidadão, ou peça à
+          administração que dê esse papel à sua conta.
+        </p>
+        <form method="post" action="/sair">
+          <button type="submit">Sair</button>
+        </form>
+      </main>
+    );
+  }
+
   if (!sessao) {
     return (
       <main>
