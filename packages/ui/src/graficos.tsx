@@ -143,7 +143,8 @@ export function Ranking({ itens }: { itens: readonly ItemDoRanking[] }): ReactNo
             <span
               className="ranking__medida"
               style={{
-                width: `${String(maior > 0 ? Math.max(0.5, (item.valor / maior) * 100) : 0)}%`,
+                // Valor positivo pequeno ainda aparece; zero não ganha barra nenhuma.
+                width: `${String(item.valor > 0 && maior > 0 ? Math.max(0.5, (item.valor / maior) * 100) : 0)}%`,
               }}
             />
           </span>

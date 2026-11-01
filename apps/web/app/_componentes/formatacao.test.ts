@@ -6,6 +6,7 @@ import {
   mes,
   nomeDoFavorecido,
   pagoAteAgora,
+  partesPagoEAPagar,
   percentual,
   reais,
   reaisResumidos,
@@ -33,6 +34,16 @@ describe('reaisResumidos', () => {
     expect(reaisResumidos(150000000n)).toBe('R$ 1,5 milhão');
     expect(reaisResumidos('250000000000')).toBe('R$ 2,5 bilhões');
     expect(reaisResumidos('4950000')).toBe('R$ 49,5 mil');
+  });
+});
+
+describe('partesPagoEAPagar', () => {
+  it('o que falta pagar nunca fica negativo', () => {
+    expect(partesPagoEAPagar(150000000n, 200000000n).map((p) => [p.rotulo, p.valor])).toEqual([
+      ['pago', 1500000],
+      ['a pagar', 500000],
+    ]);
+    expect(partesPagoEAPagar(300n, 200n).map((p) => p.valor)).toEqual([3, 0]);
   });
 });
 

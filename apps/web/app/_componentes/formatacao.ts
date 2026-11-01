@@ -1,3 +1,5 @@
+import type { Parte } from '@prometeu/ui';
+
 const CARGOS: Readonly<Record<string, string>> = {
   presidente: 'Presidente da República',
   vice_presidente: 'Vice-presidente da República',
@@ -234,4 +236,23 @@ export function reaisEmEscala(centavos: bigint | string): { numero: string; esca
 export function reaisResumidos(centavos: bigint | string): string {
   const { numero, escala } = reaisEmEscala(centavos);
   return escala === '' ? reais(centavos) : `R$ ${numero} ${escala}`;
+}
+
+/** A barra pago e a pagar de um empenho; o pago acima do empenhado não vira "a pagar" negativo. */
+export function partesPagoEAPagar(pago: bigint, empenhado: bigint): Parte[] {
+  const aPagar = empenhado > pago ? empenhado - pago : 0n;
+  return [
+    {
+      rotulo: 'pago',
+      valor: Number(pago / 100n),
+      tom: 'forte',
+      texto: `${reaisResumidos(pago)} pagos`,
+    },
+    {
+      rotulo: 'a pagar',
+      valor: Number(aPagar / 100n),
+      tom: 'vazio',
+      texto: `${reaisResumidos(aPagar)} a pagar`,
+    },
+  ];
 }

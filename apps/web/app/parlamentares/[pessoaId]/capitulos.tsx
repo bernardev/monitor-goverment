@@ -30,6 +30,7 @@ import {
   nomeDoResultado,
   pagoAteAgora,
   reais,
+  partesPagoEAPagar,
   reaisResumidos,
 } from '../../_componentes/formatacao';
 import { lugarDaObra, situacaoEMedicao } from '../../_componentes/obras';
@@ -283,7 +284,6 @@ export function Emendas({ emendas }: { emendas: EmendasDoParlamentar }): ReactNo
   }
   const empenhado = BigInt(emendas.soma.empenhadoCentavos);
   const pago = pagoAteAgora(emendas.soma);
-  const aPagar = empenhado > pago ? empenhado - pago : 0n;
   const parcela = empenhado > 0n ? Number((pago * 100n) / empenhado) : 0;
   return (
     <Capitulo
@@ -297,22 +297,7 @@ export function Emendas({ emendas }: { emendas: EmendasDoParlamentar }): ReactNo
             valor={`${String(parcela)}%`}
             legenda="do valor empenhado já foi pago a quem recebe."
           />
-          <Proporcao
-            partes={[
-              {
-                rotulo: 'pago',
-                valor: Number(pago / 100n),
-                tom: 'forte',
-                texto: `${reaisResumidos(pago)} pagos`,
-              },
-              {
-                rotulo: 'a pagar',
-                valor: Number(aPagar / 100n),
-                tom: 'vazio',
-                texto: `${reaisResumidos(aPagar)} a pagar`,
-              },
-            ]}
-          />
+          <Proporcao partes={partesPagoEAPagar(pago, empenhado)} />
         </div>
       }
       nota={nota}

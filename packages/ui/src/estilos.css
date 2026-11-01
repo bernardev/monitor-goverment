@@ -1285,13 +1285,44 @@ main:not(.capitulos) button {
 }
 
 .retrato__titulo--longo {
-  font-size: clamp(28px, 3.2vw, 44px);
-  line-height: 1.05;
-  max-width: 36ch;
+  font-size: clamp(24px, 2.3vw, 32px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  max-width: 62ch;
 }
 
 .resumo > dd.resumo__texto {
   font-size: var(--t-texto);
   font-weight: 500;
   text-align: left;
+}
+
+.retrato__texto > p {
+  max-width: 68ch;
+}
+
+.retrato__voltar {
+  flex-basis: 100%;
+}
+
+@media (max-width: 640px) {
+  /* No telefone, capítulo curto não reserva uma tela inteira de cor vazia. */
+  .capitulo {
+    min-height: 0;
+  }
+
+  .resumo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .resumo > dt {
+    padding-bottom: 0;
+  }
+
+  .resumo > dd {
+    text-align: left;
+    padding-top: 2px;
+    /* Rótulo e valor viram uma ficha só: o vão da grade fica só entre um par e outro. */
+    margin-top: calc(var(--vao) * -1);
+  }
 }

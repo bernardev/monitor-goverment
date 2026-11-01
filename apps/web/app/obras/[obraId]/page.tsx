@@ -32,6 +32,12 @@ const INTERRUPCOES: Readonly<Record<string, string>> = {
   inacabada: 'Declarada inacabada',
 };
 
+/** A fonte costuma repetir o nome na descrição, às vezes com outra caixa ou um ponto final. */
+function mesmoTexto(a: string, b: string): boolean {
+  const limpo = (t: string) => t.trim().replace(/\.$/, '').toLocaleLowerCase('pt-BR');
+  return limpo(a) === limpo(b);
+}
+
 function periodo(inicio: string | null, fim: string | null): string {
   if (inicio === null && fim === null) return 'não informado';
   return `${inicio ? dia(inicio) : '?'} a ${fim ? dia(fim) : '?'}`;
@@ -73,7 +79,7 @@ export default async function PaginaDaObra({ params }: Props): Promise<ReactNode
               ))}
           {obra.uf && obra.municipios.length > 0 ? ` - ${obra.uf}` : ''}.
         </p>
-        {obra.descricao && obra.descricao !== obra.nome && <p>{obra.descricao}</p>}
+        {obra.descricao && !mesmoTexto(obra.descricao, obra.nome) && <p>{obra.descricao}</p>}
         <p className="nota">
           Projeto {obra.idNaFonte} no Obrasgov.br, o cadastro federal de obras e projetos de
           investimento.{obra.endereco ? ` Endereço: ${obra.endereco}.` : ''}

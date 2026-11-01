@@ -18,6 +18,7 @@ import {
   nomeDoCargo,
   percentual,
   reaisEmEscala,
+  partesPagoEAPagar,
   reaisResumidos,
 } from '../../_componentes/formatacao';
 import { ItemDeObra } from '../../_componentes/obras';
@@ -68,7 +69,6 @@ export default async function MeuGoverno({ params, searchParams }: Props): Promi
   const { nome, uf } = municipio;
   const empenhado = soma(autores, 'empenhadoCentavos');
   const pago = soma(autores, 'pagoCentavos');
-  const aPagar = empenhado > pago ? empenhado - pago : 0n;
   const quantasEmendas = autores.reduce((total, a) => total + a.emendas, 0);
   const senadores = bancada.itens.filter((p) => p.cargo === 'senador');
   const deputados = bancada.itens.filter((p) => p.cargo !== 'senador');
@@ -127,24 +127,7 @@ export default async function MeuGoverno({ params, searchParams }: Props): Promi
           campo="areia"
           verbo="Recebeu."
           frase={`${reaisResumidos(pago)} pagos de ${reaisResumidos(empenhado)} empenhados, em ${plural(quantasEmendas, 'emenda', 'emendas')} com destino a ${nome}.`}
-          aoLado={
-            <Proporcao
-              partes={[
-                {
-                  rotulo: 'pago',
-                  valor: Number(pago / 100n),
-                  tom: 'forte',
-                  texto: `${reaisResumidos(pago)} pagos`,
-                },
-                {
-                  rotulo: 'a pagar',
-                  valor: Number(aPagar / 100n),
-                  tom: 'vazio',
-                  texto: `${reaisResumidos(aPagar)} a pagar`,
-                },
-              ]}
-            />
-          }
+          aoLado={<Proporcao partes={partesPagoEAPagar(pago, empenhado)} />}
           nota={
             <p>
               Conta só a parte de cada emenda destinada a {nome}; a que foi para a UF inteira ou
