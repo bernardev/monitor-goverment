@@ -32,11 +32,12 @@
 .formulario input,
 .formulario select,
 .formulario textarea,
-.revisao input {
+.revisao input,
+.revisao select {
   min-height: 48px;
-  padding: 10px 14px;
+  padding: 10px 16px;
   border: 2px solid var(--grafite);
-  border-radius: 0;
+  border-radius: var(--raio-botao);
   background: var(--branco);
   color: var(--grafite);
   font: inherit;
@@ -45,7 +46,40 @@
 
 .formulario textarea {
   min-height: 96px;
+  border-radius: 16px;
   resize: vertical;
+}
+
+/* Um grupo do formulário (a fonte, o fundamento) é uma área em outro tom, sem moldura de linha. */
+.formulario fieldset {
+  margin: 8px 0 0;
+  padding: 18px 20px 22px;
+  border: 0;
+  background: var(--superficie);
+  display: grid;
+  gap: 14px;
+}
+
+.formulario legend {
+  float: left;
+  width: 100%;
+  margin-bottom: 4px;
+  padding: 0;
+  font-size: var(--t-destaque);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* No painel a cadeia fica numa linha: é contexto da promessa, não a manchete da página. */
+.cadeia {
+  flex-direction: row;
+  flex-wrap: wrap;
+  font-size: var(--t-texto);
+}
+
+.cadeia__estagio {
+  flex: 1 1 120px;
+  padding: 12px 16px;
 }
 
 .erro {

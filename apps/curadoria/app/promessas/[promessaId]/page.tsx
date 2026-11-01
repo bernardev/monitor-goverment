@@ -147,11 +147,10 @@ export default async function Promessa({ params }: Props): Promise<ReactNode> {
               .filter((c) => !c.vinculado)
               .map((c) => (
                 <li key={`${c.tipoDoAlvo}|${c.idDoAlvo}`}>
-                  <strong>
-                    {rotulo(TIPOS_DE_ALVO, c.tipoDoAlvo)} {c.titulo}
-                  </strong>{' '}
-                  · {Math.round(c.relevancia * 100)}% das palavras
-                  {c.termosEmComum.length > 0 ? ` (${c.termosEmComum.join(', ')})` : ''}
+                  <strong>{comTipo(rotulo(TIPOS_DE_ALVO, c.tipoDoAlvo), c.titulo)}</strong> ·{' '}
+                  {c.relevancia > 0
+                    ? `${String(Math.round(c.relevancia * 100))}% das palavras (${c.termosEmComum.join(', ')})`
+                    : 'nenhuma palavra em comum'}
                   <br />
                   <small>{c.detalhe}</small>
                   <SugestaoDeVinculo
@@ -210,4 +209,11 @@ export default async function Promessa({ params }: Props): Promise<ReactNode> {
       )}
     </main>
   );
+}
+
+/** `Emenda 0003/2024`, e não `Emenda Emenda 0003/2024`: o título de alguns fatos já traz o tipo. */
+function comTipo(tipo: string, titulo: string): string {
+  return titulo.toLocaleLowerCase('pt-BR').startsWith(tipo.toLocaleLowerCase('pt-BR'))
+    ? titulo
+    : `${tipo} ${titulo}`;
 }
