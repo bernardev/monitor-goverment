@@ -1120,6 +1120,71 @@ main:not(.capitulos) button {
   }
 }
 
+/* ── Tour de boas-vindas ────────────────────────────────────────────────────────────────────── */
+/* Véu chapado em faixas em volta do item aceso, sem sombra (ADR-0017); o cartão é papel sobre ele. */
+.tour {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+}
+
+.tour__veu {
+  position: absolute;
+  background: rgb(27 27 27 / 0.66);
+}
+
+.tour__foco {
+  position: absolute;
+  outline: 3px solid var(--papel);
+}
+
+.tour__cartao {
+  position: absolute;
+  width: min(440px, calc(100vw - 32px));
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--papel);
+  color: var(--grafite);
+}
+
+.tour__cartao h2 {
+  font-size: clamp(24px, 2.4vw, 32px);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+.tour__passo {
+  font-size: var(--t-nota);
+}
+
+.tour__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.tour__acoes .botao--texto {
+  margin-right: auto;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tour__cartao,
+  .tour__foco,
+  .tour__veu {
+    transition:
+      top 250ms ease,
+      left 250ms ease,
+      width 250ms ease,
+      height 250ms ease;
+  }
+}
+
 /* ── Telefone ───────────────────────────────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
   .cabecalho__miolo {

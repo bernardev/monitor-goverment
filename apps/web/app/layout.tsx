@@ -6,6 +6,8 @@ import { Schibsted_Grotesk } from 'next/font/google';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
+import { Tour } from './_componentes/tour';
+
 // A única família do site (ADR-0017), servida pelo próprio site: nada é pedido ao Google no navegador.
 const fonte = Schibsted_Grotesk({
   subsets: ['latin'],
@@ -32,18 +34,31 @@ export default function LayoutRaiz({ children }: { children: ReactNode }): React
             Prometeu
           </Link>
           <nav aria-label="Principal" className="navegacao">
-            <Link href="/municipios">Meu governo</Link>
-            <Link href="/parlamentares">Parlamentares</Link>
-            <Link href="/votacoes">Votações</Link>
-            <Link href="/emendas">Emendas</Link>
-            <Link href="/obras">Obras</Link>
-            <Link href="/conta">Minha conta</Link>
+            <Link href="/municipios" data-tour="meu-governo">
+              Meu governo
+            </Link>
+            <Link href="/parlamentares" data-tour="parlamentares">
+              Parlamentares
+            </Link>
+            <Link href="/votacoes" data-tour="votacoes">
+              Votações
+            </Link>
+            <Link href="/emendas" data-tour="emendas">
+              Emendas
+            </Link>
+            <Link href="/obras" data-tour="obras">
+              Obras
+            </Link>
+            <Link href="/conta" data-tour="conta">
+              Minha conta
+            </Link>
           </nav>
-          <Link href="/busca" className="botao">
+          <Link href="/busca" className="botao" data-tour="busca">
             Buscar político ou cidade
           </Link>
         </Cabecalho>
         <div id="conteudo">{children}</div>
+        <Tour />
         <footer className="rodape" data-campo="grafite">
           <div className="rodape__miolo">
             <p className="rodape__marca" aria-hidden="true">
@@ -73,6 +88,9 @@ export default function LayoutRaiz({ children }: { children: ReactNode }): React
                 </li>
                 <li>
                   <Link href="/fontes">Situação das fontes</Link>
+                </li>
+                <li>
+                  <Link href="/conta">Minha conta</Link>
                 </li>
               </ul>
               <p className="nota rodape__texto">

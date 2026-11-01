@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 import { acompanhamentos } from '../_api/conta';
 import { data } from '../_componentes/formatacao';
 import { PaginaDeLista } from '../_componentes/pagina-de-lista';
+import { Rever } from '../_componentes/tour';
 import { sessaoDoCidadao } from '../_sessao/sessao';
 import { alternarAcompanhamento, apagarMeusDados } from './acoes';
 
@@ -94,6 +95,14 @@ export default async function MinhaConta({ searchParams }: Props): Promise<React
             </>
           }
         />
+      </section>
+
+      <section aria-labelledby="como-usar">
+        <h2 id="como-usar">Como usar o Prometeu</h2>
+        <p>Um passeio de um minuto pelo que dá para fazer aqui.</p>
+        <p>
+          <Rever />
+        </p>
       </section>
 
       <section aria-labelledby="dados">

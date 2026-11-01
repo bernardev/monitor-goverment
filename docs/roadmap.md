@@ -516,3 +516,11 @@ sem login levando a entrar, com um caminho de volta malicioso trocado pelo iníc
 Fica para depois, de propósito: acompanhar promessa (quando houver promessa publicada no site), o
 login sem senha e a confirmação de e-mail (pedem servidor de e-mail) e excluir a conta de login pelo
 próprio site (hoje apagar os dados leva o que a plataforma guarda; a conta no provedor continua).
+
+**Tour de boas-vindas.** Logo depois do login, o site mostra um passeio de nove passos pelo que dá
+para fazer: cada passo acende um item do cabeçalho (Meu governo, Parlamentares, Votações, Emendas,
+Obras, a busca e Minha conta) e explica, em palavras simples, o que há ali. O `/retorno` deixa um
+cookie curto quando o login dá certo; o navegador abre o tour uma vez e guarda que já viu. Minha
+conta tem "Ver o tour de novo". No telefone, onde a navegação fica no rodapé, os passos ficam no meio
+da tela e dizem isso; Minha conta entrou no rodapé. O cartão é um diálogo: foco no botão principal,
+Tab preso nele, Esc fecha. Verificado no site com o Keycloak de verdade, no computador e no telefone.
