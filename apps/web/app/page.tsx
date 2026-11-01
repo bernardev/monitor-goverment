@@ -147,6 +147,10 @@ export default async function PaginaInicial(): Promise<ReactNode> {
           Por onde começar
         </h2>
         <ul className="fichas surge">
+          <Entrada href="/municipios" titulo="Meu governo">
+            Sua cidade: quem a representa no Congresso, o dinheiro de emenda que chegou e as obras
+            que ele pagou.
+          </Entrada>
           <Entrada href="/parlamentares" titulo="Parlamentares">
             {contagem(parlamentares, 'deputados e senadores em exercício')}, com presença, votos,
             proposições e emendas.

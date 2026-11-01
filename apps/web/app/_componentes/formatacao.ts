@@ -217,15 +217,21 @@ export function pagoAteAgora(execucao: {
 
 const UMA_CASA = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 });
 
-/** `R$ 134,2 milhões`: o valor para ler numa frase; o exato fica nas tabelas. */
-export function reaisResumidos(centavos: bigint | string): string {
+/** `{ numero: '134,1', escala: 'milhões' }`: o valor em reais na escala que se lê numa frase. */
+export function reaisEmEscala(centavos: bigint | string): { numero: string; escala: string } {
   const reaisInteiros = Number(BigInt(centavos) / 100n);
-  const em = (escala: number, um: string, varios: string) => {
-    const valor = Math.floor((reaisInteiros / escala) * 10) / 10;
-    return `R$ ${UMA_CASA.format(valor)} ${valor < 2 ? um : varios}`;
+  const em = (divisor: number, um: string, varios: string) => {
+    const valor = Math.floor((reaisInteiros / divisor) * 10) / 10;
+    return { numero: UMA_CASA.format(valor), escala: valor < 2 ? um : varios };
   };
   if (reaisInteiros >= 1e9) return em(1e9, 'bilhão', 'bilhões');
   if (reaisInteiros >= 1e6) return em(1e6, 'milhão', 'milhões');
   if (reaisInteiros >= 1e3) return em(1e3, 'mil', 'mil');
-  return reais(centavos);
+  return { numero: UMA_CASA.format(reaisInteiros), escala: '' };
+}
+
+/** `R$ 134,1 milhões`: o valor para ler numa frase; o exato fica nas tabelas. */
+export function reaisResumidos(centavos: bigint | string): string {
+  const { numero, escala } = reaisEmEscala(centavos);
+  return escala === '' ? reais(centavos) : `R$ ${numero} ${escala}`;
 }

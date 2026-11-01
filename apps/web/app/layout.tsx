@@ -32,11 +32,11 @@ export default function LayoutRaiz({ children }: { children: ReactNode }): React
             Prometeu
           </Link>
           <nav aria-label="Principal" className="navegacao">
+            <Link href="/municipios">Meu governo</Link>
             <Link href="/parlamentares">Parlamentares</Link>
             <Link href="/votacoes">Votações</Link>
             <Link href="/emendas">Emendas</Link>
             <Link href="/obras">Obras</Link>
-            <Link href="/fontes">Fontes</Link>
           </nav>
           <Link href="/busca" className="botao">
             Buscar político ou cidade
@@ -50,6 +50,9 @@ export default function LayoutRaiz({ children }: { children: ReactNode }): React
             </p>
             <div className="rodape__colunas">
               <ul>
+                <li>
+                  <Link href="/municipios">Meu governo</Link>
+                </li>
                 <li>
                   <Link href="/parlamentares">Parlamentares</Link>
                 </li>

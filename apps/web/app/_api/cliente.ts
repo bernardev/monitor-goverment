@@ -1,6 +1,7 @@
 import 'server-only';
 
 import type {
+  AutorNoMunicipio,
   AutoriaDoParlamentar,
   EmendaDetalhada,
   EmendaResumo,
@@ -193,4 +194,12 @@ export async function buscarMunicipios(nome: string): Promise<MunicipioResumo[]>
 
 export function buscarMunicipio(codigoIbge: string): Promise<MunicipioResumo | undefined> {
   return obter<MunicipioResumo>(`/v1/municipios/${encodeURIComponent(codigoIbge)}`);
+}
+
+/** Quem mandou dinheiro de emenda para o município, de quem mais pagou para quem menos. */
+export async function autoresNoMunicipio(codigoIbge: string): Promise<AutorNoMunicipio[]> {
+  return (
+    (await obter<AutorNoMunicipio[]>(`/v1/municipios/${encodeURIComponent(codigoIbge)}/autores`)) ??
+    []
+  );
 }
