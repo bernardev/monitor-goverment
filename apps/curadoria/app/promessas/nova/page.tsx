@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import { publica } from '../../_api/cliente';
@@ -18,9 +17,6 @@ export default async function NovaPromessa({ searchParams }: Props): Promise<Rea
 
   return (
     <main>
-      <p>
-        <Link href="/">← Painel</Link>
-      </p>
       <h1>Registrar promessa</h1>
       <form method="get" className="formulario em-linha">
         <label>

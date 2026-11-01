@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { CadeiaDeEntrega } from '@prometeu/ui';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 
@@ -61,17 +61,15 @@ export default async function Promessa({ params }: Props): Promise<ReactNode> {
 
   return (
     <main>
-      <p>
-        <Link href="/">← Painel</Link>
-      </p>
       <h1>{promessa.texto}</h1>
       <p>
         Estágio: <strong>{rotulo(ESTAGIOS, promessa.estagio)}</strong> · Veredito vigente:{' '}
         <strong>{rotulo(VEREDITOS, promessa.vereditoVigente)}</strong> · Tema {promessa.tema}
       </p>
+      <CadeiaDeEntrega alcancados={Object.keys(ESTAGIOS).indexOf(promessa.estagio) + 1} />
 
       <h2>Fontes</h2>
-      <ul>
+      <ul className="lista">
         {promessa.fontes.map((f) => (
           <li key={f.fonteId}>
             <q>{f.citacaoLiteral}</q> — {rotulo(TIPOS_DE_FONTE, f.tipo)}, {data(f.dataDaDeclaracao)}
@@ -91,7 +89,7 @@ export default async function Promessa({ params }: Props): Promise<ReactNode> {
             Fatos com vínculo confirmado mudaram na fonte. Nada mudou sozinho na promessa: veja se o
             vínculo ainda vale e se o veredito precisa de errata, depois marque como reavaliada.
           </p>
-          <ul>
+          <ul className="lista">
             {promessa.reavaliacoes.map((r) => (
               <li key={`${r.idDoAlvo}|${r.pedidoEm}|${r.motivo}`}>
                 <strong>
@@ -114,7 +112,7 @@ export default async function Promessa({ params }: Props): Promise<ReactNode> {
         Só o vínculo confirmado conta para o estágio. Sugerir não muda nada na promessa publicada.
       </p>
       {promessa.vinculos.length === 0 && <p>Nenhum vínculo ainda.</p>}
-      <ul>
+      <ul className="lista">
         {promessa.vinculos.map((v) => (
           <li key={v.vinculoId}>
             <strong>
@@ -144,7 +142,7 @@ export default async function Promessa({ params }: Props): Promise<ReactNode> {
           {candidatos.filter((c) => !c.vinculado).length === 0 && (
             <p>Nenhum fato do autor coletado ainda.</p>
           )}
-          <ul>
+          <ul className="lista">
             {candidatos
               .filter((c) => !c.vinculado)
               .map((c) => (
@@ -170,7 +168,7 @@ export default async function Promessa({ params }: Props): Promise<ReactNode> {
 
       <h2>Histórico de vereditos</h2>
       {promessa.historico.length === 0 && <p>Nenhum veredito publicado.</p>}
-      <ol>
+      <ol className="lista">
         {promessa.historico.map((r) => (
           <li key={r.registroId}>
             {rotulo(VEREDITOS, r.veredito)} em {data(r.publicadoEm)}

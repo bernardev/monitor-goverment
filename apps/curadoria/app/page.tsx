@@ -25,7 +25,9 @@ export default async function PainelEditorial({ searchParams }: Props): Promise<
         {erro && <p role="alert">{ERROS[erro] ?? 'Não foi possível entrar.'}</p>}
         {sessao && <p>Sua conta não tem papel editorial.</p>}
         <p>
-          <a href="/entrar">Entrar</a>
+          <a href="/entrar" className="botao">
+            Entrar
+          </a>
         </p>
       </main>
     );
@@ -34,48 +36,51 @@ export default async function PainelEditorial({ searchParams }: Props): Promise<
   const promessas = await editorial.listar();
   return (
     <main>
-      <header className="topo">
-        <h1>Painel editorial</h1>
-        <form method="post" action="/sair">
-          {sessao.nome} ({sessao.papeis.join(', ')}) <button type="submit">Sair</button>
-        </form>
-      </header>
+      <h1>Promessas</h1>
+      <p>
+        Você entrou como {sessao.nome} ({sessao.papeis.join(', ')}). As pendências mostram o que
+        espera revisão e os fatos que mudaram desde a última análise.
+      </p>
       {sessao.papeis.includes('curador') && (
         <p>
-          <Link href="/promessas/nova">Registrar promessa</Link>
+          <Link href="/promessas/nova" className="botao">
+            Registrar promessa
+          </Link>
         </p>
       )}
-      <table>
-        <thead>
-          <tr>
-            <th>Promessa</th>
-            <th>Estágio</th>
-            <th>Veredito</th>
-            <th>Pendências</th>
-          </tr>
-        </thead>
-        <tbody>
-          {promessas.map((p) => (
-            <tr key={p.promessaId}>
-              <td>
-                <Link href={`/promessas/${p.promessaId}`}>{p.texto}</Link>
-              </td>
-              <td>{rotulo(ESTAGIOS, p.estagio)}</td>
-              <td>{rotulo(VEREDITOS, p.vereditoVigente)}</td>
-              <td>
-                {[
-                  p.aguardandoRevisao ? 'Veredito aguardando revisão' : '',
-                  p.reavaliacoesPendentes > 0
-                    ? `${String(p.reavaliacoesPendentes)} ${p.reavaliacoesPendentes === 1 ? 'fato mudou' : 'fatos mudaram'}`
-                    : '',
-                ]
-                  .filter(Boolean)
-                  .join(' · ')}
-              </td>
+      <div className="rolagem">
+        <table className="tabela">
+          <thead>
+            <tr>
+              <th>Promessa</th>
+              <th>Estágio</th>
+              <th>Veredito</th>
+              <th>Pendências</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {promessas.map((p) => (
+              <tr key={p.promessaId}>
+                <td>
+                  <Link href={`/promessas/${p.promessaId}`}>{p.texto}</Link>
+                </td>
+                <td>{rotulo(ESTAGIOS, p.estagio)}</td>
+                <td>{rotulo(VEREDITOS, p.vereditoVigente)}</td>
+                <td>
+                  {[
+                    p.aguardandoRevisao ? 'Veredito aguardando revisão' : '',
+                    p.reavaliacoesPendentes > 0
+                      ? `${String(p.reavaliacoesPendentes)} ${p.reavaliacoesPendentes === 1 ? 'fato mudou' : 'fatos mudaram'}`
+                      : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       {promessas.length === 0 && <p>Nenhuma promessa registrada ainda.</p>}
     </main>
   );
