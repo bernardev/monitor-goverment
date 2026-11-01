@@ -12,6 +12,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@prometeu/acesso": "workspace:*",
     "@prometeu/contracts": "workspace:*",
     "@prometeu/ui": "workspace:*",
     "next": "^16.4.3",

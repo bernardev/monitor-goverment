@@ -10,6 +10,7 @@ import {
   proposicoesDoParlamentar,
   votosDoParlamentar,
 } from '../../_api/cliente';
+import { Acompanhar } from '../../_componentes/acompanhar';
 import { Fonte } from '../../_componentes/fonte';
 import { data, nomeDoCargo } from '../../_componentes/formatacao';
 import {
@@ -86,6 +87,7 @@ export default async function PerfilDoParlamentar({ params }: Props): Promise<Re
                 ))}
               </ul>
             </nav>
+            <Acompanhar tipo="parlamentar" id={pessoaId} volta={`/parlamentares/${pessoaId}`} />
             <Fonte fonte={perfil.mandato?.fonte ?? perfil.fonte} />
           </div>
           {perfil.urlDaFoto && (

@@ -37,6 +37,7 @@ export default function LayoutRaiz({ children }: { children: ReactNode }): React
             <Link href="/votacoes">Votações</Link>
             <Link href="/emendas">Emendas</Link>
             <Link href="/obras">Obras</Link>
+            <Link href="/conta">Minha conta</Link>
           </nav>
           <Link href="/busca" className="botao">
             Buscar político ou cidade

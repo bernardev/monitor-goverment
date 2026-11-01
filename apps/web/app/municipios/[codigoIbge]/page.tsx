@@ -12,6 +12,7 @@ import {
   listarObras,
   listarParlamentares,
 } from '../../_api/cliente';
+import { Acompanhar } from '../../_componentes/acompanhar';
 import { ItemDeEmenda } from '../../_componentes/emendas';
 import {
   nomeDaSituacaoDaObra,
@@ -87,6 +88,7 @@ export default async function MeuGoverno({ params, searchParams }: Props): Promi
               {uf}. Quem representa a cidade no Congresso, o dinheiro de emenda que chegou aqui e as
               obras que ele pagou.
             </p>
+            <Acompanhar tipo="municipio" id={codigoIbge} volta={`/municipios/${codigoIbge}`} />
             <nav aria-label="Nesta página">
               <ul className="sumario">
                 <li>

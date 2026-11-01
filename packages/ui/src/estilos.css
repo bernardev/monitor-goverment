@@ -1326,3 +1326,40 @@ main:not(.capitulos) button {
     margin-top: calc(var(--vao) * -1);
   }
 }
+
+/* Ação que já foi feita (acompanhando) ou que pesa menos: mesma forma, sem a cor cheia. */
+.botao--secundario {
+  background: var(--superficie, var(--papel-2));
+  color: var(--tinta, var(--grafite));
+}
+
+main:not(.capitulos) button.botao--texto,
+button.botao--texto {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: var(--t-nota);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+  cursor: pointer;
+}
+
+.acompanhar__nota {
+  margin-top: 8px;
+  max-width: 44ch;
+}
+
+.confirmacao {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+}
+
+.confirmacao input {
+  width: 22px;
+  height: 22px;
+}
