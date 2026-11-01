@@ -30,7 +30,7 @@ O que a v1 entrega e quais módulos cada entrega envolve está em
 | 3   | Atividade Legislativa                       | Proposições, votações e presença com o motivo da ausência (Câmara e Senado).                                                                                                      | Concluída |
 | 4   | Finanças Públicas e Obras                   | Emenda até a obra: empenho, pagamento, situação e medição da obra.                                                                                                                | Concluída |
 | 5   | Compromissos ligado aos fatos               | Sugestão de vínculos a partir dos eventos de Legislativo, Finanças e Obras; reavaliação do estágio.                                                                               | Concluída |
-| 6   | Engajamento                                 | "Meu governo" por município, acompanhar político ou promessa, alertas.                                                                                                            | A fazer   |
+| 6   | Engajamento                                 | "Meu governo" por município, acompanhar político ou promessa, alertas.                                                                                                            | Em curso  |
 
 Cada etapa só termina com CI verde, testes de integração contra Postgres real e documentação de domínio
 e de contratos atualizada.
@@ -453,3 +453,29 @@ pretérito (_Prometeu. Compareceu. Votou. Propôs. Indicou. Financiou._).
 Fica para depois, de propósito: o painel de curadoria no mesmo sistema; o modo escuro (os campos de
 cor são a identidade, e um tema escuro pede outra escolha de campos); a busca no telefone dentro da
 barra; e fotos próprias dos municípios e das obras, que não existem em acervo aberto.
+
+## Etapa 6 em detalhe
+
+A parte do cidadão: entrar pela própria cidade, acompanhar quem quiser e saber quando algo muda.
+
+| Fatia | Entrega                                                                                                       | Situação  |
+| ----- | ------------------------------------------------------------------------------------------------------------- | --------- |
+| 6.1   | Meu governo: a cidade, o dinheiro de emenda que chegou, quem o mandou, as obras e a bancada que a representa. | Concluída |
+| 6.2   | Acompanhar um político, uma promessa ou uma cidade, com conta de cidadão.                                     | A fazer   |
+| 6.3   | Alertas por e-mail do que mudou no que a pessoa acompanha.                                                    | A fazer   |
+
+### Fatia 6.1: Meu governo
+
+- **Consulta:** `municipios.autoresDeEmendas` soma, por autor, só as destinações de cada emenda ao
+  próprio município (a parte que foi para outra cidade não conta) e ordena de quem mais pagou para
+  quem menos. Emenda coletiva (bancada, comissão) aparece pelo nome, sem pessoa.
+- **API:** `GET /v1/municipios/:codigoIbge/autores`.
+- **Site:** `/municipios` procura a cidade pelo nome; a página da cidade se lê em capítulos:
+  _Recebeu._ (pago e empenhado, e o ranking de quem mandou o dinheiro), _Virou obra._ (situação das
+  obras pagas com emendas) e _Representam._ (os senadores e deputados federais em exercício eleitos
+  pelo estado), com as listas completas no fim. "Meu governo" entra na barra do site e na página
+  inicial.
+
+Fica para depois, de propósito: prefeito e vereadores (pedem as fontes do TSE e das câmaras
+municipais), a lista oficial de municípios do IBGE (hoje só os que aparecem nos dados) e o partido
+da época de cada emenda (a página mostra o atual e diz isso).
