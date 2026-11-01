@@ -12,11 +12,10 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@prometeu/acesso": "workspace:*",
     "@prometeu/contracts": "workspace:*",
     "@prometeu/ui": "workspace:*",
-    "jose": "^6.2.14",
     "next": "^16.4.3",
-    "openid-client": "^6.8.8",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "server-only": "^0.0.1"
