@@ -408,6 +408,23 @@ export interface MunicipioResumo {
   readonly uf: string;
 }
 
+/**
+ * Quem indicou dinheiro de emenda para o município. Soma só as destinações ao próprio município: a
+ * parte de uma emenda que foi para outra cidade não conta aqui.
+ */
+export interface AutorNoMunicipio {
+  /** `null`: emenda coletiva (bancada, comissão, relator) ou autor sem correspondência única. */
+  readonly pessoaId: string | null;
+  readonly nome: string;
+  /** Partido atual do parlamentar, não o da época da emenda. */
+  readonly siglaPartido: string | null;
+  readonly cargo: string | null;
+  readonly emendas: number;
+  readonly empenhadoCentavos: string;
+  /** Pago no ano do orçamento somado aos restos a pagar pagos depois. */
+  readonly pagoCentavos: string;
+}
+
 /** A última coleta de uma tabela da fonte. */
 export interface ColetaDaTabela {
   /** Tabela da camada prata (`camara_votacao`). */

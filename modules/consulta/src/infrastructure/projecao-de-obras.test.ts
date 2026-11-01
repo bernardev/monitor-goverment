@@ -277,4 +277,70 @@ describe('projeção de obras', () => {
     // Da interrupção mais recente para a mais antiga.
     expect(detalhe?.interrupcoes.map((i) => i.em)).toEqual(['2026-09-21', '2025-01-10']);
   });
+
+  it('quem mandou dinheiro para o município conta só a parte que veio para ele', async () => {
+    const destinacao = (municipioIbge: string, localidade: string, pago: string) => ({
+      localidade,
+      municipioIbge,
+      ufIbge: '4300000',
+      funcao: classificacao('10'),
+      subfuncao: classificacao('301'),
+      programa: classificacao('5119'),
+      acao: classificacao('2172'),
+      planoOrcamentario: classificacao('0000'),
+      modalidade: 'finalidade_definida',
+      empenhadoCentavos: '300000',
+      liquidadoCentavos: pago,
+      pagoCentavos: pago,
+      restosInscritosCentavos: '0',
+      restosCanceladosCentavos: '0',
+      restosPagosCentavos: '50000',
+    });
+    await publicar(
+      evento(
+        'EmendaRegistrada',
+        '0192d5e0-6666-7000-8000-000000000002',
+        '2026-10-30T10:00:00.000Z',
+        {
+          codigoNaFonte: '202671230002',
+          ano: 2026,
+          tipo: 'bancada',
+          numero: '0002',
+          autor: {
+            pessoaId: null,
+            nomeNaFonte: 'BANCADA DO RIO GRANDE DO SUL',
+            codigoNaFonte: '7123',
+          },
+          destinacoes: [
+            destinacao('4320008', 'SAPUCAIA DO SUL - RS', '150000'),
+            destinacao('4314902', 'PORTO ALEGRE - RS', '999999'),
+          ],
+          capturaId: CAPTURA,
+        },
+      ),
+    );
+
+    expect(await consulta.municipios.autoresDeEmendas('4320008')).toEqual([
+      {
+        pessoaId: null,
+        nome: 'BANCADA DO RIO GRANDE DO SUL',
+        siglaPartido: null,
+        cargo: null,
+        emendas: 1,
+        empenhadoCentavos: '300000',
+        pagoCentavos: '200000',
+      },
+      {
+        pessoaId: ANA,
+        nome: 'ANA EXEMPLO',
+        siglaPartido: null,
+        cargo: null,
+        emendas: 1,
+        empenhadoCentavos: '48110437',
+        pagoCentavos: '0',
+      },
+    ]);
+    expect(await consulta.municipios.autoresDeEmendas('9999999')).toEqual([]);
+    expect(await consulta.municipios.autoresDeEmendas('nao')).toEqual([]);
+  });
 });

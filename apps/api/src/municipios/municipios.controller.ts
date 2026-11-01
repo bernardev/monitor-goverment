@@ -1,6 +1,6 @@
 import { Controller, Get, Header, Inject, NotFoundException, Param, Query } from '@nestjs/common';
 import type { ConsultaDeMunicipios } from '@prometeu/consulta';
-import type { MunicipioResumo } from '@prometeu/contracts';
+import type { AutorNoMunicipio, MunicipioResumo } from '@prometeu/contracts';
 import { z } from 'zod';
 
 import { CACHE_PUBLICO, ler, nome } from '../dados-abertos.js';
@@ -29,5 +29,15 @@ export class MunicipiosController {
     const encontrado = await this.municipios.porCodigo(codigoIbge);
     if (!encontrado) throw new NotFoundException({ mensagem: 'Município não encontrado.' });
     return encontrado;
+  }
+
+  /** Quem mandou dinheiro de emenda para o município, de quem mais pagou para quem menos. */
+  @Get(':codigoIbge/autores')
+  @Header('Cache-Control', CACHE_PUBLICO)
+  async autores(@Param('codigoIbge') codigoIbge: string): Promise<AutorNoMunicipio[]> {
+    if (!(await this.municipios.porCodigo(codigoIbge))) {
+      throw new NotFoundException({ mensagem: 'Município não encontrado.' });
+    }
+    return this.municipios.autoresDeEmendas(codigoIbge);
   }
 }

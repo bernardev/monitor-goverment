@@ -1,4 +1,5 @@
 import type {
+  AutorNoMunicipio,
   AutoriaDoParlamentar,
   CandidatoAVinculo,
   EmendaDetalhada,
@@ -105,6 +106,8 @@ export interface ConsultaDeMunicipios {
   /** Até 20, pelo nome; os que começam com o termo primeiro. */
   buscar(nome: string): Promise<MunicipioResumo[]>;
   porCodigo(codigoIbge: string): Promise<MunicipioResumo | undefined>;
+  /** Quem mandou dinheiro de emenda para o município, de quem mais pagou para quem menos. */
+  autoresDeEmendas(codigoIbge: string): Promise<AutorNoMunicipio[]>;
 }
 
 export interface ConsultaDeObras {

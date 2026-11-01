@@ -1,13 +1,22 @@
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import type { ConsultaDeMunicipios } from '@prometeu/consulta';
-import type { MunicipioResumo } from '@prometeu/contracts';
+import type { AutorNoMunicipio, MunicipioResumo } from '@prometeu/contracts';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { CONSULTA_DE_MUNICIPIOS, MunicipiosController } from './municipios.controller.js';
 
 const SAPUCAIA: MunicipioResumo = { codigoIbge: '4320008', nome: 'Sapucaia do Sul', uf: 'RS' };
+const BANCADA: AutorNoMunicipio = {
+  pessoaId: null,
+  nome: 'BANCADA DO RIO GRANDE DO SUL',
+  siglaPartido: null,
+  cargo: null,
+  emendas: 1,
+  empenhadoCentavos: '300000',
+  pagoCentavos: '200000',
+};
 
 class MunicipiosFalsos implements ConsultaDeMunicipios {
   ultimoNome: string | undefined;
@@ -19,6 +28,10 @@ class MunicipiosFalsos implements ConsultaDeMunicipios {
 
   porCodigo(codigoIbge: string): Promise<MunicipioResumo | undefined> {
     return Promise.resolve(codigoIbge === SAPUCAIA.codigoIbge ? SAPUCAIA : undefined);
+  }
+
+  autoresDeEmendas(codigoIbge: string): Promise<AutorNoMunicipio[]> {
+    return Promise.resolve(codigoIbge === SAPUCAIA.codigoIbge ? [BANCADA] : []);
   }
 }
 
@@ -56,5 +69,12 @@ describe('GET /v1/municipios', () => {
   it('acha pelo código IBGE, e responde 404 para desconhecido', async () => {
     await request(servidor).get('/v1/municipios/4320008').expect(200);
     await request(servidor).get('/v1/municipios/9999999').expect(404);
+  });
+
+  it('lista quem mandou dinheiro de emenda para o município', async () => {
+    const resposta = await request(servidor).get('/v1/municipios/4320008/autores').expect(200);
+
+    expect(resposta.body).toEqual([BANCADA]);
+    await request(servidor).get('/v1/municipios/9999999/autores').expect(404);
   });
 });

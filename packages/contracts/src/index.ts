@@ -2,6 +2,7 @@ export type {
   AutorDaEmenda,
   AutorDaProposicao,
   AutoriaDoParlamentar,
+  AutorNoMunicipio,
   CategoriaDoMotivo,
   ClassificacaoOrcamentaria,
   ColetaDaTabela,
