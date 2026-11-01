@@ -468,7 +468,7 @@ A parte do cidadão: entrar pela própria cidade, acompanhar quem quiser e saber
 | Fatia | Entrega                                                                                                       | Situação  |
 | ----- | ------------------------------------------------------------------------------------------------------------- | --------- |
 | 6.1   | Meu governo: a cidade, o dinheiro de emenda que chegou, quem o mandou, as obras e a bancada que a representa. | Concluída |
-| 6.2   | Acompanhar um político, uma promessa ou uma cidade, com conta de cidadão.                                     | A fazer   |
+| 6.2   | Acompanhar um político, uma promessa ou uma cidade, com conta de cidadão.                                     | Concluída |
 | 6.3   | Alertas por e-mail do que mudou no que a pessoa acompanha.                                                    | A fazer   |
 
 ### Fatia 6.1: Meu governo
@@ -486,3 +486,26 @@ A parte do cidadão: entrar pela própria cidade, acompanhar quem quiser e saber
 Fica para depois, de propósito: prefeito e vereadores (pedem as fontes do TSE e das câmaras
 municipais), a lista oficial de municípios do IBGE (hoje só os que aparecem nos dados) e o partido
 da época de cada emenda (a página mostra o atual e diz isso).
+
+### Fatia 6.2: acompanhar
+
+- **Conta de cidadão:** cadastro aberto no Keycloak; toda conta nova recebe o papel `cidadao`. O site
+  tem o próprio cliente OIDC (`site`) e o próprio cookie; o login do site e o do painel saem de um só
+  pacote, `@prometeu/acesso` (código de autorização com PKCE, sessão em cookie cifrado, caminho de
+  volta conferido para não virar redirecionamento aberto).
+- **Engajamento:** o agregado `Cidadao` guarda o que a pessoa acompanha, até 200 políticos e cidades,
+  pelo `sub` do login e mais nada. Grava só o que mudou, para duas abas não desfazerem uma a outra.
+  Apagar os dados leva tudo (LGPD).
+- **API:** `GET /v1/eu/acompanhamentos` (com nome e partido ou UF), `PUT` e `DELETE
+/v1/eu/acompanhamentos/:tipo/:id` e `DELETE /v1/eu`, só com o papel `cidadao` e sem cache. Acompanhar
+  confere na Consulta se o político ou a cidade existem.
+- **Site:** o botão Acompanhar no topo do parlamentar e da cidade (sem login, leva a entrar e volta à
+  mesma página) e a página Minha conta, com a lista, deixar de acompanhar e apagar os dados.
+
+Verificado com o Keycloak e a API de verdade: cadastro visível na tela de login, login e volta para a
+página certa, lista com os nomes, o clique em deixar de acompanhar (também sem JavaScript) e a ação
+sem login levando a entrar, com um caminho de volta malicioso trocado pelo início.
+
+Fica para depois, de propósito: acompanhar promessa (quando houver promessa publicada no site), o
+login sem senha e a confirmação de e-mail (pedem servidor de e-mail) e excluir a conta de login pelo
+próprio site (hoje apagar os dados leva o que a plataforma guarda; a conta no provedor continua).

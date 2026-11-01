@@ -112,5 +112,5 @@
 | **Sugestão**       | Proposta gerada por IA (promessa extraída, vínculo, resumo). Nunca é publicada sem decisão humana.             |
 | **Contestação**    | Pedido formal de correção feito por qualquer pessoa, inclusive o próprio agente público (direito de resposta). |
 | **Errata**         | Registro público de correção, com o que mudou e por quê.                                                       |
-| **Acompanhamento** | Um cidadão seguindo uma pessoa, promessa, proposição ou município.                                             |
+| **Acompanhamento** | Um cidadão seguindo um político ou uma cidade (promessa e proposição depois). Guarda só quem e desde quando.   |
 | **Meu governo**    | Recorte personalizado: todos os mandatos, emendas e obras ligados ao município do cidadão.                     |

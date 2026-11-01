@@ -28,6 +28,10 @@ exigência de segundo fator).
 - Cidadão: login sem senha (link por e-mail) ou social; dados mínimos (e-mail, município, preferências).
   Base legal LGPD: consentimento para alertas; exclusão de conta self-service. Fica para a etapa de
   Engajamento.
+  **Etapa 6.2 (2026-11-01):** o cadastro é aberto e toda conta nova recebe o papel `cidadao` (papel
+  padrão do realm); o site tem o próprio cliente (`site`) e o próprio cookie. Engajamento guarda só o
+  `sub` e o que a pessoa acompanha, nunca o e-mail. Enquanto não houver servidor de e-mail, o login
+  do cidadão é por e-mail e senha; o link por e-mail e o login social entram com ele.
 - Leitura do site e da API pública não exige conta.
 
 ## Alternativas consideradas
