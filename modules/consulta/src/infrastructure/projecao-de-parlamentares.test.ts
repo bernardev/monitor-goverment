@@ -202,6 +202,11 @@ describe('projeção de parlamentares', () => {
       1,
     );
     expect((await consulta.listar({ uf: 'XX', pagina: 1, itensPorPagina: 10 })).total).toBe(0);
+    // Em lote, pelos ids, para a lista de quem a pessoa acompanha.
+    expect(
+      (await consulta.porIds([BRUNO, ANA.toUpperCase(), 'nao-e-uuid'])).map((p) => p.nome),
+    ).toEqual(['Ana Exemplo', 'Bruno Modelo']);
+    expect(await consulta.porIds([])).toEqual([]);
   });
 
   it('a retificação muda o período do mandato exibido, e um exercício mais novo o substitui', async () => {

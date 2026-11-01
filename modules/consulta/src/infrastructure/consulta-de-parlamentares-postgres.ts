@@ -6,7 +6,20 @@ import type {
 } from '@prometeu/contracts';
 import type { BancoDoContexto } from '@prometeu/infraestrutura';
 import { CodigoIbge } from '@prometeu/shared-kernel';
-import { and, asc, count, eq, gte, isNotNull, isNull, like, lte, or, type SQL } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  count,
+  eq,
+  gte,
+  inArray,
+  isNotNull,
+  isNull,
+  like,
+  lte,
+  or,
+  type SQL,
+} from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 
 import type {
@@ -18,6 +31,7 @@ import { paraBusca } from './busca.js';
 import { captura, parlamentar } from './esquema.js';
 
 const capturaDoMandato = alias(captura, 'captura_do_mandato');
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 type Linha = typeof parlamentar.$inferSelect;
 type LinhaComNome = Linha & { nome: string };
@@ -66,6 +80,17 @@ export class ConsultaDeParlamentaresPostgres implements ConsultaDeParlamentares 
       itensPorPagina: filtro.itensPorPagina,
       total: total?.total ?? 0,
     };
+  }
+
+  async porIds(pessoaIds: readonly string[]): Promise<ParlamentarResumo[]> {
+    const validos = pessoaIds.filter((id) => UUID.test(id));
+    if (validos.length === 0) return [];
+    const linhas = await this.banco.drizzle
+      .select()
+      .from(parlamentar)
+      .where(inArray(parlamentar.pessoaId, validos))
+      .orderBy(asc(parlamentar.nome), asc(parlamentar.pessoaId));
+    return linhas.filter(temNome).map(paraResumo);
   }
 
   async buscar(pessoaId: string): Promise<PerfilDeParlamentar | undefined> {

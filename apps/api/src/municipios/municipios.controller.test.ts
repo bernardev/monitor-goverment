@@ -30,6 +30,10 @@ class MunicipiosFalsos implements ConsultaDeMunicipios {
     return Promise.resolve(codigoIbge === SAPUCAIA.codigoIbge ? SAPUCAIA : undefined);
   }
 
+  porCodigos(codigos: readonly string[]): Promise<MunicipioResumo[]> {
+    return Promise.resolve(codigos.includes(SAPUCAIA.codigoIbge) ? [SAPUCAIA] : []);
+  }
+
   autoresDeEmendas(codigoIbge: string): Promise<AutorNoMunicipio[]> {
     return Promise.resolve(codigoIbge === SAPUCAIA.codigoIbge ? [BANCADA] : []);
   }

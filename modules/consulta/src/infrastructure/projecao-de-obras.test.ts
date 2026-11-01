@@ -219,6 +219,10 @@ describe('projeção de obras', () => {
       { codigoIbge: '4320008', nome: 'Sapucaia do Sul', uf: 'RS' },
     ]);
     expect(await consulta.municipios.porCodigo('4320008')).toMatchObject({ uf: 'RS' });
+    expect(await consulta.municipios.porCodigos(['4320008', '9999999', 'x'])).toEqual([
+      { codigoIbge: '4320008', nome: 'Sapucaia do Sul', uf: 'RS' },
+    ]);
+    expect(await consulta.municipios.porCodigos([])).toEqual([]);
     expect(await consulta.municipios.buscar('s')).toEqual([]);
     const daCidade = await consulta.emendas.listar({
       pagina: 1,

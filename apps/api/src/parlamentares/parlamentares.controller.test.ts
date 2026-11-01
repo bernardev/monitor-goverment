@@ -57,6 +57,10 @@ class ConsultaFalsa implements ConsultaDeParlamentares {
   buscar(pessoaId: string): Promise<PerfilDeParlamentar | undefined> {
     return Promise.resolve(pessoaId === ANA ? perfil : undefined);
   }
+
+  porIds(pessoaIds: readonly string[]): Promise<ParlamentarResumo[]> {
+    return Promise.resolve(pessoaIds.includes(ANA) ? [perfil] : []);
+  }
 }
 
 class FrequenciaFalsa implements ConsultaDeFrequencia {

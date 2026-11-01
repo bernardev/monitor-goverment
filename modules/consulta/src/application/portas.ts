@@ -106,6 +106,8 @@ export interface ConsultaDeMunicipios {
   /** Até 20, pelo nome; os que começam com o termo primeiro. */
   buscar(nome: string): Promise<MunicipioResumo[]>;
   porCodigo(codigoIbge: string): Promise<MunicipioResumo | undefined>;
+  /** Os que existem entre os códigos pedidos; código que não existe fica de fora. */
+  porCodigos(codigosIbge: readonly string[]): Promise<MunicipioResumo[]>;
   /** Quem mandou dinheiro de emenda para o município, de quem mais pagou para quem menos. */
   autoresDeEmendas(codigoIbge: string): Promise<AutorNoMunicipio[]>;
 }
@@ -148,4 +150,6 @@ export interface Relogio {
 export interface ConsultaDeParlamentares {
   listar(filtro: FiltroDeParlamentares): Promise<Pagina<ParlamentarResumo>>;
   buscar(pessoaId: string): Promise<PerfilDeParlamentar | undefined>;
+  /** Os que existem entre os ids pedidos, na ordem dos nomes; id que não existe fica de fora. */
+  porIds(pessoaIds: readonly string[]): Promise<ParlamentarResumo[]>;
 }

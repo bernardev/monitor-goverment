@@ -1,6 +1,6 @@
 import type { AutorNoMunicipio, MunicipioResumo } from '@prometeu/contracts';
 import type { BancoDoContexto } from '@prometeu/infraestrutura';
-import { asc, eq, like, sql } from 'drizzle-orm';
+import { asc, eq, inArray, like, sql } from 'drizzle-orm';
 
 import type { ConsultaDeMunicipios } from '../application/portas.js';
 import { paraBusca } from './busca.js';
@@ -32,6 +32,16 @@ export class ConsultaDeMunicipiosPostgres implements ConsultaDeMunicipios {
       .from(municipio)
       .where(eq(municipio.codigoIbge, codigoIbge));
     return encontrado;
+  }
+
+  async porCodigos(codigosIbge: readonly string[]): Promise<MunicipioResumo[]> {
+    const validos = codigosIbge.filter((c) => /^\d{7}$/.test(c));
+    if (validos.length === 0) return [];
+    return this.banco.drizzle
+      .select({ codigoIbge: municipio.codigoIbge, nome: municipio.nome, uf: municipio.uf })
+      .from(municipio)
+      .where(inArray(municipio.codigoIbge, validos))
+      .orderBy(asc(municipio.nomeBusca), asc(municipio.uf));
   }
 
   async autoresDeEmendas(codigoIbge: string): Promise<AutorNoMunicipio[]> {
