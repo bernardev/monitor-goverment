@@ -20,6 +20,7 @@
     "@prometeu/compromissos": "workspace:*",
     "@prometeu/consulta": "workspace:*",
     "@prometeu/contracts": "workspace:*",
+    "@prometeu/engajamento": "workspace:*",
     "@prometeu/infraestrutura": "workspace:*",
     "@prometeu/shared-kernel": "workspace:*",
     "jose": "^6.2.14",

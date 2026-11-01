@@ -1,4 +1,5 @@
 export type {
+  AcompanhamentoDoCidadao,
   AutorDaEmenda,
   AutorDaProposicao,
   AutoriaDoParlamentar,

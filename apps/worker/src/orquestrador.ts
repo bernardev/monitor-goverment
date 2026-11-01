@@ -22,6 +22,7 @@ import {
   montarCompromissos,
   SCHEMA_DE_COMPROMISSOS,
 } from '@prometeu/compromissos';
+import { MIGRACOES_DE_ENGAJAMENTO, SCHEMA_DE_ENGAJAMENTO } from '@prometeu/engajamento';
 import { MIGRACOES_DA_CONSULTA, montarConsulta, SCHEMA_DA_CONSULTA } from '@prometeu/consulta';
 import {
   MIGRACOES_DE_FINANCAS_PUBLICAS,
@@ -82,6 +83,12 @@ export class Orquestrador implements OnApplicationBootstrap, OnApplicationShutdo
       urlDoBanco(SCHEMA_DE_COMPROMISSOS),
     ),
     consulta: BancoDoContexto.conectar(SCHEMA_DA_CONSULTA, urlDoBanco(SCHEMA_DA_CONSULTA)),
+    // Só para migrar: o worker ainda não consome eventos para o Engajamento (os alertas, etapa 6.3).
+    engajamento: BancoDoContexto.conectar(
+      SCHEMA_DE_ENGAJAMENTO,
+      urlDoBanco(SCHEMA_DE_ENGAJAMENTO),
+      1,
+    ),
     financasPublicas: BancoDoContexto.conectar(
       SCHEMA_DE_FINANCAS_PUBLICAS,
       urlDoBanco(SCHEMA_DE_FINANCAS_PUBLICAS),
@@ -98,6 +105,7 @@ export class Orquestrador implements OnApplicationBootstrap, OnApplicationShutdo
     await migrar(this.bancos.atividadeLegislativa, MIGRACOES_DE_ATIVIDADE_LEGISLATIVA);
     await migrar(this.bancos.compromissos, MIGRACOES_DE_COMPROMISSOS);
     await migrar(this.bancos.consulta, MIGRACOES_DA_CONSULTA);
+    await migrar(this.bancos.engajamento, MIGRACOES_DE_ENGAJAMENTO);
     await migrar(this.bancos.financasPublicas, MIGRACOES_DE_FINANCAS_PUBLICAS);
     await migrar(this.bancos.obras, MIGRACOES_DE_OBRAS);
     this.logger.log('Migrações aplicadas.');

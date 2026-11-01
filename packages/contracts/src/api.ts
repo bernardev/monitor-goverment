@@ -533,3 +533,15 @@ export interface EmendasDoParlamentar extends Pagina<EmendaResumo> {
   /** A execução somada de todas as emendas dele, não só as da página. */
   readonly soma: ExecucaoDaEmenda;
 }
+
+/** Um político ou uma cidade que a pessoa acompanha, como o site mostra na conta dela. */
+export interface AcompanhamentoDoCidadao {
+  readonly tipo: 'parlamentar' | 'municipio';
+  readonly id: string;
+  /** Desde quando acompanha (ISO 8601). */
+  readonly desde: string;
+  /** O nome; `null` se o alvo saiu da base pública depois que a pessoa começou a acompanhar. */
+  readonly titulo: string | null;
+  /** Partido e UF do parlamentar, ou a UF da cidade. */
+  readonly detalhe: string | null;
+}
