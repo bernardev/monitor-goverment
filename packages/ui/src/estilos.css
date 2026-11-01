@@ -1058,6 +1058,68 @@ main:not(.capitulos) button {
   overflow-x: auto;
 }
 
+/* Ranking: quem tem mais, com a barra do tamanho do valor em relação ao maior. */
+.ranking {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--vao);
+}
+
+.ranking__item {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr) minmax(130px, auto);
+  align-items: center;
+  gap: 8px 24px;
+  padding: 14px 20px;
+  background: var(--superficie);
+}
+
+.ranking__quem {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ranking__rotulo {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.ranking__detalhe {
+  font-size: var(--t-nota);
+}
+
+.ranking__barra {
+  display: block;
+  height: 20px;
+  background: var(--vazio);
+}
+
+.ranking__medida {
+  display: block;
+  height: 100%;
+  background: var(--forte);
+}
+
+.ranking__valor {
+  text-align: right;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .ranking__item {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ranking__valor {
+    text-align: left;
+  }
+}
+
 /* ── Telefone ───────────────────────────────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
   .cabecalho__miolo {
@@ -1140,4 +1202,59 @@ main:not(.capitulos) button {
   max-width: var(--largura);
   margin: 0 auto;
   padding: 16px max(var(--margem), calc(100% - 78ch)) 24px var(--margem);
+}
+
+.retrato__lado {
+  flex: 0 1 420px;
+}
+
+.titulo-de-lista {
+  font-size: var(--t-destaque);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* O que vem depois dos capítulos: as listas completas, sem cor de assunto. */
+.apendice {
+  padding: var(--entre-secoes) var(--margem);
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.apendice > * {
+  width: 100%;
+  max-width: var(--largura);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.paginacao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 24px;
+}
+
+/* Muitos nomes curtos: em colunas de texto, sem uma ficha para cada. */
+.nomes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  columns: 4 220px;
+  column-gap: 32px;
+}
+
+.nomes > li {
+  break-inside: avoid;
+  padding: 5px 0;
+}
+
+.nomes a {
+  font-weight: 500;
+}
+
+.retrato__lado .cifra__valor {
+  font-size: var(--t-titulo);
+  white-space: nowrap;
 }

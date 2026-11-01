@@ -7,9 +7,11 @@ export {
   Calendario,
   Cifra,
   ESTAGIOS,
+  type ItemDoRanking,
   type Marca,
   type Parte,
   Proporcao,
+  Ranking,
   type Tom,
 } from './graficos';
 export { type DiaMarcado, porcentagens, porMes } from './medidas';

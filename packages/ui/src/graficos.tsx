@@ -113,3 +113,43 @@ export function CadeiaDeEntrega({ alcancados }: { alcancados: number }): ReactNo
     </ol>
   );
 }
+
+export interface ItemDoRanking {
+  readonly chave: string;
+  /** Quem ou o quê: pode ser um link. */
+  readonly rotulo: ReactNode;
+  /** Uma linha de contexto abaixo do rótulo (partido, cargo, quantas emendas). */
+  readonly detalhe?: ReactNode;
+  readonly valor: number;
+  /** O valor como se lê (`R$ 1,2 milhão`). */
+  readonly texto: string;
+}
+
+/**
+ * Uma lista ordenada com uma barra por item, do tamanho do valor em relação ao maior. Serve para
+ * comparar (quem mandou mais dinheiro), não para somar: a barra não fecha 100%.
+ */
+export function Ranking({ itens }: { itens: readonly ItemDoRanking[] }): ReactNode {
+  const maior = Math.max(0, ...itens.map((i) => i.valor));
+  return (
+    <ol className="ranking">
+      {itens.map((item) => (
+        <li key={item.chave} className="ranking__item">
+          <div className="ranking__quem">
+            <span className="ranking__rotulo">{item.rotulo}</span>
+            {item.detalhe !== undefined && <span className="ranking__detalhe">{item.detalhe}</span>}
+          </div>
+          <span className="ranking__barra" aria-hidden="true">
+            <span
+              className="ranking__medida"
+              style={{
+                width: `${String(maior > 0 ? Math.max(0.5, (item.valor / maior) * 100) : 0)}%`,
+              }}
+            />
+          </span>
+          <span className="ranking__valor">{item.texto}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}
