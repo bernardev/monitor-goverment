@@ -457,6 +457,13 @@ _Chegou a._ com o ranking dos favorecidos, _Virou obra._) e a obra (_Executou._,
 paga._). O painel de curadoria passou a usar o mesmo pacote, e a promessa mostra a cadeia de entrega
 acesa até o estágio confirmado.
 
+No acabamento, as listas (parlamentares, votações, proposições, emendas, obras, fontes, busca, Meu
+governo e Minha conta) ganharam um topo comum na cor do assunto, com os filtros agrupados e a
+paginação num componente só; o site ganhou páginas próprias de não encontrado e de erro; e o painel
+foi conferido logado, em captura de tela, com os formulários no sistema. A conferência achou um erro
+antigo: a lista do painel mostrava todo veredito como "não iniciada", porque a subconsulta comparava
+a promessa com o `id` errado.
+
 Fica para depois, de propósito: o modo escuro (os campos de cor são a identidade, e um tema escuro
 pede outra escolha de campos); a busca no telefone dentro da barra; e fotos próprias dos municípios e
 das obras, que não existem em acervo aberto.
