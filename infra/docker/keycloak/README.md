@@ -5,12 +5,12 @@ Serve **só ao ambiente local**: os usuários de exemplo, a senha `desenvolvimen
 cliente `ferramentas-locais` (login por senha na linha de comando) não existem em produção, onde toda conta
 editorial tem OTP obrigatório.
 
-| Usuário                 | Papéis                    |
-| ----------------------- | ------------------------- |
-| `curadora`              | `curador`                 |
-| `revisor`               | `revisor`                 |
-| `editora`               | `editor_chefe`, `curador` |
-| `cidada@prometeu.local` | `cidadao`                 |
+| Usuário                 | Papéis                               |
+| ----------------------- | ------------------------------------ |
+| `curadora`              | `curador`, `cidadao`                 |
+| `revisor`               | `revisor`, `cidadao`                 |
+| `editora`               | `editor_chefe`, `curador`, `cidadao` |
+| `cidada@prometeu.local` | `cidadao`                            |
 
 Console de administração: `http://localhost:8080/admin` (usuário `admin`, senha `desenvolvimento`).
 
