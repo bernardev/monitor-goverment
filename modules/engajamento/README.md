@@ -1,6 +1,7 @@
 # Módulo `engajamento`
 
-Cidadãos, acompanhamentos, alertas, preferências de canal e o recorte 'meu governo'.
+Cidadãos e o que eles acompanham (políticos e cidades); depois, os alertas e as preferências de canal.
+Guarda só o identificador do login (`sub`) e os acompanhamentos, nunca nome ou e-mail (ADR-0014).
 
 - **Schema no banco:** `engajamento` (somente este módulo escreve nele, ver ADR-0006).
 - **Linguagem:** termos da [linguagem ubíqua](../../docs/dominio/linguagem-ubiqua.md).

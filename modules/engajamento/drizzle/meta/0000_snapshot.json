@@ -1,0 +1,85 @@
+{
+  "id": "adee3462-074a-42c3-9e90-3ece93b53328",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "engajamento.acompanhamento": {
+      "name": "acompanhamento",
+      "schema": "engajamento",
+      "columns": {
+        "cidadao_id": {
+          "name": "cidadao_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "alvo_id": {
+          "name": "alvo_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "desde": {
+          "name": "desde",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "acompanhamento_por_alvo": {
+          "name": "acompanhamento_por_alvo",
+          "columns": [
+            {
+              "expression": "tipo",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "alvo_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "acompanhamento_cidadao_id_tipo_alvo_id_pk": {
+          "name": "acompanhamento_cidadao_id_tipo_alvo_id_pk",
+          "columns": ["cidadao_id", "tipo", "alvo_id"]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {
+    "engajamento": "engajamento"
+  },
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
