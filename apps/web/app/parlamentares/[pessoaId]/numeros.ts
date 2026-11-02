@@ -51,7 +51,7 @@ export function numerosDoParlamentar(dados: {
     {
       ...(comEmendas ? comContagem(emendas.total) : { valor: SEM_DADO }),
       rotulo: comEmendas
-        ? `${emendas.total === 1 ? 'emenda indicada' : 'emendas indicadas'}, ${reaisResumidos(empenhado)}`
+        ? `${emendas.total === 1 ? 'emenda indicada' : 'emendas indicadas'} com ${reaisResumidos(empenhado)} empenhados`
         : 'emendas indicadas',
       periodo: periodoDasEmendasDele,
     },

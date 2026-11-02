@@ -13,8 +13,9 @@ import {
 } from '../../_api/cliente';
 import { Acompanhar } from '../../_componentes/acompanhar';
 import { Fonte } from '../../_componentes/fonte';
-import { data, nomeDoCargo } from '../../_componentes/formatacao';
+import { nomeDoCargo } from '../../_componentes/formatacao';
 import { GLOSSARIO } from '../../_componentes/glossario';
+import { emExercicio, textoDoMandato } from './mandato';
 import { numerosDoParlamentar } from './numeros';
 import {
   Autorias,
@@ -90,13 +91,15 @@ export default async function PerfilDoParlamentar({ params }: Props): Promise<Re
         <div className="reportagem__texto">
           <Chapeu>
             {nomeDoCargo(perfil.cargo)}
-            {perfil.mandato && !perfil.mandato.fim ? ' · em exercício' : ''}
+            {perfil.mandato && emExercicio(perfil.mandato.fim) ? ' · em exercício' : ''}
           </Chapeu>
           <h1>{perfil.nome}</h1>
           <div className="reportagem__acoes">
             <p className="reportagem__fina">
               {partidoEUf}
-              {perfil.mandato ? ` · mandato desde ${data(perfil.mandato.inicio)}` : ''}
+              {perfil.mandato
+                ? ` · ${textoDoMandato(perfil.mandato.inicio, perfil.mandato.fim)}`
+                : ''}
             </p>
             <Acompanhar tipo="parlamentar" id={pessoaId} volta={`/parlamentares/${pessoaId}`} />
           </div>
@@ -121,6 +124,7 @@ export default async function PerfilDoParlamentar({ params }: Props): Promise<Re
         )}
         <Explica termo="Emenda">{GLOSSARIO.emenda}</Explica>
         <Explica termo="Empenhado">{GLOSSARIO.empenhado}</Explica>
+        <Explica termo="Pago">{GLOSSARIO.pago}</Explica>
       </div>
 
       <nav aria-label="Nesta página">

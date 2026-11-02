@@ -83,7 +83,7 @@ describe('numerosDoParlamentar', () => {
     expect(itens.map((n) => n.rotulo)).toEqual([
       'dias de sessão em que esteve presente',
       'faltas justificadas (e 1 sem justificativa)',
-      'emendas indicadas, R$ 108,9 milhões',
+      'emendas indicadas com R$ 108,9 milhões empenhados',
       'do valor das emendas já pago',
     ]);
     expect(itens.map((n) => n.periodo)).toEqual([

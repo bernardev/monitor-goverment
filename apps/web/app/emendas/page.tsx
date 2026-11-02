@@ -50,7 +50,13 @@ export default async function PaginaDeEmendas({ searchParams }: Props): Promise<
       chapeu="Dinheiro público"
       titulo="Emendas parlamentares"
       descricao="Quem indicou para onde vai o dinheiro do orçamento federal: deputados, senadores, bancadas e comissões. Do orçamento mais recente para o mais antigo; no mesmo ano, a de maior valor empenhado primeiro."
-      explica={<Explica termo="Emenda">{GLOSSARIO.emenda}</Explica>}
+      explica={
+        <>
+          <Explica termo="Emenda">{GLOSSARIO.emenda}</Explica>
+          <Explica termo="Empenhado">{GLOSSARIO.empenhado}</Explica>
+          <Explica termo="Pago">{GLOSSARIO.pago}</Explica>
+        </>
+      }
       filtros={
         <form method="get" action="/emendas" className="filtros">
           <label htmlFor="ano">Orçamento</label>

@@ -145,7 +145,7 @@ export function Votos({ votos }: { votos: VotosDoParlamentar }): ReactNode {
   const nota = (
     <p className="nota">
       Entram as votações em que votou, as que o listam entre quem não votou e as dos dias em que a
-      casa apurou a frequência. Só as votações já coletadas da fonte oficial aparecem aqui.
+      casa registrou presença. Só as votações já coletadas da fonte oficial aparecem aqui.
     </p>
   );
   const fonte = (
@@ -267,8 +267,8 @@ export function Emendas({ emendas }: { emendas: EmendasDoParlamentar }): ReactNo
   const nota = (
     <p className="nota">
       Emendas individuais, do Portal da Transparência, ligadas ao parlamentar quando o nome do autor
-      corresponde a uma só pessoa em exercício. Pago soma o que saiu no ano do orçamento e o que
-      saiu nos anos seguintes.
+      corresponde a uma só pessoa que estava em exercício no ano anterior ao do orçamento. Pago soma
+      o que saiu no ano do orçamento e o que saiu nos anos seguintes.
     </p>
   );
   if (emendas.total === 0) {
