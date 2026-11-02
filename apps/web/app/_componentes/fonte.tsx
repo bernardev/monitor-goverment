@@ -3,17 +3,32 @@ import type { ReactNode } from 'react';
 
 import { dataEHora } from './formatacao';
 
+/** O domínio de uma fonte http(s); endereço inválido não derruba a página, só perde o link. */
+function dominioDe(url: string): string | null {
+  try {
+    const { protocol, hostname } = new URL(url);
+    return protocol === 'http:' || protocol === 'https:' ? hostname : null;
+  } catch {
+    return null;
+  }
+}
+
 /** O texto da fonte sem o parágrafo, para caber numa linha fina ou numa chamada. */
 export function FonteEmLinha({ fonte }: { fonte: FonteDoDado }): ReactNode {
   if (fonte.url === null || fonte.coletadaEm === null) {
     return <>Fonte: captura {fonte.capturaId} (detalhes em processamento).</>;
   }
+  const dominio = dominioDe(fonte.url);
   return (
     <>
       Fonte:{' '}
-      <a href={fonte.url} rel="noopener noreferrer external">
-        {new URL(fonte.url).hostname}
-      </a>
+      {dominio === null ? (
+        fonte.url
+      ) : (
+        <a href={fonte.url} rel="noopener noreferrer external">
+          {dominio}
+        </a>
+      )}
       , coletado em {dataEHora(fonte.coletadaEm)}. Captura {fonte.capturaId}.
     </>
   );

@@ -107,7 +107,9 @@ export function Tour(): ReactNode {
       const marca = PASSOS[passo]?.alvo;
       const item = marca ? document.querySelector(`[data-tour="${marca}"]`) : null;
       // O menu fechado do telefone esconde o item com content-visibility, que ainda deixa um retângulo.
-      const caixa = item?.checkVisibility() === false ? undefined : item?.getBoundingClientRect();
+      // `checkVisibility` falta no Safari antes do 17.4: sem ele, vale só o retângulo.
+      const escondido = typeof item?.checkVisibility === 'function' && !item.checkVisibility();
+      const caixa = escondido ? undefined : item?.getBoundingClientRect();
       const visivel = caixa && caixa.width > 0 && caixa.height > 0 ? caixa : null;
       setAlvo(visivel);
       setPosicao(
@@ -205,9 +207,9 @@ export function Tour(): ReactNode {
         </p>
         <h2 id="tour-titulo">{atual.titulo}</h2>
         <p id="tour-texto">{atual.texto}</p>
-        {/* No telefone a navegação fica dentro do menu ☰ do cabeçalho. */}
+        {/* No telefone a navegação fica dentro do Menu do cabeçalho. */}
         {atual.alvo && !alvo && (
-          <p className="tour__passo">No telefone, abra o menu ☰ para chegar aqui.</p>
+          <p className="tour__passo">No telefone, abra o Menu no topo para chegar aqui.</p>
         )}
         <div className="tour__acoes">
           {!ultimo && (

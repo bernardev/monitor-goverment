@@ -156,7 +156,9 @@ describe('presença', () => {
     );
   });
   it('sem coleta ou sem a fonte, diz que não há dias coletados', () => {
-    expect(periodoDaPresenca(undefined)).toBe('sem dias de sessão coletados');
     expect(periodoDaPresenca([fontes[0]!])).toBe('sem dias de sessão coletados');
+  });
+  it('sem a situação das fontes (consulta falhou), não afirma nada', () => {
+    expect(periodoDaPresenca(undefined)).toBeUndefined();
   });
 });

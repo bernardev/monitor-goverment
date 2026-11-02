@@ -78,7 +78,8 @@ export function rotuloDeObras(concluidas: number, total: number): string {
 
 /**
  * O período da chamada de presença: a Câmara é a única fonte de frequência diária, e vale a coleta
- * da tabela de frequência (a da fonte inteira pode ser de outra tabela).
+ * da tabela de frequência (a da fonte inteira pode ser de outra tabela). Sem a situação das fontes
+ * (a consulta falhou), não há o que afirmar: devolve `undefined`.
  */
 export function periodoDaPresenca(
   fontes:
@@ -91,8 +92,9 @@ export function periodoDaPresenca(
         }[];
       }[]
     | undefined,
-): string {
-  const camara = fontes?.find((f) => f.fonte === 'camara');
+): string | undefined {
+  if (!fontes) return undefined;
+  const camara = fontes.find((f) => f.fonte === 'camara');
   const coleta =
     camara?.tabelas.find((t) => t.tabela === 'camara_frequencia_dia')?.ultimaColetaEm ??
     camara?.ultimaColetaEm;

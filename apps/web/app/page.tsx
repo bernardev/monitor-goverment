@@ -62,6 +62,7 @@ export default async function PaginaInicial(): Promise<ReactNode> {
   const fonteDasEmendas = fonteMaisRecente(emendas);
   const fonteDasObras = fonteMaisRecente(obras);
   const periodoDasEmendasNoSite = periodoDasEmendas(fonteDasEmendas?.coletadaEm ?? null);
+  const periodoDaChamada = periodoDaPresenca(fontes);
   const pagoNoExemplo = autoresDoExemplo?.reduce((soma, a) => soma + BigInt(a.pagoCentavos), 0n);
 
   const numeros: NumeroChave[] = [];
@@ -110,7 +111,7 @@ export default async function PaginaInicial(): Promise<ReactNode> {
                   justificada traz o motivo aceito pela Casa. Escolha um deputado para ver.
                 </>
               }
-              fonte={`Fonte: Câmara dos Deputados, ${periodoDaPresenca(fontes)}.`}
+              fonte={`Fonte: Câmara dos Deputados${periodoDaChamada ? `, ${periodoDaChamada}` : ''}.`}
             />
           </div>
         </div>
