@@ -105,9 +105,9 @@ export function Tour(): ReactNode {
     if (passo === null) return;
     const medir = () => {
       const marca = PASSOS[passo]?.alvo;
-      const caixa = marca
-        ? document.querySelector(`[data-tour="${marca}"]`)?.getBoundingClientRect()
-        : undefined;
+      const item = marca ? document.querySelector(`[data-tour="${marca}"]`) : null;
+      // O menu fechado do telefone esconde o item com content-visibility, que ainda deixa um retângulo.
+      const caixa = item?.checkVisibility() === false ? undefined : item?.getBoundingClientRect();
       const visivel = caixa && caixa.width > 0 && caixa.height > 0 ? caixa : null;
       setAlvo(visivel);
       setPosicao(
@@ -205,9 +205,9 @@ export function Tour(): ReactNode {
         </p>
         <h2 id="tour-titulo">{atual.titulo}</h2>
         <p id="tour-texto">{atual.texto}</p>
-        {/* No telefone a navegação sai do cabeçalho e fica no rodapé. */}
+        {/* No telefone a navegação fica dentro do menu ☰ do cabeçalho. */}
         {atual.alvo && !alvo && (
-          <p className="tour__passo">No telefone, este atalho fica no rodapé da página.</p>
+          <p className="tour__passo">No telefone, abra o menu ☰ para chegar aqui.</p>
         )}
         <div className="tour__acoes">
           {!ultimo && (

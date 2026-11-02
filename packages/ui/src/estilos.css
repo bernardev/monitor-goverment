@@ -1583,7 +1583,7 @@ html.movimento .ranking__item:nth-child(n + 4) [data-surge='barra'] {
 }
 
 /* ── Tour de boas-vindas ────────────────────────────────────────────────────────────────────── */
-/* Véu chapado em faixas em volta do item aceso, sem sombra (ADR-0017); o cartão é papel sobre ele. */
+/* Véu chapado em faixas em volta do item aceso, sem sombra; o cartão é branco com fio fino. */
 .tour {
   position: fixed;
   inset: 0;
@@ -1597,7 +1597,7 @@ html.movimento .ranking__item:nth-child(n + 4) [data-surge='barra'] {
 
 .tour__foco {
   position: absolute;
-  outline: 3px solid var(--branco);
+  outline: 3px solid var(--azul);
 }
 
 .tour__cartao {
@@ -1609,13 +1609,14 @@ html.movimento .ranking__item:nth-child(n + 4) [data-surge='barra'] {
   gap: 12px;
   background: var(--branco);
   color: var(--tinta);
+  border: 1px solid var(--fio-forte);
 }
 
 .tour__cartao h2 {
-  font-size: clamp(24px, 2.4vw, 32px);
-  font-weight: 900;
-  letter-spacing: -0.02em;
-  line-height: 1.05;
+  font-family: var(--fonte-titulo-pilha);
+  font-size: var(--t-secao);
+  font-weight: 700;
+  line-height: 1.15;
 }
 
 .tour__passo {
@@ -1649,6 +1650,12 @@ html.movimento .ranking__item:nth-child(n + 4) [data-surge='barra'] {
 
 /* ── Telefone ───────────────────────────────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
+  /* Cinco colunas não cabem em 390 px ("Orçamento" estoura): três por linha. */
+  .cadeia {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    row-gap: 12px;
+  }
+
   .marca {
     font-size: 24px;
   }

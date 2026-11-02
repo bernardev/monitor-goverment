@@ -1,4 +1,5 @@
 import type { AcompanhamentoDoCidadao } from '@prometeu/contracts';
+import { Secao } from '@prometeu/ui';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
@@ -71,8 +72,7 @@ export default async function MinhaConta({ searchParams }: Props): Promise<React
       <p>Você entrou como {sessao.nome}.</p>
       {apagado && <p role="status">Pronto: apagamos tudo o que você acompanhava.</p>}
 
-      <section aria-labelledby="politicos">
-        <h2 id="politicos">Políticos que acompanho</h2>
+      <Secao id="politicos" titulo="Políticos que acompanho">
         <Lista
           itens={politicos}
           vazio={
@@ -82,10 +82,9 @@ export default async function MinhaConta({ searchParams }: Props): Promise<React
             </>
           }
         />
-      </section>
+      </Secao>
 
-      <section aria-labelledby="cidades">
-        <h2 id="cidades">Cidades que acompanho</h2>
+      <Secao id="cidades" titulo="Cidades que acompanho">
         <Lista
           itens={cidades}
           vazio={
@@ -95,18 +94,16 @@ export default async function MinhaConta({ searchParams }: Props): Promise<React
             </>
           }
         />
-      </section>
+      </Secao>
 
-      <section aria-labelledby="como-usar">
-        <h2 id="como-usar">Como usar o Prometeu</h2>
+      <Secao id="como-usar" titulo="Como usar o Prometeu">
         <p>Um passeio de um minuto pelo que dá para fazer aqui.</p>
         <p>
           <Rever />
         </p>
-      </section>
+      </Secao>
 
-      <section aria-labelledby="dados">
-        <h2 id="dados">Seus dados</h2>
+      <Secao id="dados" titulo="Seus dados">
         <p>
           A plataforma guarda só a lista acima, ligada ao identificador do seu login. Apagar leva a
           lista inteira, sem volta; a conta de login continua existindo e pode ser usada de novo.
@@ -128,7 +125,7 @@ export default async function MinhaConta({ searchParams }: Props): Promise<React
             Sair
           </button>
         </form>
-      </section>
+      </Secao>
     </PaginaDeLista>
   );
 }
@@ -142,7 +139,7 @@ function Lista({
 }): ReactNode {
   if (itens.length === 0) return <p>{vazio}</p>;
   return (
-    <ul className="lista">
+    <ul className="lista lista--fios">
       {itens.map((a) => (
         <li key={`${a.tipo}:${a.id}`}>
           <Link href={`${ENDERECO[a.tipo]}/${a.id}`}>{a.titulo ?? 'Não está mais na base'}</Link>
