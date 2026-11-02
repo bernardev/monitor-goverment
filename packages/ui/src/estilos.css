@@ -199,13 +199,19 @@ textarea {
   color: var(--tinta);
 }
 
-input,
+/* Só campos de texto: caixa de marcar, opção e campo oculto mantêm o tamanho nativo. */
+input:not([type='checkbox'], [type='radio'], [type='hidden']),
 select {
   min-height: 44px;
   padding: 0 14px;
   border: 1px solid var(--contorno);
   border-radius: var(--raio);
   background: var(--branco);
+}
+
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: var(--azul);
 }
 
 label {
