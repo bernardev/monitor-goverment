@@ -30,18 +30,18 @@ principais. O nome **Prometeu** fica; os verbos no pretérito como títulos saem
 
 **Cores.** Tokens em variáveis CSS, em `packages/ui`:
 
-| Uso                        | Cor                   |
-| -------------------------- | --------------------- |
-| Fundo                      | `#ffffff`             |
-| Superfície das caixas      | `#f4f5f7`             |
-| Tinta                      | `#111111`             |
-| Texto secundário           | `#555555`             |
-| Notas e fontes             | `#6b6b6b`             |
-| Fio fino / fio forte       | `#e3e3e3` / `#111111` |
-| Destaque (azul-marinho)    | `#0b3d6b`             |
-| Segunda série dos gráficos | `#9fb3c8`             |
-| Valor ausente (contorno)   | `#999999`             |
-| Abstenção e sem voto       | `#cccccc`             |
+| Uso                        | Cor                        |
+| -------------------------- | -------------------------- |
+| Fundo                      | `#ffffff`                  |
+| Superfície das caixas      | `#f4f5f7`                  |
+| Tinta                      | `#111111`                  |
+| Texto secundário           | `#555555`                  |
+| Notas e fontes             | `#6b6b6b`                  |
+| Fio fino / fio forte       | `#e3e3e3` / `#111111`      |
+| Destaque (azul-marinho)    | `#0b3d6b`                  |
+| Segunda série dos gráficos | `#9fb3c8`                  |
+| Sem voto e valor ausente   | branco, contorno `#999999` |
+| Abstenção                  | `#cccccc`                  |
 
 O cinza das notas (`#6b6b6b`) tem 5,3:1 sobre o branco, o que passa em AA para 13 px.
 
@@ -55,7 +55,7 @@ chamada da capa 30 / 24 px; número-chave 30 / 26 px; texto 17 px; nota e fonte 
 caixa alta com `letter-spacing: 0.07em`. A página tem no máximo 1200 px e os parágrafos 720 px.
 
 **Neutralidade.** Nada de cor de partido, nem vermelho e verde. Nas votações, "sim" é `#0b3d6b`,
-"não" é `#9fb3c8` e abstenção e sem voto são `#cccccc`: tonalidade, nunca matiz, e **sempre com o
+"não" é `#9fb3c8` e abstenção é `#cccccc` e sem voto é branco com contorno `#999999`: tonalidade, nunca matiz, e **sempre com o
 rótulo escrito** junto da barra. As cores claras ficam abaixo de 3:1 contra o branco; passam porque o
 rótulo acompanha toda barra. Nenhum parlamentar identificável aparece em destaque fora da página da
 própria pessoa.
@@ -84,7 +84,7 @@ orçamento para a despesa), pago (já saiu para quem recebe), sessão, falta jus
 nominal, favorecido e situação da obra.
 
 **Implementação.** O sistema continua em `packages/ui`, só de apresentação (regra `ui-so-apresentacao`
-do dependency-cruiser): tokens, uma folha de estilo e componentes de servidor. Saem `Capitulo`, `Campo`
+do dependency-cruiser): tokens, uma folha de estilo e componentes de apresentação, de servidor, menos o `Movimento`, que é de cliente. Saem `Capitulo`, `Campo`
 e `Cifra`. Entram `Chapeu`, `Secao`, `FaixaDeNumeros`, `Chamada`, `Explica`, `Movimento` e o cabeçalho
 com menu que abre no telefone (um `<details>`, sem JavaScript). `Ranking`, `Proporcao`, `Calendario`
 e `CadeiaDeEntrega` ficam, no estilo discreto: barras simples, sem grade, sem interação. O painel de
