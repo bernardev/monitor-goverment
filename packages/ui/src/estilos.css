@@ -1346,6 +1346,135 @@ main:not(.capitulos, .reportagem) button {
   color: var(--tinta);
 }
 
+/* ── Capa: a primeira página, com a manchete à esquerda e a coluna à direita ────────────────────── */
+.capa__topo {
+  max-width: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 24px;
+  margin-bottom: 20px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--fio);
+  color: var(--tinta-2);
+  font-size: var(--t-nota);
+}
+
+.capa__topo span:first-child {
+  color: var(--tinta);
+  font-weight: 600;
+}
+
+.capa__miolo {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  gap: 32px;
+}
+
+.capa__destaques,
+.capa__manchete {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.capa__destaques {
+  gap: 28px;
+}
+
+.capa__manchete .chamada__fina {
+  max-width: var(--largura-texto);
+}
+
+.capa__secundarias {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.capa__secundarias .chamada {
+  padding-top: 12px;
+  border-top: 1px solid var(--fio);
+}
+
+.capa__coluna {
+  min-width: 0;
+  padding-left: 24px;
+  border-left: 1px solid var(--fio);
+}
+
+.capa__coluna .secao:first-child {
+  margin-top: 0;
+}
+
+.capa__coluna form.busca input {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--tinta);
+  font-size: 16px;
+}
+
+.capa__coluna form.busca .botao {
+  min-height: 44px;
+  padding: 0 16px;
+  font-size: 15px;
+}
+
+.capa__exemplo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 0;
+  border-top: 1px solid var(--fio);
+}
+
+.capa__exemplo a {
+  font-weight: 600;
+}
+
+.capa__exemplo span {
+  color: var(--tinta-2);
+  font-size: 14px;
+}
+
+/* Os dois totais empilhados: a coluna é estreita para quatro linhas de período lado a lado. */
+.capa__coluna .faixa {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.capa__coluna .faixa__item {
+  padding: 10px 0;
+  border-left: 0;
+}
+
+.capa__coluna .faixa__item + .faixa__item {
+  border-top: 1px solid var(--fio);
+}
+
+.capa__entradas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0 32px;
+}
+
+@media (max-width: 900px) {
+  .capa__miolo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .capa__coluna {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .capa__secundarias {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* ── Movimento ──────────────────────────────────────────────────────────────────────────────── */
 /* O <Movimento /> põe `movimento` no <html>. Sem ele (sem JavaScript, movimento reduzido), nada se esconde. */
 html.movimento [data-surge] {

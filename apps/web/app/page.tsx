@@ -1,196 +1,271 @@
-import { Cifra } from '@prometeu/ui';
-import Image from 'next/image';
+import type { ObraDetalhada, ObraResumo, VotacaoNominalResumo } from '@prometeu/contracts';
+import { Chamada, Chapeu, Explica, FaixaDeNumeros, Proporcao, Secao } from '@prometeu/ui';
+import type { NumeroChave } from '@prometeu/ui';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import {
+  autoresNoMunicipio,
+  buscarObra,
   listarEmendas,
   listarObras,
-  listarParlamentares,
-  listarProposicoes,
   listarVotacoes,
 } from './_api/cliente';
-import congresso from './_imagens/congresso.jpg';
-import constituicao from './_imagens/constituicao-1988.jpg';
-import senado from './_imagens/senado.jpg';
+import { dataPorExtenso, resumirTexto, tituloDaManchete } from './_componentes/capa';
+import { Fonte, FonteEmLinha } from './_componentes/fonte';
+import { dia, nomeDoResultado, periodoDasEmendas, reaisResumidos } from './_componentes/formatacao';
+import { GLOSSARIO } from './_componentes/glossario';
+import { lugarDaObra, situacaoEMedicao } from './_componentes/obras';
+import { partesDoPlacar } from './_componentes/placar';
+import { fonteMaisRecente } from './parlamentares/[pessoaId]/numeros';
 
 const NUMERO = new Intl.NumberFormat('pt-BR');
 
-/** Só o total de cada lista; a página inicial abre mesmo se a API estiver fora. */
-async function total(lista: Promise<{ total: number }>): Promise<number | undefined> {
-  return lista.then((l) => l.total).catch(() => undefined);
-}
+/** A cidade de exemplo da coluna: Porto Alegre (RS). */
+const CIDADE_DE_EXEMPLO = { codigoIbge: '4314902', nome: 'Porto Alegre', uf: 'RS' } as const;
 
-function contagem(n: number | undefined, unidade: string): string {
-  return n === undefined ? unidade : `${NUMERO.format(n)} ${unidade}`;
+/** Um pedaço da capa que falha não derruba a página: o bloco dele só some. */
+function tentar<T>(promessa: Promise<T>): Promise<T | undefined> {
+  return promessa.catch(() => undefined);
 }
 
 export default async function PaginaInicial(): Promise<ReactNode> {
-  const [parlamentares, votacoes, proposicoes, emendas, obras, concluidas] = await Promise.all([
-    total(listarParlamentares({ pagina: 1, itens: 1 })),
-    total(listarVotacoes(1)),
-    total(listarProposicoes({ pagina: 1 })),
-    total(listarEmendas({ pagina: 1 })),
-    total(listarObras({ pagina: 1, itens: 1 })),
-    total(listarObras({ pagina: 1, itens: 1, situacao: 'concluida' })),
+  const [votacoes, paralisadas, emendas, obras, concluidas, autoresDoExemplo] = await Promise.all([
+    tentar(listarVotacoes(1)),
+    tentar(listarObras({ situacao: 'paralisada', pagina: 1, itens: 1 })),
+    tentar(listarEmendas({ pagina: 1 })),
+    tentar(listarObras({ pagina: 1, itens: 1 })),
+    tentar(listarObras({ situacao: 'concluida', pagina: 1, itens: 1 })),
+    tentar(autoresNoMunicipio(CIDADE_DE_EXEMPLO.codigoIbge)),
   ]);
+  const obraParada = paralisadas?.itens[0];
+  const detalheDaObra = obraParada ? await tentar(buscarObra(obraParada.obraId)) : undefined;
+  const votacao = votacoes?.itens[0];
+
+  const fonteDasEmendas = fonteMaisRecente(emendas);
+  const fonteDasObras = fonteMaisRecente(obras);
+  const periodoDasEmendasNoSite = periodoDasEmendas(fonteDasEmendas?.coletadaEm ?? null);
+  const pagoNoExemplo = autoresDoExemplo?.reduce((soma, a) => soma + BigInt(a.pagoCentavos), 0n);
+
+  const numeros: NumeroChave[] = [];
+  if (emendas && emendas.total > 0) {
+    numeros.push({
+      valor: NUMERO.format(emendas.total),
+      rotulo: 'emendas ao orçamento acompanhadas',
+      periodo: periodoDasEmendasNoSite,
+    });
+  }
+  if (concluidas && obras) {
+    numeros.push({
+      valor: NUMERO.format(concluidas.total),
+      rotulo: `${concluidas.total === 1 ? 'obra concluída' : 'obras concluídas'}, de ${NUMERO.format(obras.total)} pagas com emendas`,
+      periodo: periodoDasEmendas(fonteDasObras?.coletadaEm ?? null),
+    });
+  }
 
   return (
-    <main className="capitulos">
-      <section className="abertura" data-campo="grafite" aria-labelledby="abertura">
-        <h1 id="abertura" className="abertura__titulo">
-          <span className="abertura__clara">Prometeu.</span> <span>Cumpriu?</span>
-        </h1>
-        <div className="abertura__pe surge">
-          <form method="get" action="/busca" role="search" className="busca">
-            <label htmlFor="q" className="oculto">
-              Procure um parlamentar, um município ou uma obra
-            </label>
-            <input
-              id="q"
-              name="q"
-              type="search"
-              minLength={2}
-              required
-              placeholder="Um político, uma cidade, uma obra"
-            />
-            <button type="submit" className="botao">
-              Buscar
-            </button>
-          </form>
-          <p className="destaque">
-            O que cada político prometeu e o que fez depois, do registro oficial à entrega, com a
-            fonte de cada fato.
-          </p>
-        </div>
-      </section>
+    <main className="reportagem capa">
+      <h1 className="oculto">Prometeu: o que o governo federal prometeu e fez</h1>
+      <p className="capa__topo">
+        <span>{dataPorExtenso(new Date())}</span>
+        <span>O que cada político prometeu e o que fez depois, com a fonte de cada fato.</span>
+      </p>
 
-      <section className="mosaico" data-campo="papel" aria-labelledby="mosaico">
-        <div className="mosaico__quadro">
-          <div className="mosaico__lema surge" data-campo="aco">
-            <h2 id="mosaico" className="titulo">
-              Fato,
-              <br />
-              com fonte.
-            </h2>
-          </div>
-          <div className="mosaico__numero surge" data-campo="areia">
-            <p className="titulo">{emendas === undefined ? 'Emendas' : NUMERO.format(emendas)}</p>
-            <p>emendas ao orçamento acompanhadas desde 2023</p>
-          </div>
-          <div className="mosaico__foto surge">
-            <Image
-              src={congresso}
-              alt="As torres do Congresso Nacional e a cúpula do Senado, em Brasília"
-              sizes="(max-width: 820px) 50vw, 34vw"
-              className="respira"
-              priority
+      <div className="capa__miolo">
+        <div className="capa__destaques">
+          <h2 className="oculto">Destaques</h2>
+          {votacao ? (
+            <Manchete votacao={votacao} />
+          ) : (
+            <p>As votações não estão disponíveis agora. Tente de novo em alguns minutos.</p>
+          )}
+
+          <div className="capa__secundarias">
+            {obraParada && <ChamadaDaObra obra={obraParada} detalhe={detalheDaObra} />}
+            <Chamada
+              tamanho="secundaria"
+              chapeu="Presença"
+              titulo="Faltas com o motivo dado ao plenário, dia a dia"
+              href="/parlamentares"
+              linhaFina={
+                <>
+                  Cada deputado e senador tem a presença nas sessões registrada, e a falta
+                  justificada traz o motivo aceito pela Casa. Escolha um parlamentar para ver.
+                </>
+              }
+              fonte="Fonte: Câmara dos Deputados e Senado Federal, na página de cada parlamentar."
             />
           </div>
         </div>
-        <div className="mosaico__texto surge">
-          <p className="destaque">
-            O Prometeu acompanha o que cada político prometeu e o que fez depois. Os fatos vêm das
-            fontes oficiais: a Câmara e o Senado para presença, votos e proposições; o Portal da
-            Transparência para as emendas ao orçamento; o Obrasgov para as obras que elas pagam.
-            Cada número guarda a captura de onde saiu, com data e endereço, para qualquer pessoa
-            conferir. A curadoria liga promessas a fatos, e nenhum veredito sai sem a revisão de uma
-            segunda pessoa. A plataforma não tem partido: mostra o registro, não dá nota.
-          </p>
-          <p className="nota">
-            Foto do Congresso: Agência Senado, CC BY 2.0, via Wikimedia Commons.
-          </p>
+
+        <aside className="capa__coluna" aria-label="Sua cidade e os totais">
+          <Secao
+            id="sua-cidade"
+            titulo="O que chegou à sua cidade"
+            {...(fonteDasEmendas ? { fonte: <Fonte fonte={fonteDasEmendas} /> } : {})}
+          >
+            <form method="get" action="/busca" role="search" className="busca">
+              <label htmlFor="q" className="oculto">
+                Nome da sua cidade
+              </label>
+              <input
+                id="q"
+                name="q"
+                type="search"
+                minLength={2}
+                required
+                placeholder="Digite sua cidade"
+              />
+              <button type="submit" className="botao">
+                Buscar
+              </button>
+            </form>
+            {pagoNoExemplo !== undefined && (
+              <div className="capa__exemplo">
+                <Chapeu>Por exemplo</Chapeu>
+                <Link href={`/municipios/${CIDADE_DE_EXEMPLO.codigoIbge}`}>
+                  {CIDADE_DE_EXEMPLO.nome} ({CIDADE_DE_EXEMPLO.uf})
+                </Link>
+                <span>
+                  {reaisResumidos(pagoNoExemplo)} pagos em emendas, {periodoDasEmendasNoSite}.
+                </span>
+              </div>
+            )}
+            <Explica termo="Emenda">{GLOSSARIO.emenda}</Explica>
+            <Explica termo="Pago">{GLOSSARIO.pago}</Explica>
+          </Secao>
+
+          {numeros.length > 0 && (
+            <Secao
+              id="em-numeros"
+              titulo="O site em números"
+              fonte={
+                <>
+                  {fonteDasEmendas && <Fonte fonte={fonteDasEmendas} />}
+                  {fonteDasObras && <Fonte fonte={fonteDasObras} />}
+                </>
+              }
+            >
+              <FaixaDeNumeros itens={numeros} />
+            </Secao>
+          )}
+        </aside>
+      </div>
+
+      <Secao id="por-onde-comecar" titulo="Por onde começar">
+        <div className="capa__entradas">
+          <Chamada
+            tamanho="lista"
+            chapeu="Meu governo"
+            titulo="Sua cidade"
+            href="/municipios"
+            linhaFina="Quem a representa no Congresso, o dinheiro de emenda que chegou e as obras que ele pagou."
+          />
+          <Chamada
+            tamanho="lista"
+            chapeu="Parlamentares"
+            titulo="Deputados e senadores"
+            href="/parlamentares"
+            linhaFina="Presença, votos, proposições e emendas de cada um."
+          />
+          <Chamada
+            tamanho="lista"
+            chapeu="Votações"
+            titulo="Votações nominais"
+            href="/votacoes"
+            linhaFina="Votações dos últimos 90 dias, com o voto de cada parlamentar."
+          />
+          <Chamada
+            tamanho="lista"
+            chapeu="Proposições"
+            titulo="Propostas de lei"
+            href="/proposicoes"
+            linhaFina="O que a Câmara e o Senado têm em votação, com a tramitação."
+          />
+          <Chamada
+            tamanho="lista"
+            chapeu="Emendas"
+            titulo="Emendas ao orçamento"
+            href="/emendas"
+            linhaFina="Quem indicou, para onde foi e quanto já foi pago."
+          />
+          <Chamada
+            tamanho="lista"
+            chapeu="Obras"
+            titulo="Obras pagas com emendas"
+            href="/obras"
+            linhaFina="A situação e a medição de cada uma, da maior para a menor."
+          />
+          <Chamada
+            tamanho="lista"
+            chapeu="Fontes"
+            titulo="Situação das fontes"
+            href="/fontes"
+            linhaFina="A última coleta de cada fonte oficial e se a agenda está em dia."
+          />
         </div>
-      </section>
-
-      <figure className="faixa" data-campo="grafite">
-        <Image
-          src={constituicao}
-          alt="O plenário do Congresso cheio, com papéis jogados para o alto, no dia da promulgação da Constituição"
-          sizes="100vw"
-          className="faixa__foto"
-        />
-        <figcaption className="faixa__legenda nota">
-          O plenário do Congresso em 5 de outubro de 1988, dia em que a Constituição foi promulgada.
-          Foto: Agência Senado, CC BY 2.0, via Wikimedia Commons.
-        </figcaption>
-      </figure>
-
-      <section className="tela-numero" data-campo="areia" aria-labelledby="obras-concluidas">
-        <h2 id="obras-concluidas" className="tela-numero__frase surge">
-          Dinheiro de emenda que virou obra
-        </h2>
-        <Cifra
-          valor={concluidas === undefined ? 'Obras' : NUMERO.format(concluidas)}
-          legenda={`obras pagas com emendas parlamentares já concluídas, de ${contagem(obras, 'obras')} acompanhadas pelo Obrasgov.`}
-        />
-        <p className="nota">
-          <Link href="/obras">Ver as obras, da maior para a menor</Link>
-        </p>
-      </section>
-
-      <figure className="faixa" data-campo="aco">
-        <Image
-          src={senado}
-          alt="As bancadas de madeira e as cadeiras azuis do plenário do Senado, vazias"
-          sizes="100vw"
-          className="faixa__foto respira"
-        />
-        <figcaption className="faixa__legenda nota">
-          O plenário do Senado. Cada uma das 81 cadeiras e das 513 da Câmara tem um mandato
-          acompanhado aqui. Foto: Boaventuravinicius, CC BY-SA 4.0, via Wikimedia Commons.
-        </figcaption>
-      </figure>
-
-      <section className="entradas" data-campo="papel" aria-labelledby="entradas">
-        <h2 id="entradas" className="titulo surge">
-          Por onde começar
-        </h2>
-        <ul className="fichas surge">
-          <Entrada href="/municipios" titulo="Meu governo">
-            Sua cidade: quem a representa no Congresso, o dinheiro de emenda que chegou e as obras
-            que ele pagou.
-          </Entrada>
-          <Entrada href="/parlamentares" titulo="Parlamentares">
-            {contagem(parlamentares, 'deputados e senadores em exercício')}, com presença, votos,
-            proposições e emendas.
-          </Entrada>
-          <Entrada href="/votacoes" titulo="Votações nominais">
-            {contagem(votacoes, 'votações')} nos últimos 90 dias, com o voto de cada parlamentar.
-          </Entrada>
-          <Entrada href="/proposicoes" titulo="Proposições">
-            {contagem(proposicoes, 'propostas de lei')} da Câmara e do Senado, com a tramitação.
-          </Entrada>
-          <Entrada href="/emendas" titulo="Emendas">
-            {contagem(emendas, 'emendas')}: quem indicou, para onde foi e quanto já foi pago.
-          </Entrada>
-          <Entrada href="/obras" titulo="Obras">
-            {contagem(obras, 'obras')} pagas com emendas, com situação e medição.
-          </Entrada>
-          <Entrada href="/fontes" titulo="Fontes">
-            A última coleta de cada fonte oficial e se a agenda está em dia.
-          </Entrada>
-        </ul>
-      </section>
+      </Secao>
     </main>
   );
 }
 
-function Entrada({
-  href,
-  titulo,
-  children,
-}: {
-  href: string;
-  titulo: string;
-  children: ReactNode;
-}): ReactNode {
+/** A votação mais recente: o placar em barra, o que foi votado e o caminho para o voto de cada um. */
+function Manchete({ votacao }: { votacao: VotacaoNominalResumo }): ReactNode {
+  const camara = votacao.casa === 'camara_dos_deputados';
+  const ementa = votacao.proposicoes[0]?.ementa;
+  const resultado =
+    votacao.resultado === 'nao_informado'
+      ? ''
+      : ` Resultado: ${nomeDoResultado(votacao.resultado).toLowerCase()}.`;
   return (
-    <li className="ficha">
-      <Link href={href} className="ficha__titulo">
-        {titulo}
-      </Link>
-      <p className="ficha__texto">{children}</p>
-    </li>
+    <div className="capa__manchete">
+      <Chamada
+        tamanho="manchete"
+        chapeu={`Votações · ${camara ? 'Câmara' : 'Senado'}`}
+        titulo={tituloDaManchete(votacao)}
+        href={`/votacoes/${votacao.votacaoId}`}
+        linhaFina={
+          <>
+            Votação nominal de {dia(votacao.dia)}.{resultado} Nas palavras{' '}
+            {camara ? 'da Câmara' : 'do Senado'}: {votacao.descricao}
+            {ementa ? ` Sobre o projeto: ${resumirTexto(ementa, 200)}` : ''}{' '}
+            <Link href={`/votacoes/${votacao.votacaoId}`}>
+              Veja como votou cada {camara ? 'deputado' : 'senador'}.
+            </Link>
+          </>
+        }
+      />
+      <Proporcao partes={partesDoPlacar(votacao)} />
+      <Explica termo="Votação nominal">{GLOSSARIO.votacaoNominal}</Explica>
+      <Fonte fonte={votacao.fonte} />
+    </div>
+  );
+}
+
+/** A maior obra paralisada entre as pagas com emendas, com o motivo que a fonte informa. */
+function ChamadaDaObra({
+  obra,
+  detalhe,
+}: {
+  obra: ObraResumo;
+  detalhe: ObraDetalhada | undefined;
+}): ReactNode {
+  const interrupcao = detalhe?.interrupcoes[0];
+  const motivo =
+    interrupcao === undefined
+      ? ''
+      : interrupcao.justificativa
+        ? ` Motivo informado: ${resumirTexto(interrupcao.justificativa, 220)}`
+        : ' A fonte não informa o motivo.';
+  const desde = interrupcao ? ` Parou em ${dia(interrupcao.em.slice(0, 10))}.` : '';
+  return (
+    <Chamada
+      tamanho="secundaria"
+      chapeu="Obras · paga com emendas"
+      titulo={`Obra de ${reaisResumidos(obra.investimentoPrevistoCentavos)} em ${lugarDaObra(obra)} está paralisada`}
+      href={`/obras/${obra.obraId}`}
+      linhaFina={`${obra.nome}. ${situacaoEMedicao(obra)}.${desde}${motivo}`}
+      fonte={<FonteEmLinha fonte={obra.fonte} />}
+    />
   );
 }

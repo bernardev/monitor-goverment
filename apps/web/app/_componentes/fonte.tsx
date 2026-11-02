@@ -3,18 +3,27 @@ import type { ReactNode } from 'react';
 
 import { dataEHora } from './formatacao';
 
-/** Toda informação exibida mostra de onde veio (ADR-0009). */
-export function Fonte({ fonte }: { fonte: FonteDoDado }): ReactNode {
+/** O texto da fonte sem o parágrafo, para caber numa linha fina ou numa chamada. */
+export function FonteEmLinha({ fonte }: { fonte: FonteDoDado }): ReactNode {
   if (fonte.url === null || fonte.coletadaEm === null) {
-    return <p className="fonte">Fonte: captura {fonte.capturaId} (detalhes em processamento).</p>;
+    return <>Fonte: captura {fonte.capturaId} (detalhes em processamento).</>;
   }
   return (
-    <p className="fonte">
+    <>
       Fonte:{' '}
       <a href={fonte.url} rel="noopener noreferrer external">
         {new URL(fonte.url).hostname}
       </a>
       , coletado em {dataEHora(fonte.coletadaEm)}. Captura {fonte.capturaId}.
+    </>
+  );
+}
+
+/** Toda informação exibida mostra de onde veio (ADR-0009). */
+export function Fonte({ fonte }: { fonte: FonteDoDado }): ReactNode {
+  return (
+    <p className="fonte">
+      <FonteEmLinha fonte={fonte} />
     </p>
   );
 }
