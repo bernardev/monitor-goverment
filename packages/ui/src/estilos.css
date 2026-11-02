@@ -69,7 +69,7 @@
 
 html {
   -webkit-text-size-adjust: 100%;
-  scroll-padding-top: 24px;
+  scroll-padding-top: 112px;
 }
 
 body {
@@ -246,7 +246,11 @@ form.busca .botao {
 
 /* ── Cabeçalho e rodapé ─────────────────────────────────────────────────────────────────────── */
 .cabecalho {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   background: var(--branco);
+  border-bottom: 1px solid var(--fio);
 }
 
 .cabecalho__miolo {
@@ -312,6 +316,18 @@ form.busca .botao {
 @media (min-width: 641px) {
   .cabecalho__menu::details-content {
     content-visibility: visible;
+  }
+}
+
+/* Sem ::details-content (Safari < 18.4, Firefox < 143) o conteúdo fechado não aparece: o Menu fica à mostra e abre. */
+@supports not selector(::details-content) {
+  .cabecalho__menu summary {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
   }
 }
 
@@ -1458,7 +1474,13 @@ html.movimento .ranking__item:nth-child(n + 4) [data-surge='barra'] {
   }
 
   html {
-    scroll-padding-top: 16px;
+    scroll-padding-top: 128px;
+  }
+
+  /* Com o menu aberto o cabeçalho pode passar da tela: rola por dentro. */
+  .cabecalho {
+    max-height: 100svh;
+    overflow-y: auto;
   }
 
   .faixa {

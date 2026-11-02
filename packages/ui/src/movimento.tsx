@@ -33,13 +33,25 @@ function contar(el: HTMLElement): void {
  * Montado uma vez em cada layout; vale para as páginas que entram depois, na navegação.
  */
 export function Movimento(): null {
+  // O menu do telefone (<details>) fecha ao seguir um link, senão fica aberto após a navegação do cliente.
+  useEffect(() => {
+    const aoClicar = (e: MouseEvent): void => {
+      if (!(e.target instanceof Element)) return;
+      if (e.target.closest('.cabecalho__menu a')) {
+        e.target.closest('details')?.removeAttribute('open');
+      }
+    };
+    document.addEventListener('click', aoClicar);
+    return () => {
+      document.removeEventListener('click', aoClicar);
+    };
+  }, []);
+
   useEffect(() => {
     if (!('IntersectionObserver' in window)) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     const raiz = document.documentElement;
-    raiz.classList.add('movimento');
-
     const preparados = new WeakSet<Element>();
     const observador = new IntersectionObserver(
       (entradas) => {
@@ -51,25 +63,34 @@ export function Movimento(): null {
           if (el.dataset['conta'] !== undefined) contar(el);
         }
       },
-      { rootMargin: '0px 0px -8% 0px' },
+      { threshold: 0 },
     );
 
-    const varrer = (): void => {
+    const varrer = (inicial: boolean): void => {
       for (const el of document.querySelectorAll<HTMLElement>('[data-surge], [data-conta]')) {
         if (preparados.has(el)) continue;
         preparados.add(el);
+        if (inicial) {
+          const { top, bottom } = el.getBoundingClientRect();
+          if (top < window.innerHeight && bottom > 0) {
+            // Já está na tela quando a página hidrata: fica como veio do servidor, sem piscar nem contar.
+            el.dataset['visivel'] = '1';
+            continue;
+          }
+        }
         if (el.dataset['conta'] !== undefined) {
           el.textContent = textoDaContagem(contagemDe(el), 0);
         }
         observador.observe(el);
       }
     };
-    varrer();
+    varrer(true);
+    raiz.classList.add('movimento');
     // As páginas seguintes chegam por navegação do cliente, sem recarregar o layout.
     // Só nós de elemento: a própria contagem troca texto a cada quadro e não deve varrer a página.
     const mutacoes = new MutationObserver((registros) => {
       if (registros.some((r) => [...r.addedNodes].some((n) => n.nodeType === Node.ELEMENT_NODE))) {
-        varrer();
+        varrer(false);
       }
     });
     mutacoes.observe(document.body, { childList: true, subtree: true });
