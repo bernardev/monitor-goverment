@@ -1,3 +1,4 @@
+import { Chapeu } from '@prometeu/ui';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
@@ -20,8 +21,11 @@ export default async function PainelEditorial({ searchParams }: Props): Promise<
 
   if (!sessao || sessao.papeis.length === 0) {
     return (
-      <main>
-        <h1>Painel editorial</h1>
+      <main className="reportagem painel">
+        <header className="editoria__topo">
+          <Chapeu>Curadoria</Chapeu>
+          <h1>Painel editorial</h1>
+        </header>
         {erro && <p role="alert">{ERROS[erro] ?? 'Não foi possível entrar.'}</p>}
         {sessao && <p>Sua conta não tem papel editorial.</p>}
         <p>
@@ -35,19 +39,20 @@ export default async function PainelEditorial({ searchParams }: Props): Promise<
 
   const promessas = await editorial.listar();
   return (
-    <main>
-      <h1>Promessas</h1>
-      <p>
-        Você entrou como {sessao.nome} ({sessao.papeis.join(', ')}). As pendências mostram o que
-        espera revisão e os fatos que mudaram desde a última análise.
-      </p>
-      {sessao.papeis.includes('curador') && (
-        <p>
+    <main className="reportagem painel">
+      <header className="editoria__topo">
+        <Chapeu>Curadoria</Chapeu>
+        <h1>Promessas</h1>
+        <p className="editoria__descricao">
+          Você entrou como {sessao.nome} ({sessao.papeis.join(', ')}). As pendências mostram o que
+          espera revisão e os fatos que mudaram desde a última análise.
+        </p>
+        {sessao.papeis.includes('curador') && (
           <Link href="/promessas/nova" className="botao">
             Registrar promessa
           </Link>
-        </p>
-      )}
+        )}
+      </header>
       <div className="rolagem">
         <table className="tabela">
           <thead>
@@ -64,9 +69,9 @@ export default async function PainelEditorial({ searchParams }: Props): Promise<
                 <td>
                   <Link href={`/promessas/${p.promessaId}`}>{p.texto}</Link>
                 </td>
-                <td>{rotulo(ESTAGIOS, p.estagio)}</td>
-                <td>{rotulo(VEREDITOS, p.vereditoVigente)}</td>
-                <td>
+                <td data-rotulo="Estágio:">{rotulo(ESTAGIOS, p.estagio)}</td>
+                <td data-rotulo="Veredito:">{rotulo(VEREDITOS, p.vereditoVigente)}</td>
+                <td data-rotulo="Pendências:">
                   {[
                     p.aguardandoRevisao ? 'Veredito aguardando revisão' : '',
                     p.reavaliacoesPendentes > 0
@@ -74,7 +79,7 @@ export default async function PainelEditorial({ searchParams }: Props): Promise<
                       : '',
                   ]
                     .filter(Boolean)
-                    .join(' · ')}
+                    .join(' · ') || '—'}
                 </td>
               </tr>
             ))}

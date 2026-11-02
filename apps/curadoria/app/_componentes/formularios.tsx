@@ -137,7 +137,7 @@ export function FormularioDePromessa({
       </fieldset>
 
       <Erro estado={estado} />
-      <button type="submit" disabled={enviando}>
+      <button type="submit" className="botao" disabled={enviando}>
         {enviando ? 'Capturando e registrando…' : 'Registrar promessa'}
       </button>
     </form>
@@ -190,7 +190,7 @@ export function FormularioDeVeredito({
         <input type="checkbox" name="errata" value="sim" /> Errata: corrige o veredito vigente
       </label>
       <Erro estado={estado} />
-      <button type="submit" disabled={enviando}>
+      <button type="submit" className="botao" disabled={enviando}>
         {enviando ? 'Enviando…' : 'Propor veredito'}
       </button>
     </form>
@@ -210,7 +210,7 @@ export function Revisao({
     <div className="revisao">
       <form action={publicar}>
         <Erro estado={publicacao} />
-        <button type="submit" disabled={publicando}>
+        <button type="submit" className="botao" disabled={publicando}>
           Publicar veredito
         </button>
       </form>
@@ -220,7 +220,7 @@ export function Revisao({
           <input name="motivo" required />
         </label>
         <Erro estado={recusa} />
-        <button type="submit" disabled={recusando}>
+        <button type="submit" className="botao botao--secundario" disabled={recusando}>
           Recusar e devolver
         </button>
       </form>
@@ -255,7 +255,7 @@ export function SugestaoDeVinculo({
           ))}
         </select>
       </label>{' '}
-      <button type="submit" disabled={sugerindo}>
+      <button type="submit" className="botao botao--secundario" disabled={sugerindo}>
         {sugerindo ? 'Sugerindo…' : 'Sugerir vínculo'}
       </button>
       <Erro estado={estado} />
@@ -280,7 +280,7 @@ export function DecisaoDeVinculo({
       {confirmavel && (
         <form action={confirmar}>
           <Erro estado={confirmacao} />
-          <button type="submit" disabled={confirmando}>
+          <button type="submit" className="botao" disabled={confirmando}>
             Confirmar vínculo
           </button>
         </form>
@@ -289,7 +289,7 @@ export function DecisaoDeVinculo({
         <label>
           Motivo <input name="motivo" required />
         </label>{' '}
-        <button type="submit" disabled={rejeitando}>
+        <button type="submit" className="botao botao--secundario" disabled={rejeitando}>
           {confirmavel ? 'Rejeitar' : 'Desfazer'}
         </button>
         <Erro estado={rejeicao} />
@@ -303,7 +303,7 @@ export function ConclusaoDeReavaliacao({ concluir }: { concluir: AcaoDoFormulari
   return (
     <form action={acao}>
       <Erro estado={estado} />
-      <button type="submit" disabled={concluindo}>
+      <button type="submit" className="botao" disabled={concluindo}>
         Marcar como reavaliada
       </button>
     </form>

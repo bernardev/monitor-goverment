@@ -1,3 +1,4 @@
+import { Chapeu } from '@prometeu/ui';
 import type { ReactNode } from 'react';
 
 import { publica } from '../../_api/cliente';
@@ -16,8 +17,11 @@ export default async function NovaPromessa({ searchParams }: Props): Promise<Rea
   const parlamentares = uf ? await publica.parlamentares(uf) : [];
 
   return (
-    <main>
-      <h1>Registrar promessa</h1>
+    <main className="reportagem painel">
+      <header className="editoria__topo">
+        <Chapeu>Curadoria</Chapeu>
+        <h1>Registrar promessa</h1>
+      </header>
       <form method="get" className="formulario em-linha">
         <label>
           Estado do parlamentar{' '}
@@ -30,7 +34,9 @@ export default async function NovaPromessa({ searchParams }: Props): Promise<Rea
             ))}
           </select>
         </label>{' '}
-        <button type="submit">Carregar parlamentares</button>
+        <button type="submit" className="botao botao--secundario">
+          Carregar parlamentares
+        </button>
       </form>
       {uf && parlamentares.length === 0 && <p>Nenhum parlamentar encontrado em {uf}.</p>}
       {parlamentares.length > 0 && <FormularioDePromessa parlamentares={parlamentares} />}

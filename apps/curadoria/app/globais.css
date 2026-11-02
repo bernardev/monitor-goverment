@@ -1,6 +1,7 @@
 /*
  * O painel usa o sistema visual do site (@prometeu/ui, ADR-0017). Aqui ficam só as peças de
- * ferramenta: formulários, mensagens de erro e o bloco de revisão.
+ * ferramenta: formulários, mensagens de erro e o bloco de revisão. Os campos de texto e o botão
+ * principal vêm do sistema; aqui só a textarea, os rótulos maiores e os grupos.
  */
 :root {
   --erro: #9f1d12;
@@ -10,16 +11,46 @@
   font-weight: 500;
 }
 
+/* A página do painel: a coluna do site, com o topo e as seções uma sob a outra. */
+.painel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* O texto da promessa é o título, mas pode ter até 500 caracteres: menor que o título de página. */
+.painel h1.painel__promessa {
+  font-size: var(--t-manchete);
+  max-width: var(--largura-texto);
+}
+
+.painel__ajuda {
+  color: var(--tinta-2);
+  font-size: 15px;
+}
+
 .formulario {
   display: grid;
   gap: 18px;
   max-width: 44rem;
 }
 
-.formulario label {
+/* Rótulo de formulário legível: o rótulo global (13 px) é de nota, não de campo. */
+.formulario label,
+.revisao label,
+.em-linha label {
   display: grid;
   gap: 6px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* Caixa de marcar com o texto ao lado, no tamanho nativo. */
+.formulario label.em-linha {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 400;
 }
 
 .formulario.em-linha {
@@ -29,33 +60,20 @@
   gap: 12px;
 }
 
-.formulario input,
-.formulario select,
-.formulario textarea,
-.revisao input,
-.revisao select {
-  min-height: 48px;
-  padding: 10px 16px;
-  border: 2px solid var(--tinta);
-  border-radius: var(--raio-botao);
-  background: var(--branco);
-  color: var(--tinta);
-  font: inherit;
-  font-weight: 400;
-}
-
 .formulario textarea {
   min-height: 96px;
-  border-radius: 16px;
+  padding: 10px 14px;
+  border: 1px solid var(--contorno);
+  border-radius: var(--raio);
+  background: var(--branco);
   resize: vertical;
 }
 
-/* Um grupo do formulário (a fonte, o fundamento) é uma área em outro tom, sem moldura de linha. */
+/* Um grupo do formulário (a fonte, as evidências) é uma área com fio fino. */
 .formulario fieldset {
   margin: 8px 0 0;
-  padding: 18px 20px 22px;
-  border: 0;
-  background: var(--superficie);
+  padding: 16px 20px 20px;
+  border: 1px solid var(--fio);
   display: grid;
   gap: 14px;
 }
@@ -65,21 +83,9 @@
   width: 100%;
   margin-bottom: 4px;
   padding: 0;
+  font-family: var(--fonte-titulo-pilha);
   font-size: var(--t-destaque);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-/* No painel a cadeia fica numa linha: é contexto da promessa, não a manchete da página. */
-.cadeia {
-  flex-direction: row;
-  flex-wrap: wrap;
-  font-size: var(--t-texto);
-}
-
-.cadeia__estagio {
-  flex: 1 1 120px;
-  padding: 12px 16px;
+  font-weight: 600;
 }
 
 .erro {
@@ -87,11 +93,13 @@
   font-weight: 700;
 }
 
+/* A decisão sobre um vínculo e a revisão de um veredito: uma área própria, com fio fino. */
 .revisao {
   display: grid;
   gap: 14px;
-  padding: 20px 22px;
-  background: var(--superficie);
+  margin-top: 12px;
+  padding: 16px 20px;
+  border: 1px solid var(--fio);
 }
 
 .revisao .em-linha,
@@ -100,4 +108,14 @@
   flex-wrap: wrap;
   align-items: flex-end;
   gap: 10px;
+}
+
+.botao:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+/* O botão de envio tem o tamanho do texto, não da coluna do formulário. */
+.formulario > .botao {
+  justify-self: start;
 }

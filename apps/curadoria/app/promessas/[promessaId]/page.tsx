@@ -1,4 +1,4 @@
-import { CadeiaDeEntrega } from '@prometeu/ui';
+import { CadeiaDeEntrega, Chapeu, Secao } from '@prometeu/ui';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 
@@ -60,36 +60,39 @@ export default async function Promessa({ params }: Props): Promise<ReactNode> {
   ];
 
   return (
-    <main>
-      <h1>{promessa.texto}</h1>
-      <p>
-        Estágio: <strong>{rotulo(ESTAGIOS, promessa.estagio)}</strong> · Veredito vigente:{' '}
-        <strong>{rotulo(VEREDITOS, promessa.vereditoVigente)}</strong> · Tema {promessa.tema}
-      </p>
+    <main className="reportagem painel">
+      <header className="editoria__topo">
+        <Chapeu>Promessa · Tema {promessa.tema}</Chapeu>
+        <h1 className="painel__promessa">{promessa.texto}</h1>
+        <p>
+          Estágio: <strong>{rotulo(ESTAGIOS, promessa.estagio)}</strong> · Veredito vigente:{' '}
+          <strong>{rotulo(VEREDITOS, promessa.vereditoVigente)}</strong>
+        </p>
+      </header>
       <CadeiaDeEntrega alcancados={Object.keys(ESTAGIOS).indexOf(promessa.estagio) + 1} />
 
-      <h2>Fontes</h2>
-      <ul className="lista">
-        {promessa.fontes.map((f) => (
-          <li key={f.fonteId}>
-            <q>{f.citacaoLiteral}</q> — {rotulo(TIPOS_DE_FONTE, f.tipo)}, {data(f.dataDaDeclaracao)}
-            ,{' '}
-            {f.localizacao.tipo === 'pagina'
-              ? `página ${f.localizacao.pagina}`
-              : `${f.localizacao.inicioEmSegundos}s a ${f.localizacao.fimEmSegundos}s`}
-            . Captura {f.capturaId}.
-          </li>
-        ))}
-      </ul>
+      <Secao id="fontes" titulo="Fontes">
+        <ul className="lista lista--fios">
+          {promessa.fontes.map((f) => (
+            <li key={f.fonteId}>
+              <q>{f.citacaoLiteral}</q> — {rotulo(TIPOS_DE_FONTE, f.tipo)},{' '}
+              {data(f.dataDaDeclaracao)},{' '}
+              {f.localizacao.tipo === 'pagina'
+                ? `página ${f.localizacao.pagina}`
+                : `${f.localizacao.inicioEmSegundos}s a ${f.localizacao.fimEmSegundos}s`}
+              . Captura {f.capturaId}.
+            </li>
+          ))}
+        </ul>
+      </Secao>
 
       {promessa.reavaliacoes.length > 0 && (
-        <section>
-          <h2>Fatos que mudaram desde a última análise</h2>
-          <p className="fonte">
+        <Secao id="reavaliacoes" titulo="Fatos que mudaram desde a última análise">
+          <p className="painel__ajuda">
             Fatos com vínculo confirmado mudaram na fonte. Nada mudou sozinho na promessa: veja se o
             vínculo ainda vale e se o veredito precisa de errata, depois marque como reavaliada.
           </p>
-          <ul className="lista">
+          <ul className="lista lista--fios">
             {promessa.reavaliacoes.map((r) => (
               <li key={`${r.idDoAlvo}|${r.pedidoEm}|${r.motivo}`}>
                 <strong>
@@ -104,45 +107,45 @@ export default async function Promessa({ params }: Props): Promise<ReactNode> {
             ))}
           </ul>
           <ConclusaoDeReavaliacao concluir={concluirReavaliacao.bind(null, promessa.promessaId)} />
-        </section>
+        </Secao>
       )}
 
-      <h2>Vínculos com fatos</h2>
-      <p className="fonte">
-        Só o vínculo confirmado conta para o estágio. Sugerir não muda nada na promessa publicada.
-      </p>
-      {promessa.vinculos.length === 0 && <p>Nenhum vínculo ainda.</p>}
-      <ul className="lista">
-        {promessa.vinculos.map((v) => (
-          <li key={v.vinculoId}>
-            <strong>
-              {rotulo(TIPOS_DE_ALVO, v.tipoDoAlvo)}{' '}
-              {titulos.get(`${v.tipoDoAlvo}|${v.idDoAlvo}`) ?? v.idDoAlvo}
-            </strong>{' '}
-            comprova {rotulo(ESTAGIOS, v.estagioQueComprova)} ·{' '}
-            {rotulo(SITUACOES_DE_VINCULO, v.situacao)}
-            {v.situacao !== 'rejeitado' && (
-              <DecisaoDeVinculo
-                confirmavel={v.situacao === 'sugerido'}
-                confirmar={confirmarVinculo.bind(null, promessa.promessaId, v.vinculoId)}
-                rejeitar={rejeitarVinculo.bind(null, promessa.promessaId, v.vinculoId)}
-              />
-            )}
-          </li>
-        ))}
-      </ul>
+      <Secao id="vinculos" titulo="Vínculos com fatos">
+        <p className="painel__ajuda">
+          Só o vínculo confirmado conta para o estágio. Sugerir não muda nada na promessa publicada.
+        </p>
+        {promessa.vinculos.length === 0 && <p>Nenhum vínculo ainda.</p>}
+        <ul className="lista lista--fios">
+          {promessa.vinculos.map((v) => (
+            <li key={v.vinculoId}>
+              <strong>
+                {rotulo(TIPOS_DE_ALVO, v.tipoDoAlvo)}{' '}
+                {titulos.get(`${v.tipoDoAlvo}|${v.idDoAlvo}`) ?? v.idDoAlvo}
+              </strong>{' '}
+              comprova {rotulo(ESTAGIOS, v.estagioQueComprova)} ·{' '}
+              {rotulo(SITUACOES_DE_VINCULO, v.situacao)}
+              {v.situacao !== 'rejeitado' && (
+                <DecisaoDeVinculo
+                  confirmavel={v.situacao === 'sugerido'}
+                  confirmar={confirmarVinculo.bind(null, promessa.promessaId, v.vinculoId)}
+                  rejeitar={rejeitarVinculo.bind(null, promessa.promessaId, v.vinculoId)}
+                />
+              )}
+            </li>
+          ))}
+        </ul>
+      </Secao>
 
       {curador && (
-        <section>
-          <h2>Fatos do autor que podem comprovar a promessa</h2>
-          <p className="fonte">
+        <Secao id="candidatos" titulo="Fatos do autor que podem comprovar a promessa">
+          <p className="painel__ajuda">
             Proposições de autoria, emendas que indicou e obras pagas por elas, das que têm mais
             palavras em comum com a promessa para as que têm menos. Quem decide é a curadoria.
           </p>
           {candidatos.filter((c) => !c.vinculado).length === 0 && (
             <p>Nenhum fato do autor coletado ainda.</p>
           )}
-          <ul className="lista">
+          <ul className="lista lista--fios">
             {candidatos
               .filter((c) => !c.vinculado)
               .map((c) => (
@@ -162,23 +165,23 @@ export default async function Promessa({ params }: Props): Promise<ReactNode> {
                 </li>
               ))}
           </ul>
-        </section>
+        </Secao>
       )}
 
-      <h2>Histórico de vereditos</h2>
-      {promessa.historico.length === 0 && <p>Nenhum veredito publicado.</p>}
-      <ol className="lista">
-        {promessa.historico.map((r) => (
-          <li key={r.registroId}>
-            {rotulo(VEREDITOS, r.veredito)} em {data(r.publicadoEm)}
-            {r.errata ? ' (errata)' : ''}: {r.justificativa}
-          </li>
-        ))}
-      </ol>
+      <Secao id="historico" titulo="Histórico de vereditos">
+        {promessa.historico.length === 0 && <p>Nenhum veredito publicado.</p>}
+        <ol className="lista lista--fios">
+          {promessa.historico.map((r) => (
+            <li key={r.registroId}>
+              {rotulo(VEREDITOS, r.veredito)} em {data(r.publicadoEm)}
+              {r.errata ? ' (errata)' : ''}: {r.justificativa}
+            </li>
+          ))}
+        </ol>
+      </Secao>
 
       {promessa.propostaPendente ? (
-        <section>
-          <h2>Proposta aguardando revisão</h2>
+        <Secao id="proposta" titulo="Proposta aguardando revisão">
           <p>
             {rotulo(VEREDITOS, promessa.propostaPendente.veredito)}
             {promessa.propostaPendente.errata ? ' (errata)' : ''}:{' '}
@@ -195,16 +198,15 @@ export default async function Promessa({ params }: Props): Promise<ReactNode> {
               recusar={recusarVeredito.bind(null, promessa.promessaId)}
             />
           )}
-        </section>
+        </Secao>
       ) : (
         curador && (
-          <section>
-            <h2>Propor veredito</h2>
+          <Secao id="propor" titulo="Propor veredito">
             <FormularioDeVeredito
               propor={proporVeredito.bind(null, promessa.promessaId)}
               capturas={capturas}
             />
-          </section>
+          </Secao>
         )
       )}
     </main>
