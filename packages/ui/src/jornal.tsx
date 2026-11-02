@@ -58,7 +58,15 @@ export function FaixaDeNumeros({ itens }: { itens: readonly NumeroChave[] }): Re
       {itens.map((item) => (
         <div key={item.rotulo} className="faixa__item">
           <p className="faixa__valor">
-            <span {...atributosDaContagem(item.contagem)}>{item.valor}</span>
+            {item.contagem ? (
+              // O valor real fica no DOM (React é o dono dele); o `Movimento` anima um irmão aria-hidden.
+              <span {...atributosDaContagem(item.contagem)}>
+                <span className="conta__real">{item.valor}</span>
+                <span className="conta__anima" aria-hidden="true" />
+              </span>
+            ) : (
+              item.valor
+            )}
           </p>
           <p className="faixa__rotulo">{item.rotulo}</p>
           <p className="faixa__periodo">{item.periodo}</p>

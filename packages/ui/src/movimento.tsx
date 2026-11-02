@@ -15,13 +15,22 @@ function contagemDe(el: HTMLElement): Contagem {
   };
 }
 
+/** O texto que anda fica no irmão `aria-hidden`; o valor real continua no DOM, lido por leitores de tela. */
+function mostrar(el: HTMLElement, fracao: number): void {
+  const anima = el.querySelector('.conta__anima');
+  if (anima) anima.textContent = textoDaContagem(contagemDe(el), fracao);
+}
+
 function contar(el: HTMLElement): void {
-  const contagem = contagemDe(el);
   const inicio = performance.now();
   const passo = (agora: number): void => {
     const t = Math.min(1, (agora - inicio) / DURACAO_DA_CONTAGEM);
-    el.textContent = textoDaContagem(contagem, 1 - (1 - t) ** 3);
-    if (t < 1) requestAnimationFrame(passo);
+    if (t < 1) {
+      mostrar(el, 1 - (1 - t) ** 3);
+      requestAnimationFrame(passo);
+    } else {
+      delete el.dataset['contando'];
+    }
   };
   requestAnimationFrame(passo);
 }
@@ -79,7 +88,8 @@ export function Movimento(): null {
           }
         }
         if (el.dataset['conta'] !== undefined) {
-          el.textContent = textoDaContagem(contagemDe(el), 0);
+          el.dataset['contando'] = '1';
+          mostrar(el, 0);
         }
         observador.observe(el);
       }

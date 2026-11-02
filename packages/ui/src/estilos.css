@@ -126,30 +126,24 @@ img {
   color: var(--nota);
 }
 
-.destaque {
-  font-size: var(--t-destaque);
-  line-height: 1.4;
-  max-width: 34ch;
-}
-
-.titulo {
-  font-family: var(--fonte-titulo-pilha);
-  font-size: var(--t-pagina);
-  font-weight: 700;
-  line-height: 1.1;
-}
-
-.numeros {
-  font-variant-numeric: tabular-nums;
-}
-
-.oculto {
+.oculto,
+html.movimento [data-contando] .conta__real {
   position: absolute;
   width: 1px;
   height: 1px;
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
+}
+
+/* O link "Ir para o conteúdo" aparece quando recebe o foco do teclado. */
+.oculto:focus-visible {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip-path: none;
+  white-space: normal;
 }
 
 /* ── Botões e formulários ───────────────────────────────────────────────────────────────────── */
@@ -713,19 +707,6 @@ form[role='search'] select {
   max-width: 44ch;
 }
 
-.entradas {
-  padding: var(--entre-secoes) var(--margem);
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
-}
-
-.entradas > * {
-  width: 100%;
-  max-width: var(--largura);
-  margin: 0 auto;
-}
-
 .pilha {
   display: flex;
   flex-direction: column;
@@ -1093,6 +1074,28 @@ html.movimento .ranking__item:nth-child(n + 4) [data-surge='barra'] {
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;
+  }
+}
+
+/* Impressão e PDF: o que ainda não entrou na tela sai pronto, com o valor real dos números. */
+@media print {
+  html.movimento [data-surge] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .conta__anima {
+    display: none !important;
+  }
+
+  html.movimento [data-contando] .conta__real {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
   }
 }
 
@@ -1466,12 +1469,6 @@ button.botao--texto {
 }
 
 /* ── Páginas de lista ───────────────────────────────────────────────────────────────────────── */
-
-.contagem {
-  font-size: var(--t-destaque);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
 
 /* ── Editoria: o topo e o corpo de uma página de lista ───────────────────────────────────────── */
 .editoria__topo {
