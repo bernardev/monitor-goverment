@@ -65,8 +65,9 @@ número cobre. Presença e votos usam o `de`/`ate` que a API devolve. Os totais 
 a API entrega sem intervalo, usam `INICIO_DA_COBERTURA_DE_EMENDAS = 2023` (a base de emendas começa no
 orçamento de 2023) e a data da coleta: "desde o orçamento de 2023, até a coleta de dd/mm/aaaa". Se a
 fonte vier sem data de coleta, o texto omite o "até a coleta" e nunca mostra data inválida. As obras
-são chamadas de "obras com dinheiro de emenda": os dados são empenhos, e "pagas" afirmaria um
-pagamento que a fonte não registra.
+são chamadas de "obras com dinheiro de emenda", e não "obras pagas com emendas", nome que a
+especificação trazia e que esta decisão troca: o vínculo entre obra e emenda vem do empenho registrado
+no Obrasgov.br, e nem todo empenho virou pagamento; "pagas" afirmaria mais do que o dado mostra.
 
 **Movimento.** Leve, sem loop, em CSS e um script curto (`Movimento`), sem biblioteca:
 
@@ -113,5 +114,7 @@ novos dados ou rotas de API, modo escuro nem gráficos interativos.
 - **O que precisa acontecer a partir de agora:** toda página nova usa `@prometeu/ui`; cores, tamanhos e
   fontes fora dos tokens são recusados em revisão; toda seção de dado termina com fonte e período;
   nenhum título de seção volta ao pretérito; "sim" e "não" nunca em vermelho e verde nem em cor de
-  partido; o painel e o site passam pelo inspetor de direção de arte (1440, 768 e 390 px) antes de
+  partido; contraste AA, foco visível, conteúdo legível sem JavaScript e `prefers-reduced-motion`
+  respeitado em toda página nova; nenhuma dependência nova para o visual (fontes por
+  `next/font/google`, movimento em CSS e um script curto); o painel e o site passam pelo inspetor de direção de arte (1440, 768 e 390 px) antes de
   entrar.

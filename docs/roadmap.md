@@ -471,8 +471,8 @@ cada número ganha o período e a fonte, os termos técnicos ganham uma frase pa
 movimento leve que desliga com `prefers-reduced-motion` e some sem JavaScript. A capa se monta com
 a votação, a obra e os totais mais recentes. Site e painel usam o mesmo `packages/ui`.
 
-Fica para depois, de propósito: o modo escuro (os campos de cor são a identidade, e um tema escuro
-pede outra escolha de campos); a busca no telefone dentro da barra; e fotos próprias dos municípios e
+Fica para depois, de propósito: o modo escuro (o visual de jornal foi desenhado e conferido só sobre fundo branco, e um tema
+escuro pede nova escolha de tons, de contraste e de cores dos votos); a busca no telefone dentro da barra; e fotos próprias dos municípios e
 das obras, que não existem em acervo aberto.
 
 ## Etapa 6 em detalhe

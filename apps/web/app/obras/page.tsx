@@ -13,7 +13,7 @@ import { PaginaDeLista } from '../_componentes/pagina-de-lista';
 export const metadata: Metadata = {
   title: 'Obras com dinheiro de emenda | Prometeu',
   description:
-    'Obras federais com dinheiro de emendas parlamentares: em que pé estão, quanto já foi executado e quais emendas as pagam.',
+    'Obras federais com dinheiro de emendas parlamentares: em que pé estão, quanto já foi executado e de quais emendas veio o dinheiro.',
 };
 
 interface Props {

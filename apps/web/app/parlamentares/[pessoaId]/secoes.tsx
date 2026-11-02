@@ -318,14 +318,14 @@ export function Obras({ obras }: { obras: ObrasDoParlamentar }): ReactNode {
   const fonte = <FonteDaSecao fonte={maiores.itens[0]?.fonte} publicador="Obrasgov.br" />;
   const nota = (
     <p className="nota">
-      Obras do Obrasgov pagas por ao menos uma emenda deste parlamentar. A situação e a medição são
-      as que a fonte informa.
+      Obras do Obrasgov com dinheiro de ao menos uma emenda deste parlamentar. A situação e a
+      medição são as que a fonte informa.
     </p>
   );
   if (maiores.total === 0) {
     return (
       <Secao id="obras" titulo={SECOES.obras} periodo={periodo} fonte={fonte}>
-        <p>Nenhuma obra coletada paga por emendas deste parlamentar.</p>
+        <p>Nenhuma obra coletada com dinheiro das emendas deste parlamentar.</p>
         {nota}
       </Secao>
     );
