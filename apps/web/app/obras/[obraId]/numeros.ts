@@ -1,9 +1,14 @@
 import type { MedicaoDaObra } from '@prometeu/contracts';
-import { type NumeroChave, textoDaContagem } from '@prometeu/ui';
+import type { NumeroChave } from '@prometeu/ui';
 
-import { dataCurta, dia, periodoDasEmendas, reaisResumidos } from '../../_componentes/formatacao';
-
-const SEM_DADO = '—';
+import {
+  comContagem,
+  dataCurta,
+  dia,
+  periodoDasEmendas,
+  reaisResumidos,
+  SEM_DADO,
+} from '../../_componentes/formatacao';
 
 /** Largura, em letras minúsculas, que cabe em duas linhas do título no telefone (30 px). */
 const LARGURA_DO_TITULO = 34;
@@ -29,18 +34,17 @@ export function periodoAteAColeta(coletadaEm: string | null): string {
 export function numerosDaObra(dados: {
   medicao: MedicaoDaObra | null;
   investimentoPrevistoCentavos: string;
-  emendas: readonly { empenhadoCentavos: string }[];
+  /** Um item por empenho: a mesma emenda pode ter mais de um. */
+  emendas: readonly { codigoDaEmenda: string; empenhadoCentavos: string }[];
   coletadaEm: string | null;
 }): NumeroChave[] {
   const { medicao, emendas, coletadaEm } = dados;
+  const quantasEmendas = new Set(emendas.map((e) => e.codigoDaEmenda)).size;
   const empenhado = emendas.reduce((soma, e) => soma + BigInt(e.empenhadoCentavos), 0n);
-  const executado = medicao
-    ? { alvo: medicao.percentualCentesimos / 100, casas: 2, sufixo: '%' }
-    : null;
   return [
     {
-      ...(executado
-        ? { valor: textoDaContagem(executado, 1), contagem: executado }
+      ...(medicao
+        ? comContagem(medicao.percentualCentesimos / 100, { casas: 2, sufixo: '%' })
         : { valor: SEM_DADO }),
       rotulo: 'da obra executados, segundo o Obrasgov.br',
       periodo: !medicao
@@ -59,7 +63,7 @@ export function numerosDaObra(dados: {
     },
     {
       valor: emendas.length > 0 ? reaisResumidos(empenhado) : SEM_DADO,
-      rotulo: `empenhados (reservados no orçamento) por ${emendas.length === 0 ? '' : `${String(emendas.length)} `}${emendas.length === 1 ? 'emenda' : 'emendas'}`,
+      rotulo: `empenhados (reservados no orçamento) por ${quantasEmendas === 0 ? '' : `${String(quantasEmendas)} `}${quantasEmendas === 1 ? 'emenda' : 'emendas'}`,
       periodo: periodoDasEmendas(coletadaEm),
     },
   ];

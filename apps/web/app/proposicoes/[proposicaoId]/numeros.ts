@@ -1,14 +1,6 @@
-import { type NumeroChave, textoDaContagem } from '@prometeu/ui';
+import type { NumeroChave } from '@prometeu/ui';
 
-import { data, dia } from '../../_componentes/formatacao';
-
-const SEM_DADO = '—';
-
-/** O número com a contagem; o valor é o texto final dela, o mesmo que o servidor entrega sem JavaScript. */
-function comContagem(alvo: number): Pick<NumeroChave, 'valor' | 'contagem'> {
-  const contagem = { alvo };
-  return { valor: textoDaContagem(contagem, 1), contagem };
-}
+import { comContagem, data, dia, SEM_DADO } from '../../_componentes/formatacao';
 
 /** `de 3 de março de 2026 a 5 de junho de 2026`, do mais antigo ao mais recente; um dia só vira `em`. */
 function intervalo(valores: readonly string[], formatar: (v: string) => string): string | null {

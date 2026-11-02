@@ -3,7 +3,13 @@ import { textoDaContagem } from '@prometeu/ui';
 import { describe, expect, it } from 'vitest';
 
 import { reais } from '../../_componentes/formatacao';
-import { fasesDaEmenda, numerosDaEmenda, periodoDaEmenda, periodoDosFavorecidos } from './numeros';
+import {
+  classificacaoDoGasto,
+  fasesDaEmenda,
+  numerosDaEmenda,
+  periodoDaEmenda,
+  periodoDosFavorecidos,
+} from './numeros';
 
 const execucao: ExecucaoDaEmenda = {
   empenhadoCentavos: '10000000000',
@@ -90,5 +96,28 @@ describe('periodoDosFavorecidos', () => {
 
   it('sem favorecido, diz que não há pagamento registrado', () => {
     expect(periodoDosFavorecidos([])).toBe('nenhum pagamento registrado');
+  });
+});
+
+describe('classificacaoDoGasto', () => {
+  const c = (codigo: string, nome: string) => ({ codigo, nome });
+  const destino = {
+    funcao: c('10', 'Saúde'),
+    subfuncao: c('302', 'Assistência hospitalar e ambulatorial'),
+    programa: c('5118', 'Atenção especializada à saúde'),
+    acao: c('2E90', 'Incremento temporário'),
+    planoOrcamentario: c('0000', 'Plano padrão'),
+  };
+
+  it('diz em palavras simples como o gasto é classificado, com os nomes oficiais como valor', () => {
+    expect(classificacaoDoGasto(destino)).toBe(
+      'área 10 · Saúde; subárea 302 · Assistência hospitalar e ambulatorial; programa 5118 · Atenção especializada à saúde; ação 2E90 · Incremento temporário',
+    );
+  });
+
+  it('o plano orçamentário só entra quando não é o padrão (0000)', () => {
+    expect(classificacaoDoGasto({ ...destino, planoOrcamentario: c('0001', 'Plano X') })).toContain(
+      '; plano 0001 · Plano X',
+    );
   });
 });

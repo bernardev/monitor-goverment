@@ -1,4 +1,3 @@
-import type { ClassificacaoOrcamentaria } from '@prometeu/contracts';
 import { Explica, FaixaDeNumeros, Proporcao, Ranking, Secao } from '@prometeu/ui';
 import type { Metadata } from 'next';
 import Link from 'next/link';
@@ -12,15 +11,23 @@ import { FonteDaSecao } from '../../_componentes/fonte';
 import {
   nomeDaModalidade,
   nomeDoTipoDeEmenda,
+  NUMERO,
   pagoAteAgora,
   partesPagoEAPagar,
+  plural,
   reais,
   reaisResumidos,
 } from '../../_componentes/formatacao';
 import { GLOSSARIO } from '../../_componentes/glossario';
 import { ItemDeObra } from '../../_componentes/obras';
 import { Topo } from '../../_componentes/topo';
-import { fasesDaEmenda, numerosDaEmenda, periodoDaEmenda, periodoDosFavorecidos } from './numeros';
+import {
+  classificacaoDoGasto,
+  fasesDaEmenda,
+  numerosDaEmenda,
+  periodoDaEmenda,
+  periodoDosFavorecidos,
+} from './numeros';
 
 interface Props {
   readonly params: Promise<{ emendaId: string }>;
@@ -33,15 +40,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       ? `${identificacaoDaEmenda(emenda)} de ${emenda.autor.nome} | Prometeu`
       : 'Emenda não encontrada | Prometeu',
   };
-}
-
-const classificacao = (c: ClassificacaoOrcamentaria) => `${c.codigo} · ${c.nome}`;
-
-const NUMERO = new Intl.NumberFormat('pt-BR');
-
-/** `1 destino` ou `2 destinos`. */
-function plural(n: number, um: string, varios: string): string {
-  return `${NUMERO.format(n)} ${n === 1 ? um : varios}`;
 }
 
 export default async function PaginaDaEmenda({ params }: Props): Promise<ReactNode> {
@@ -138,6 +136,10 @@ export default async function PaginaDaEmenda({ params }: Props): Promise<ReactNo
         <p>
           {`${plural(emenda.destinacoes.length, 'destino', 'destinos')}, cada um com a ação do orçamento que paga.`}
         </p>
+        <p>
+          Abaixo de cada destino, os nomes oficiais com que o governo classifica esse gasto no
+          orçamento: a área (função), a subárea (subfunção), o programa e a ação.
+        </p>
         <ul className="linhas">
           {emenda.destinacoes.map((d) => (
             // A fonte não repete localidade com a mesma classificação: é a chave da destinação.
@@ -161,13 +163,7 @@ export default async function PaginaDaEmenda({ params }: Props): Promise<ReactNo
                   Empenhado {reais(d.execucao.empenhadoCentavos)} · pago até agora{' '}
                   {reais(pagoAteAgora(d.execucao))}
                 </p>
-                <p className="nota">
-                  Ação {d.acao.codigo} · programa {classificacao(d.programa)} · função{' '}
-                  {classificacao(d.funcao)} · subfunção {classificacao(d.subfuncao)}
-                  {d.planoOrcamentario.codigo !== '0000'
-                    ? ` · plano orçamentário ${classificacao(d.planoOrcamentario)}`
-                    : ''}
-                </p>
+                <p className="nota">Classificação no orçamento: {classificacaoDoGasto(d)}</p>
               </div>
             </li>
           ))}

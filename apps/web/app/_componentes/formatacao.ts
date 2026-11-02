@@ -1,4 +1,27 @@
-import type { Parte } from '@prometeu/ui';
+import { type Contagem, type NumeroChave, type Parte, textoDaContagem } from '@prometeu/ui';
+
+/** O valor de um número-chave sem dado: o rótulo e o período ficam, o valor não conta. */
+export const SEM_DADO = '—';
+
+/** Números para ler em português: `1.234`. */
+export const NUMERO = new Intl.NumberFormat('pt-BR');
+
+/** `1 autor` ou `2 autores`, com o número formatado. */
+export function plural(n: number, um: string, varios: string): string {
+  return `${NUMERO.format(n)} ${n === 1 ? um : varios}`;
+}
+
+/**
+ * O número com a contagem; o valor é o texto final dela, o mesmo que o servidor entrega sem
+ * JavaScript.
+ */
+export function comContagem(
+  alvo: number,
+  extras: Omit<Contagem, 'alvo'> = {},
+): Required<Pick<NumeroChave, 'valor' | 'contagem'>> {
+  const contagem = { alvo, ...extras };
+  return { valor: textoDaContagem(contagem, 1), contagem };
+}
 
 const CARGOS: Readonly<Record<string, string>> = {
   presidente: 'Presidente da República',

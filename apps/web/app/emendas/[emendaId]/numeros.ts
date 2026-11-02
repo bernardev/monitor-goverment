@@ -1,15 +1,19 @@
-import type { ExecucaoDaEmenda, FavorecidoDaEmenda } from '@prometeu/contracts';
-import { type ItemDoRanking, type NumeroChave, textoDaContagem } from '@prometeu/ui';
+import type {
+  ClassificacaoOrcamentaria,
+  ExecucaoDaEmenda,
+  FavorecidoDaEmenda,
+} from '@prometeu/contracts';
+import type { ItemDoRanking, NumeroChave } from '@prometeu/ui';
 
 import {
+  comContagem,
   dataCurta,
   pagoAteAgora,
   periodoEmMeses,
   reais,
   reaisResumidos,
+  SEM_DADO,
 } from '../../_componentes/formatacao';
-
-const SEM_DADO = '—';
 
 /** O período dos números de uma emenda: do orçamento do ano até a coleta, quando a data se sabe. */
 export function periodoDaEmenda(ano: number, coletadaEm: string | null): string {
@@ -31,9 +35,9 @@ export function numerosDaEmenda(dados: {
   const periodo = periodoDaEmenda(dados.ano, dados.coletadaEm);
   const comValor = empenhado > 0n;
   // Centésimos de ponto: 5000 é 50,00%. A conta é em inteiro, como o `percentual` do site.
-  const contagem = comValor
-    ? { alvo: Number((pago * 10000n) / empenhado) / 100, casas: 2, sufixo: '%' }
-    : null;
+  const parte = comValor
+    ? comContagem(Number((pago * 10000n) / empenhado) / 100, { casas: 2, sufixo: '%' })
+    : { valor: SEM_DADO };
   return [
     {
       valor: comValor ? reaisResumidos(pago) : SEM_DADO,
@@ -46,7 +50,7 @@ export function numerosDaEmenda(dados: {
       periodo,
     },
     {
-      ...(contagem ? { valor: textoDaContagem(contagem, 1), contagem } : { valor: SEM_DADO }),
+      ...parte,
       rotulo: 'do valor reservado já foi pago',
       periodo,
     },
@@ -86,6 +90,29 @@ export function fasesDaEmenda(execucao: ExecucaoDaEmenda): ItemDoRanking[] {
     fase('restos-pagos', 'Pago nos anos seguintes', execucao.restosPagosCentavos),
     fase('total', 'Pago até agora', pagoAteAgora(execucao), 'No ano do orçamento e depois'),
   ];
+}
+
+/**
+ * Como o governo classifica o gasto no orçamento, em palavras simples: área (função), subárea
+ * (subfunção), programa e ação, com os nomes oficiais como valor. O plano orçamentário só entra
+ * quando não é o padrão (`0000`).
+ */
+export function classificacaoDoGasto(d: {
+  funcao: ClassificacaoOrcamentaria;
+  subfuncao: ClassificacaoOrcamentaria;
+  programa: ClassificacaoOrcamentaria;
+  acao: ClassificacaoOrcamentaria;
+  planoOrcamentario: ClassificacaoOrcamentaria;
+}): string {
+  const c = (x: ClassificacaoOrcamentaria) => `${x.codigo} · ${x.nome}`;
+  const partes = [
+    `área ${c(d.funcao)}`,
+    `subárea ${c(d.subfuncao)}`,
+    `programa ${c(d.programa)}`,
+    `ação ${c(d.acao)}`,
+  ];
+  if (d.planoOrcamentario.codigo !== '0000') partes.push(`plano ${c(d.planoOrcamentario)}`);
+  return partes.join('; ');
 }
 
 /** Do primeiro ao último mês em que algum favorecido recebeu. */

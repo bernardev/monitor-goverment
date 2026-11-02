@@ -21,6 +21,8 @@ import {
   periodoDasEmendas,
   reais,
   reaisResumidos,
+  NUMERO,
+  plural,
 } from '../../_componentes/formatacao';
 import { GLOSSARIO } from '../../_componentes/glossario';
 import { ItemDeObra, situacaoEMedicao } from '../../_componentes/obras';
@@ -31,8 +33,6 @@ interface Props {
   readonly params: Promise<{ codigoIbge: string }>;
   readonly searchParams: Promise<{ pagina?: string }>;
 }
-
-const NUMERO = new Intl.NumberFormat('pt-BR');
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const municipio = await buscarMunicipio((await params).codigoIbge);
@@ -45,11 +45,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 function soma(autores: readonly AutorNoMunicipio[], campo: 'empenhadoCentavos' | 'pagoCentavos') {
   return autores.reduce((total, a) => total + BigInt(a[campo]), 0n);
-}
-
-/** `12 emendas` ou `1 emenda`, conforme a contagem. */
-function plural(n: number, um: string, varios: string): string {
-  return `${NUMERO.format(n)} ${n === 1 ? um : varios}`;
 }
 
 export default async function MeuGoverno({ params, searchParams }: Props): Promise<ReactNode> {

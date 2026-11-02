@@ -1,14 +1,11 @@
-import { type NumeroChave, textoDaContagem } from '@prometeu/ui';
+import type { NumeroChave } from '@prometeu/ui';
 
-import { periodoDasEmendas, reaisResumidos } from '../../_componentes/formatacao';
-
-const SEM_DADO = '—';
-
-/** O número com a contagem; o valor é o texto final dela, o mesmo que o servidor entrega sem JavaScript. */
-function comContagem(alvo: number): Pick<NumeroChave, 'valor' | 'contagem'> {
-  const contagem = { alvo };
-  return { valor: textoDaContagem(contagem, 1), contagem };
-}
+import {
+  comContagem,
+  periodoDasEmendas,
+  reaisResumidos,
+  SEM_DADO,
+} from '../../_componentes/formatacao';
 
 /**
  * Os quatro números da faixa do topo: pago, empenhado, emendas e obras. Sem dado, o valor é "—" e

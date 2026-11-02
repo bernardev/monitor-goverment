@@ -1,8 +1,10 @@
+import { textoDaContagem } from '@prometeu/ui';
 import { describe, expect, it } from 'vitest';
 
 import {
   artigoDaCasa,
   cnpj,
+  comContagem,
   documentoDoFavorecido,
   mes,
   nomeDoFavorecido,
@@ -11,6 +13,7 @@ import {
   percentual,
   periodoDasEmendas,
   periodoEmMeses,
+  plural,
   reais,
   reaisResumidos,
 } from './formatacao';
@@ -109,5 +112,25 @@ describe('artigoDaCasa', () => {
   it('a Câmara é feminina e o Senado, masculino', () => {
     expect(artigoDaCasa('camara_dos_deputados')).toBe('a');
     expect(artigoDaCasa('senado_federal')).toBe('o');
+  });
+});
+
+describe('plural', () => {
+  it('concorda com a contagem e formata o número em pt-BR', () => {
+    expect(plural(1, 'autor', 'autores')).toBe('1 autor');
+    expect(plural(0, 'autor', 'autores')).toBe('0 autores');
+    expect(plural(1234, 'ato', 'atos')).toBe('1.234 atos');
+  });
+});
+
+describe('comContagem', () => {
+  it('o valor é o texto final da contagem, com sufixo e casas', () => {
+    const n = comContagem(23.35, { casas: 2, sufixo: '%' });
+    expect(n.valor).toBe('23,35%');
+    expect(n.valor).toBe(textoDaContagem(n.contagem, 1));
+  });
+
+  it('sem extras, conta inteiros', () => {
+    expect(comContagem(1234)).toEqual({ valor: '1.234', contagem: { alvo: 1234 } });
   });
 });

@@ -3,23 +3,17 @@ import type {
   FonteDoDado,
   FrequenciaDoParlamentar,
 } from '@prometeu/contracts';
-import { type NumeroChave, textoDaContagem } from '@prometeu/ui';
+import type { NumeroChave } from '@prometeu/ui';
 
 import {
+  comContagem,
+  NUMERO,
   pagoAteAgora,
   periodoDasEmendas,
   periodoEmMeses,
   reaisResumidos,
+  SEM_DADO,
 } from '../../_componentes/formatacao';
-
-const NUMERO = new Intl.NumberFormat('pt-BR');
-const SEM_DADO = '—';
-
-/** O número com a contagem; o valor é o texto final dela, o mesmo que o servidor entrega sem JavaScript. */
-function comContagem(alvo: number, sufixo = ''): Pick<NumeroChave, 'valor' | 'contagem'> {
-  const contagem = { alvo, sufixo };
-  return { valor: textoDaContagem(contagem, 1), contagem };
-}
 
 /** A fonte coletada por último entre os itens listados (emendas ou obras); `undefined` se não há item. */
 export function fonteMaisRecente(
@@ -57,7 +51,7 @@ export function numerosDoParlamentar(dados: {
   return [
     {
       ...(resumo
-        ? comContagem(resumo.presencas, ` de ${NUMERO.format(resumo.diasComSessao)}`)
+        ? comContagem(resumo.presencas, { sufixo: ` de ${NUMERO.format(resumo.diasComSessao)}` })
         : { valor: SEM_DADO }),
       rotulo: 'dias de sessão em que esteve presente',
       periodo: periodoDaPresenca,
@@ -78,7 +72,7 @@ export function numerosDoParlamentar(dados: {
     },
     {
       ...(comEmendas && empenhado > 0n
-        ? comContagem(Number((pago * 100n) / empenhado), '%')
+        ? comContagem(Number((pago * 100n) / empenhado), { sufixo: '%' })
         : { valor: SEM_DADO }),
       rotulo: 'do valor das emendas já pago',
       periodo: periodoDasEmendasDele,

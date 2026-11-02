@@ -24,13 +24,17 @@ import {
 } from './_componentes/capa';
 import { DataDoDia } from './_componentes/data-do-dia';
 import { Fonte, FonteEmLinha } from './_componentes/fonte';
-import { dia, nomeDoResultado, periodoDasEmendas, reaisResumidos } from './_componentes/formatacao';
+import {
+  dia,
+  NUMERO,
+  nomeDoResultado,
+  periodoDasEmendas,
+  reaisResumidos,
+} from './_componentes/formatacao';
 import { GLOSSARIO } from './_componentes/glossario';
 import { lugarDaObra, situacaoEMedicao } from './_componentes/obras';
 import { partesDoPlacar } from './_componentes/placar';
 import { fonteMaisRecente } from './parlamentares/[pessoaId]/numeros';
-
-const NUMERO = new Intl.NumberFormat('pt-BR');
 
 /** A cidade de exemplo da coluna: Porto Alegre (RS). */
 const CIDADE_DE_EXEMPLO = { codigoIbge: '4314902', nome: 'Porto Alegre', uf: 'RS' } as const;

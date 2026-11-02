@@ -36,13 +36,12 @@ import {
   periodoEmMeses,
   reais,
   reaisResumidos,
+  NUMERO,
 } from '../../_componentes/formatacao';
 import { GLOSSARIO } from '../../_componentes/glossario';
 import { lugarDaObra, situacaoEMedicao } from '../../_componentes/obras';
 import { ROTULO_DA_OPCAO, TOM_DA_OPCAO } from '../../_componentes/placar';
 import { fonteMaisRecente } from './numeros';
-
-const NUMERO = new Intl.NumberFormat('pt-BR');
 
 /** As seções da página, na ordem em que aparecem; o sumário do topo leva a cada uma. */
 export const SECOES = {

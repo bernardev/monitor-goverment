@@ -8,6 +8,7 @@ import type { ReactNode } from 'react';
 import { buscarVotacao } from '../../_api/cliente';
 import { FonteDaSecao } from '../../_componentes/fonte';
 import {
+  artigoDaCasa,
   dia,
   identificacao,
   nomeDaCasa,
@@ -15,11 +16,12 @@ import {
   nomeDaSituacaoSemVoto,
   nomeDoMotivo,
   nomeDoResultado,
+  plural,
 } from '../../_componentes/formatacao';
 import { GLOSSARIO } from '../../_componentes/glossario';
 import { ORDEM_DAS_OPCOES, partesDoPlacar, placarEmFrase } from '../../_componentes/placar';
 import { Topo } from '../../_componentes/topo';
-import { numerosDaVotacao } from './numeros';
+import { numerosDaVotacao, textoDosVotos } from './numeros';
 
 interface Props {
   readonly params: Promise<{ votacaoId: string }>;
@@ -34,17 +36,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-const NUMERO = new Intl.NumberFormat('pt-BR');
-
-/** `1 parlamentar` ou `2 parlamentares`. */
-function plural(n: number, um: string, varios: string): string {
-  return `${NUMERO.format(n)} ${n === 1 ? um : varios}`;
-}
-
 export default async function PaginaDaVotacao({ params }: Props): Promise<ReactNode> {
   const votacao = await buscarVotacao((await params).votacaoId);
   if (!votacao) notFound();
   const casa = nomeDaCasa(votacao.casa);
+  const artigo = artigoDaCasa(votacao.casa);
   const periodo = dia(votacao.dia);
   const numeros = numerosDaVotacao(votacao);
   const resultado =
@@ -107,8 +103,8 @@ export default async function PaginaDaVotacao({ params }: Props): Promise<ReactN
       >
         <p>
           {votacao.secreta
-            ? 'Votação secreta: a casa registra quem votou, não como. '
-            : `${plural(votacao.votos.length, 'voto registrado', 'votos registrados')}: ${placarEmFrase(votacao)}. `}
+            ? `Votação secreta: ${artigo} ${casa} registra quem votou, não como. `
+            : `Placar informado ${artigo === 'a' ? 'pela' : 'pelo'} ${casa}: ${placarEmFrase(votacao)}. `}
           {resultado}
         </p>
         <Proporcao partes={partesDoPlacar(votacao)} />
@@ -124,9 +120,7 @@ export default async function PaginaDaVotacao({ params }: Props): Promise<ReactN
         periodo={periodo}
         fonte={<FonteDaSecao fonte={votacao.fonteDosVotos} publicador={casa} />}
       >
-        <p>
-          {`${plural(votacao.votos.length, 'parlamentar com voto registrado', 'parlamentares com voto registrado')}, com o partido do dia da votação.`}
-        </p>
+        <p>{textoDosVotos({ secreta: votacao.secreta, nomes: votacao.votos.length })}</p>
         <div className="pilha">
           {agrupar(votacao.votos, (v) => v.opcao)
             .sort(([a], [b]) => ORDEM_DAS_OPCOES.indexOf(a) - ORDEM_DAS_OPCOES.indexOf(b))
@@ -144,15 +138,15 @@ export default async function PaginaDaVotacao({ params }: Props): Promise<ReactN
       >
         {!votacao.relacaoCompleta ? (
           <p>
-            A Câmara lista só quem votou: não informa quem não votou. Quem não aparece na lista
-            acima não é, por isso, ausente.
+            {artigo.toUpperCase()} {casa} lista só quem votou: não informa quem não votou. Quem não
+            aparece na lista acima não é, por isso, ausente.
           </p>
         ) : votacao.semVoto.length === 0 ? (
-          <p>Todos os senadores em exercício têm voto registrado.</p>
+          <p>Todos os parlamentares em exercício têm voto registrado.</p>
         ) : (
           <>
             <p>
-              {`${plural(votacao.semVoto.length, 'senador em exercício sem voto registrado', 'senadores em exercício sem voto registrado')}, com a situação que o Senado informou.`}
+              {`${plural(votacao.semVoto.length, 'parlamentar em exercício sem voto registrado', 'parlamentares em exercício sem voto registrado')}, com a situação que ${artigo} ${casa} informou.`}
             </p>
             <div className="pilha">
               {agrupar(votacao.semVoto, (s) => s.situacao).map(([situacao, pessoas]) => (

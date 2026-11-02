@@ -16,6 +16,8 @@ import {
   nomeDaCasa,
   nomeDoResultado,
   nomeDoTipo,
+  NUMERO,
+  plural,
 } from '../../_componentes/formatacao';
 import { GLOSSARIO } from '../../_componentes/glossario';
 import { placarEmFrase } from '../../_componentes/placar';
@@ -36,13 +38,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       ? `${identificacao(proposicao)} | Prometeu`
       : 'Proposição não encontrada | Prometeu',
   };
-}
-
-const NUMERO = new Intl.NumberFormat('pt-BR');
-
-/** `1 autor` ou `2 autores`. */
-function plural(n: number, um: string, varios: string): string {
-  return `${NUMERO.format(n)} ${n === 1 ? um : varios}`;
 }
 
 export default async function PaginaDaProposicao({ params }: Props): Promise<ReactNode> {

@@ -1,6 +1,6 @@
 import type { ObraDetalhada, VotacaoNominalResumo } from '@prometeu/contracts';
 
-import { dataCurta, dia, identificacao } from './formatacao';
+import { dataCurta, dia, identificacao, NUMERO } from './formatacao';
 
 const DATA_POR_EXTENSO = new Intl.DateTimeFormat('pt-BR', {
   dateStyle: 'full',
@@ -67,8 +67,6 @@ export function fraseDaInterrupcao(interrupcoes: readonly Interrupcao[]): string
     : 'A fonte não informa o motivo';
   return juntarFrases(`${VERBO_DA_INTERRUPCAO[i.tipo]} ${dia(i.em.slice(0, 10))}`, motivo);
 }
-
-const NUMERO = new Intl.NumberFormat('pt-BR');
 
 export function rotuloDeEmendas(total: number): string {
   return total === 1 ? 'emenda ao orçamento acompanhada' : 'emendas ao orçamento acompanhadas';

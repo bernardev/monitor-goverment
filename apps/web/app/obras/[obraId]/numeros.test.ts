@@ -6,7 +6,10 @@ import { nomeCabeNoTitulo, numerosDaObra, periodoAteAColeta } from './numeros';
 const base = {
   medicao: { percentualCentesimos: 2335, em: '2026-10-21' },
   investimentoPrevistoCentavos: '250000000',
-  emendas: [{ empenhadoCentavos: '100000000' }, { empenhadoCentavos: '50000000' }],
+  emendas: [
+    { codigoDaEmenda: 'A', empenhadoCentavos: '100000000' },
+    { codigoDaEmenda: 'B', empenhadoCentavos: '50000000' },
+  ],
   coletadaEm: '2026-10-30T19:46:00Z',
 };
 
@@ -68,10 +71,23 @@ describe('numerosDaObra', () => {
     expect(executado?.periodo).toBe('medição sem data informada');
   });
 
+  it('uma emenda com dois empenhos conta uma vez, mas soma os dois valores', () => {
+    const [, , reservado] = numerosDaObra({
+      ...base,
+      emendas: [
+        { codigoDaEmenda: 'A', empenhadoCentavos: '100000000' },
+        { codigoDaEmenda: 'A', empenhadoCentavos: '50000000' },
+      ],
+    });
+    expect(reservado?.rotulo).toBe('empenhados (reservados no orçamento) por 1 emenda');
+    expect(reservado?.valor).toBe('R$ 1,5 milhão');
+  });
+
   it('sem emendas, a terceira fica em "—"; com uma, o rótulo usa o singular', () => {
     expect(numerosDaObra({ ...base, emendas: [] })[2]?.valor).toBe('—');
-    expect(numerosDaObra({ ...base, emendas: [{ empenhadoCentavos: '100' }] })[2]?.rotulo).toBe(
-      'empenhados (reservados no orçamento) por 1 emenda',
-    );
+    expect(
+      numerosDaObra({ ...base, emendas: [{ codigoDaEmenda: 'A', empenhadoCentavos: '100' }] })[2]
+        ?.rotulo,
+    ).toBe('empenhados (reservados no orçamento) por 1 emenda');
   });
 });

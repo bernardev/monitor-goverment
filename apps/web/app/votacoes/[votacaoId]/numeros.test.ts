@@ -1,7 +1,7 @@
 import { textoDaContagem } from '@prometeu/ui';
 import { describe, expect, it } from 'vitest';
 
-import { numerosDaVotacao } from './numeros';
+import { numerosDaVotacao, textoDosVotos } from './numeros';
 
 const placar = {
   sim: 300,
@@ -44,5 +44,32 @@ describe('numerosDaVotacao', () => {
     expect(
       numerosDaVotacao({ placar: { ...placar, secreto: 80 }, secreta: true, dia: '2026-03-12' }),
     ).toEqual([]);
+  });
+});
+
+describe('textoDosVotos', () => {
+  it('conta os nomes da lista da casa, sem chamar de placar', () => {
+    expect(textoDosVotos({ secreta: false, nomes: 503 })).toBe(
+      '503 nomes na lista de votos da casa, com o partido do dia da votação.',
+    );
+    expect(textoDosVotos({ secreta: false, nomes: 1 })).toContain('1 nome na lista');
+  });
+
+  it('votação secreta com nomes: diz quem votou, sem o voto de cada um', () => {
+    expect(textoDosVotos({ secreta: true, nomes: 67 })).toBe(
+      '67 parlamentares na lista de quem votou; o voto de cada um é secreto.',
+    );
+  });
+
+  it('votação secreta sem nomes: diz que o voto foi secreto, não "0 parlamentares"', () => {
+    const texto = textoDosVotos({ secreta: true, nomes: 0 });
+    expect(texto).toBe('Votação secreta: a casa não informa o voto de cada um.');
+    expect(texto).not.toContain('0 parlamentares');
+  });
+
+  it('votação aberta sem nenhum nome diz que a lista veio vazia', () => {
+    expect(textoDosVotos({ secreta: false, nomes: 0 })).toBe(
+      'A lista de votos da casa não traz nenhum nome.',
+    );
   });
 });

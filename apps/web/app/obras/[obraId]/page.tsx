@@ -10,7 +10,9 @@ import {
   cnpj,
   dia,
   nomeDaSituacaoDaObra,
+  NUMERO,
   percentual,
+  periodoDasEmendas,
   reais,
   reaisResumidos,
 } from '../../_componentes/formatacao';
@@ -33,8 +35,6 @@ const INTERRUPCOES: Readonly<Record<string, string>> = {
   cancelada: 'Cancelada',
   inacabada: 'Declarada inacabada',
 };
-
-const NUMERO = new Intl.NumberFormat('pt-BR');
 
 /** A fonte costuma repetir o nome na descrição, às vezes com outra caixa ou um ponto final. */
 function mesmoTexto(a: string, b: string): boolean {
@@ -74,7 +74,7 @@ export default async function PaginaDaObra({ params }: Props): Promise<ReactNode
   const secoes = [
     ['andamento', 'Andamento'],
     ['paradas', 'Paradas, se houve'],
-    ['pago', 'Quanto foi pago'],
+    ['reservado', 'Dinheiro de emenda reservado para a obra'],
   ] as const;
 
   return (
@@ -198,7 +198,12 @@ export default async function PaginaDaObra({ params }: Props): Promise<ReactNode
         )}
       </Secao>
 
-      <Secao id="pago" titulo="Quanto foi pago" periodo={ateAColeta} fonte={fonte}>
+      <Secao
+        id="reservado"
+        titulo="Dinheiro de emenda reservado para a obra"
+        periodo={periodoDasEmendas(obra.fonte.coletadaEm)}
+        fonte={fonte}
+      >
         {emendas.length === 0 ? (
           <p>Nenhum empenho de emenda parlamentar ligado a esta obra.</p>
         ) : (
