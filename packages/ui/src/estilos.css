@@ -635,7 +635,7 @@ form.busca .botao {
 }
 
 /* ── Páginas sem capítulos (listas, detalhes) ───────────────────────────────────────────────── */
-main:not(.capitulos) {
+main:not(.capitulos, .reportagem) {
   max-width: var(--largura);
   margin: 0 auto;
   padding: clamp(40px, 6vw, 88px) var(--margem) var(--entre-secoes);
@@ -644,11 +644,11 @@ main:not(.capitulos) {
   gap: 28px;
 }
 
-main:not(.capitulos) > p:first-child a {
+main:not(.capitulos, .reportagem) > p:first-child a {
   font-size: var(--t-nota);
 }
 
-main:not(.capitulos) h1 {
+main:not(.capitulos, .reportagem) h1 {
   font-size: var(--t-titulo);
   font-weight: 900;
   line-height: 0.95;
@@ -656,27 +656,27 @@ main:not(.capitulos) h1 {
   max-width: 22ch;
 }
 
-main:not(.capitulos) h2 {
+main:not(.capitulos, .reportagem) h2 {
   font-size: clamp(28px, 3vw, 40px);
   font-weight: 900;
   letter-spacing: -0.03em;
   margin-top: 40px;
 }
 
-main:not(.capitulos) h3 {
+main:not(.capitulos, .reportagem) h3 {
   font-size: 24px;
   font-weight: 700;
   margin-top: 24px;
 }
 
-main:not(.capitulos) > p,
-main:not(.capitulos) section > p,
-main:not(.capitulos) article > p {
+main:not(.capitulos, .reportagem) > p,
+main:not(.capitulos, .reportagem) section > p,
+main:not(.capitulos, .reportagem) article > p {
   max-width: 72ch;
 }
 
-main:not(.capitulos) section,
-main:not(.capitulos) article {
+main:not(.capitulos, .reportagem) section,
+main:not(.capitulos, .reportagem) article {
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -769,9 +769,9 @@ form[role='search'] {
 
 form[role='search'] input,
 form[role='search'] select,
-main:not(.capitulos) select,
-main:not(.capitulos) input[type='search'],
-main:not(.capitulos) input[type='text'] {
+main:not(.capitulos, .reportagem) select,
+main:not(.capitulos, .reportagem) input[type='search'],
+main:not(.capitulos, .reportagem) input[type='text'] {
   min-height: 48px;
   padding: 0 18px;
   border: 2px solid var(--tinta);
@@ -781,7 +781,7 @@ main:not(.capitulos) input[type='text'] {
   font: inherit;
 }
 
-main:not(.capitulos) button {
+main:not(.capitulos, .reportagem) button {
   min-height: 48px;
   padding: 0 22px;
   border: 0;
@@ -791,6 +791,69 @@ main:not(.capitulos) button {
   font: inherit;
   font-weight: 500;
   cursor: pointer;
+}
+
+/* ── Página de reportagem: o cabeçalho da pessoa e o índice das seções ─────────────────────────── */
+.reportagem {
+  max-width: var(--largura);
+  margin: 0 auto;
+  padding: clamp(24px, 4vw, 40px) var(--margem) var(--entre-secoes);
+}
+
+.reportagem__cabeca {
+  display: flex;
+  gap: 16px 20px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.reportagem__foto {
+  flex: none;
+  width: 96px;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  background: var(--superficie);
+}
+
+.reportagem__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.reportagem__fina {
+  color: var(--tinta-2);
+}
+
+.reportagem__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 16px;
+}
+
+.reportagem__nota {
+  margin-top: 10px;
+  color: var(--tinta-2);
+  font-size: var(--t-nota);
+}
+
+.indice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.indice a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
 }
 
 /* ── Movimento ──────────────────────────────────────────────────────────────────────────────── */
@@ -1149,6 +1212,14 @@ main:not(.capitulos) button {
 
 .secao {
   margin-top: clamp(32px, 5vw, 48px);
+}
+
+.secao > * + * {
+  margin-top: 12px;
+}
+
+.secao > .secao__cabeca + * {
+  margin-top: 0;
 }
 
 .secao__cabeca {
@@ -1532,11 +1603,12 @@ html.movimento .ranking__item:nth-child(n + 4) [data-surge='barra'] {
   }
 }
 
-/* Uma foto de ponta a ponta, com a legenda e o crédito embaixo. */
-.faixa {
+/* Uma foto de ponta a ponta, com a legenda e o crédito embaixo. Só o <figure>: o <div class="faixa"> é a faixa de números. */
+figure.faixa {
   margin: 0;
   display: flex;
   flex-direction: column;
+  border: 0;
 }
 
 .faixa__foto {
@@ -1690,7 +1762,7 @@ html.movimento .ranking__item:nth-child(n + 4) [data-surge='barra'] {
   background: var(--fio);
 }
 
-main:not(.capitulos) button.botao--texto,
+main:not(.capitulos, .reportagem) button.botao--texto,
 button.botao--texto {
   min-height: 44px;
   padding: 0;

@@ -256,3 +256,28 @@ export function partesPagoEAPagar(pago: bigint, empenhado: bigint): Parte[] {
     },
   ];
 }
+
+/** A base de emendas começa no orçamento de 2023 (roadmap, fatia 4.1); se recuar, muda só aqui. */
+export const INICIO_DA_COBERTURA_DE_EMENDAS = 2023;
+
+const DATA_CURTA = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo' });
+
+/** O intervalo dos números de emendas, que a API entrega sem `de`/`ate`: do primeiro orçamento à coleta. */
+export function periodoDasEmendas(coletadaEm: string | null): string {
+  const desde = `desde o orçamento de ${String(INICIO_DA_COBERTURA_DE_EMENDAS)}`;
+  return coletadaEm === null
+    ? desde
+    : `${desde}, até a coleta de ${DATA_CURTA.format(new Date(coletadaEm))}`;
+}
+
+const MESES_ABREVIADOS = MESES.map((m) => `${m}.`);
+
+/** `2026-08-04` a `2026-11-01` → `ago. a nov. de 2026`; o período por mês, como o jornal escreve. */
+export function periodoEmMeses(de: string, ate: string): string {
+  const [anoDe = '', mesDe = ''] = de.split('-');
+  const [anoAte = '', mesAte = ''] = ate.split('-');
+  const nome = (m: string) => MESES_ABREVIADOS[Number(m) - 1] ?? m;
+  if (anoDe !== anoAte) return `${nome(mesDe)} de ${anoDe} a ${nome(mesAte)} de ${anoAte}`;
+  if (mesDe === mesAte) return `${nome(mesDe)} de ${anoDe}`;
+  return `${nome(mesDe)} a ${nome(mesAte)} de ${anoDe}`;
+}

@@ -8,6 +8,8 @@ import {
   pagoAteAgora,
   partesPagoEAPagar,
   percentual,
+  periodoDasEmendas,
+  periodoEmMeses,
   reais,
   reaisResumidos,
 } from './formatacao';
@@ -78,5 +80,26 @@ describe('percentual', () => {
     [10_194, '101,94%'],
   ])('%s centésimos → %s', (centesimos, esperado) => {
     expect(percentual(centesimos)).toBe(esperado);
+  });
+});
+
+describe('periodoDasEmendas', () => {
+  it('diz desde quando e até a coleta', () => {
+    expect(periodoDasEmendas('2026-10-30T19:46:00Z')).toBe(
+      'desde o orçamento de 2023, até a coleta de 30/10/2026',
+    );
+  });
+  it('sem data de coleta, diz só desde quando', () => {
+    expect(periodoDasEmendas(null)).toBe('desde o orçamento de 2023');
+  });
+});
+
+describe('periodoEmMeses', () => {
+  it.each([
+    ['2026-08-04', '2026-11-01', 'ago. a nov. de 2026'],
+    ['2026-08-04', '2026-08-30', 'ago. de 2026'],
+    ['2025-11-04', '2026-02-01', 'nov. de 2025 a fev. de 2026'],
+  ])('%s a %s → %s', (de, ate, esperado) => {
+    expect(periodoEmMeses(de, ate)).toBe(esperado);
   });
 });

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { Chapeu, FaixaDeNumeros } from '@prometeu/ui';
 import type { ReactNode } from 'react';
 
 import {
@@ -13,6 +14,7 @@ import {
 import { Acompanhar } from '../../_componentes/acompanhar';
 import { Fonte } from '../../_componentes/fonte';
 import { data, nomeDoCargo } from '../../_componentes/formatacao';
+import { numerosDoParlamentar } from './numeros';
 import {
   Autorias,
   Emendas,
@@ -20,9 +22,9 @@ import {
   type ObrasDoParlamentar,
   Presenca,
   Promessas,
-  VERBOS,
+  SECOES,
   Votos,
-} from './capitulos';
+} from './secoes';
 
 interface Props {
   readonly params: Promise<{ pessoaId: string }>;
@@ -59,44 +61,56 @@ export default async function PerfilDoParlamentar({ params }: Props): Promise<Re
   if (!perfil) notFound();
 
   // A frequência diária só é coletada na Câmara; no Senado, a ausência e o motivo vêm em cada
-  // votação.
+  // votação. Sem presença, a faixa fica só com os números de emendas.
   const comPresenca = frequencia !== undefined && perfil.cargo !== 'senador';
-  const capitulos = Object.entries(VERBOS).filter(([id]) => id !== 'compareceu' || comPresenca);
+  const numeros = numerosDoParlamentar({ frequencia, emendas });
+  const secoes = Object.entries(SECOES).filter(([id]) => id !== 'presenca' || comPresenca);
+  const partidoEUf = [perfil.siglaPartido ?? 'sem partido', perfil.uf].filter(Boolean).join('-');
 
   return (
-    <main className="capitulos">
-      <section className="retrato" data-campo="papel" aria-labelledby="nome">
-        <div className="retrato__miolo">
-          <div className="retrato__texto">
-            <h1 id="nome" className="retrato__nome">
-              {perfil.nome}
-            </h1>
-            <p className="destaque">
-              {nomeDoCargo(perfil.cargo)}
-              {perfil.uf ? ` por ${perfil.uf}` : ''} · {perfil.siglaPartido ?? 'sem partido'}
-              {perfil.mandato
-                ? `. Mandato de ${data(perfil.mandato.inicio)}${perfil.mandato.fim ? ` a ${data(perfil.mandato.fim)}` : ', em curso'}.`
-                : '.'}
+    <main className="reportagem">
+      <header className="reportagem__cabeca">
+        {perfil.urlDaFoto && (
+          <img
+            className="reportagem__foto"
+            src={perfil.urlDaFoto}
+            alt={`Foto oficial de ${perfil.nome}`}
+          />
+        )}
+        <div className="reportagem__texto">
+          <Chapeu>
+            {nomeDoCargo(perfil.cargo)}
+            {perfil.mandato && !perfil.mandato.fim ? ' · em exercício' : ''}
+          </Chapeu>
+          <h1>{perfil.nome}</h1>
+          <div className="reportagem__acoes">
+            <p className="reportagem__fina">
+              {partidoEUf}
+              {perfil.mandato ? ` · mandato desde ${data(perfil.mandato.inicio)}` : ''}
             </p>
-            <nav aria-label="O que fez">
-              <ul className="sumario">
-                {capitulos.map(([id, verbo]) => (
-                  <li key={id}>
-                    <a href={`#${id}`}>{verbo}</a>
-                  </li>
-                ))}
-              </ul>
-            </nav>
             <Acompanhar tipo="parlamentar" id={pessoaId} volta={`/parlamentares/${pessoaId}`} />
-            <Fonte fonte={perfil.mandato?.fonte ?? perfil.fonte} />
           </div>
-          {perfil.urlDaFoto && (
-            <figure className="retrato__foto">
-              <img src={perfil.urlDaFoto} alt={`Foto oficial de ${perfil.nome}`} />
-            </figure>
-          )}
+          <Fonte fonte={perfil.mandato?.fonte ?? perfil.fonte} />
         </div>
-      </section>
+      </header>
+
+      <FaixaDeNumeros itens={comPresenca ? numeros : numeros.slice(2)} />
+      <p className="reportagem__nota">
+        {comPresenca
+          ? 'Os números de presença contam só os dias de sessão já coletados da Câmara. '
+          : ''}
+        Os de emendas somam as emendas individuais ligadas a este parlamentar.
+      </p>
+
+      <nav aria-label="Nesta página">
+        <ul className="indice">
+          {secoes.map(([id, titulo]) => (
+            <li key={id}>
+              <a href={`#${id}`}>{titulo}</a>
+            </li>
+          ))}
+        </ul>
+      </nav>
 
       <Promessas />
       {comPresenca && <Presenca frequencia={frequencia} />}
