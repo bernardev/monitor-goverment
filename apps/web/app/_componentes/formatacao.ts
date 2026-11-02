@@ -262,12 +262,15 @@ export const INICIO_DA_COBERTURA_DE_EMENDAS = 2023;
 
 const DATA_CURTA = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo' });
 
+/** `30/10/2026`, no horário de Brasília. */
+export function dataCurta(iso: string): string {
+  return DATA_CURTA.format(new Date(iso));
+}
+
 /** O intervalo dos números de emendas, que a API entrega sem `de`/`ate`: do primeiro orçamento à coleta. */
 export function periodoDasEmendas(coletadaEm: string | null): string {
   const desde = `desde o orçamento de ${String(INICIO_DA_COBERTURA_DE_EMENDAS)}`;
-  return coletadaEm === null
-    ? desde
-    : `${desde}, até a coleta de ${DATA_CURTA.format(new Date(coletadaEm))}`;
+  return coletadaEm === null ? desde : `${desde}, até a coleta de ${dataCurta(coletadaEm)}`;
 }
 
 const MESES_ABREVIADOS = MESES.map((m) => `${m}.`);

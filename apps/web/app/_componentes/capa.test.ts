@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
-import { dataPorExtenso, resumirTexto, tituloDaManchete } from './capa';
+import {
+  dataPorExtenso,
+  fraseDaInterrupcao,
+  juntarFrases,
+  periodoDaPresenca,
+  resumirTexto,
+  rotuloDeEmendas,
+  rotuloDeObras,
+  tituloDaManchete,
+} from './capa';
 
 describe('dataPorExtenso', () => {
   it('escreve o dia da semana e a data completa', () => {
@@ -69,5 +78,85 @@ describe('resumirTexto', () => {
   });
   it('junta quebras de linha', () => {
     expect(resumirTexto('a\n\n  b', 10)).toBe('a b');
+  });
+});
+
+describe('juntarFrases', () => {
+  it('põe ponto onde falta e não duplica pontuação', () => {
+    expect(juntarFrases('Votação de 1 de março', 'Resultado: aprovada.', 'Sobre o texto…')).toBe(
+      'Votação de 1 de março. Resultado: aprovada. Sobre o texto…',
+    );
+  });
+  it('ignora o que está vazio', () => {
+    expect(juntarFrases('A', '', null, undefined, ' B ')).toBe('A. B.');
+  });
+});
+
+describe('fraseDaInterrupcao', () => {
+  const paralisada = {
+    tipo: 'paralisada',
+    em: '2026-03-06',
+    justificativa: 'Falta de recursos.',
+  } as const;
+  it('diz quando parou e o motivo', () => {
+    expect(fraseDaInterrupcao([paralisada])).toBe(
+      'Parou em 6 de março de 2026. Motivo informado: Falta de recursos.',
+    );
+  });
+  it('sem justificativa, diz que a fonte não informa', () => {
+    expect(fraseDaInterrupcao([{ ...paralisada, justificativa: null }])).toBe(
+      'Parou em 6 de março de 2026. A fonte não informa o motivo.',
+    );
+  });
+  it('prefere a paralisação mais recente a outro tipo de interrupção', () => {
+    const cancelada = { tipo: 'cancelada', em: '2026-09-01', justificativa: null } as const;
+    expect(fraseDaInterrupcao([cancelada, paralisada])).toContain('Parou em 6 de março');
+  });
+  it('sem paralisação, usa o verbo do tipo que há', () => {
+    const cancelada = { tipo: 'cancelada', em: '2026-09-01', justificativa: null } as const;
+    expect(fraseDaInterrupcao([cancelada])).toBe(
+      'Cancelada em 1 de setembro de 2026. A fonte não informa o motivo.',
+    );
+  });
+  it('sem interrupção, não inventa frase', () => {
+    expect(fraseDaInterrupcao([])).toBe('');
+  });
+});
+
+describe('concordância dos totais', () => {
+  it('emendas', () => {
+    expect(rotuloDeEmendas(1)).toBe('emenda ao orçamento acompanhada');
+    expect(rotuloDeEmendas(25131)).toBe('emendas ao orçamento acompanhadas');
+  });
+  it('obras concluídas', () => {
+    expect(rotuloDeObras(1, 1)).toBe('obra concluída, de 1 paga com emendas');
+    expect(rotuloDeObras(878, 10121)).toBe('obras concluídas, de 10.121 pagas com emendas');
+    expect(rotuloDeObras(0, 1)).toBe('obras concluídas, de 1 paga com emendas');
+  });
+});
+
+describe('presença', () => {
+  const fontes = [
+    { fonte: 'senado', ultimaColetaEm: '2026-10-29T10:00:00Z', tabelas: [] },
+    {
+      fonte: 'camara',
+      ultimaColetaEm: '2026-10-31T18:04:00Z',
+      tabelas: [
+        { tabela: 'camara_deputado', ultimaColetaEm: '2026-10-31T17:00:00Z' },
+        { tabela: 'camara_frequencia_dia', ultimaColetaEm: '2026-10-31T15:50:00Z' },
+      ],
+    },
+  ];
+  it('usa a coleta da tabela de frequência da Câmara', () => {
+    expect(periodoDaPresenca(fontes)).toBe('dias de sessão coletados até 31/10/2026');
+  });
+  it('sem a tabela, cai na última coleta da Câmara', () => {
+    expect(periodoDaPresenca([{ ...fontes[1]!, tabelas: [] }])).toBe(
+      'dias de sessão coletados até 31/10/2026',
+    );
+  });
+  it('sem coleta ou sem a fonte, diz que não há dias coletados', () => {
+    expect(periodoDaPresenca(undefined)).toBe('sem dias de sessão coletados');
+    expect(periodoDaPresenca([fontes[0]!])).toBe('sem dias de sessão coletados');
   });
 });

@@ -10,8 +10,19 @@ import {
   listarEmendas,
   listarObras,
   listarVotacoes,
+  situacaoDasFontes,
 } from './_api/cliente';
-import { dataPorExtenso, resumirTexto, tituloDaManchete } from './_componentes/capa';
+import {
+  fraseDaInterrupcao,
+  juntarFrases,
+  periodoDaPresenca,
+  resumirTexto,
+  rotuloDeEmendas,
+  rotuloDeObras,
+  tituloDaManchete,
+  dataPorExtenso,
+} from './_componentes/capa';
+import { DataDoDia } from './_componentes/data-do-dia';
 import { Fonte, FonteEmLinha } from './_componentes/fonte';
 import { dia, nomeDoResultado, periodoDasEmendas, reaisResumidos } from './_componentes/formatacao';
 import { GLOSSARIO } from './_componentes/glossario';
@@ -30,14 +41,16 @@ function tentar<T>(promessa: Promise<T>): Promise<T | undefined> {
 }
 
 export default async function PaginaInicial(): Promise<ReactNode> {
-  const [votacoes, paralisadas, emendas, obras, concluidas, autoresDoExemplo] = await Promise.all([
-    tentar(listarVotacoes(1)),
-    tentar(listarObras({ situacao: 'paralisada', pagina: 1, itens: 1 })),
-    tentar(listarEmendas({ pagina: 1 })),
-    tentar(listarObras({ pagina: 1, itens: 1 })),
-    tentar(listarObras({ situacao: 'concluida', pagina: 1, itens: 1 })),
-    tentar(autoresNoMunicipio(CIDADE_DE_EXEMPLO.codigoIbge)),
-  ]);
+  const [votacoes, paralisadas, emendas, obras, concluidas, autoresDoExemplo, fontes] =
+    await Promise.all([
+      tentar(listarVotacoes(1)),
+      tentar(listarObras({ situacao: 'paralisada', pagina: 1, itens: 1 })),
+      tentar(listarEmendas({ pagina: 1 })),
+      tentar(listarObras({ pagina: 1, itens: 1 })),
+      tentar(listarObras({ situacao: 'concluida', pagina: 1, itens: 1 })),
+      tentar(autoresNoMunicipio(CIDADE_DE_EXEMPLO.codigoIbge)),
+      tentar(situacaoDasFontes()),
+    ]);
   const obraParada = paralisadas?.itens[0];
   const detalheDaObra = obraParada ? await tentar(buscarObra(obraParada.obraId)) : undefined;
   const votacao = votacoes?.itens[0];
@@ -51,14 +64,14 @@ export default async function PaginaInicial(): Promise<ReactNode> {
   if (emendas && emendas.total > 0) {
     numeros.push({
       valor: NUMERO.format(emendas.total),
-      rotulo: 'emendas ao orçamento acompanhadas',
+      rotulo: rotuloDeEmendas(emendas.total),
       periodo: periodoDasEmendasNoSite,
     });
   }
   if (concluidas && obras) {
     numeros.push({
       valor: NUMERO.format(concluidas.total),
-      rotulo: `${concluidas.total === 1 ? 'obra concluída' : 'obras concluídas'}, de ${NUMERO.format(obras.total)} pagas com emendas`,
+      rotulo: rotuloDeObras(concluidas.total, obras.total),
       periodo: periodoDasEmendas(fonteDasObras?.coletadaEm ?? null),
     });
   }
@@ -67,7 +80,7 @@ export default async function PaginaInicial(): Promise<ReactNode> {
     <main className="reportagem capa">
       <h1 className="oculto">Prometeu: o que o governo federal prometeu e fez</h1>
       <p className="capa__topo">
-        <span>{dataPorExtenso(new Date())}</span>
+        <DataDoDia inicial={dataPorExtenso(new Date())} />
         <span>O que cada político prometeu e o que fez depois, com a fonte de cada fato.</span>
       </p>
 
@@ -85,15 +98,15 @@ export default async function PaginaInicial(): Promise<ReactNode> {
             <Chamada
               tamanho="secundaria"
               chapeu="Presença"
-              titulo="Faltas com o motivo dado ao plenário, dia a dia"
+              titulo="Faltas com o motivo dado à Câmara, dia a dia"
               href="/parlamentares"
               linhaFina={
                 <>
-                  Cada deputado e senador tem a presença nas sessões registrada, e a falta
-                  justificada traz o motivo aceito pela Casa. Escolha um parlamentar para ver.
+                  Cada deputado tem a presença nas sessões da Câmara registrada, e a falta
+                  justificada traz o motivo aceito pela Casa. Escolha um deputado para ver.
                 </>
               }
-              fonte="Fonte: Câmara dos Deputados e Senado Federal, na página de cada parlamentar."
+              fonte={`Fonte: Câmara dos Deputados, ${periodoDaPresenca(fontes)}.`}
             />
           </div>
         </div>
@@ -120,7 +133,7 @@ export default async function PaginaInicial(): Promise<ReactNode> {
                 Buscar
               </button>
             </form>
-            {pagoNoExemplo !== undefined && (
+            {fonteDasEmendas && pagoNoExemplo !== undefined && pagoNoExemplo > 0n && (
               <div className="capa__exemplo">
                 <Chapeu>Por exemplo</Chapeu>
                 <Link href={`/municipios/${CIDADE_DE_EXEMPLO.codigoIbge}`}>
@@ -216,7 +229,7 @@ function Manchete({ votacao }: { votacao: VotacaoNominalResumo }): ReactNode {
   const resultado =
     votacao.resultado === 'nao_informado'
       ? ''
-      : ` Resultado: ${nomeDoResultado(votacao.resultado).toLowerCase()}.`;
+      : `Resultado: ${nomeDoResultado(votacao.resultado).toLowerCase()}`;
   return (
     <div className="capa__manchete">
       <Chamada
@@ -226,7 +239,12 @@ function Manchete({ votacao }: { votacao: VotacaoNominalResumo }): ReactNode {
         href={`/votacoes/${votacao.votacaoId}`}
         linhaFina={
           <>
-            Votação nominal de {dia(votacao.dia)}.{resultado} Nas palavras{' '}
+            {juntarFrases(
+              `Votação nominal de ${dia(votacao.dia)}`,
+              resultado,
+              `Nas palavras ${camara ? 'da Câmara' : 'do Senado'}: ${votacao.descricao}`,
+              ementa ? `Sobre o projeto: ${resumirTexto(ementa, 200)}` : '',
+            )}{' '}
             {camara ? 'da Câmara' : 'do Senado'}: {votacao.descricao}
             {ementa ? ` Sobre o projeto: ${resumirTexto(ementa, 200)}` : ''}{' '}
             <Link href={`/votacoes/${votacao.votacaoId}`}>
@@ -250,21 +268,17 @@ function ChamadaDaObra({
   obra: ObraResumo;
   detalhe: ObraDetalhada | undefined;
 }): ReactNode {
-  const interrupcao = detalhe?.interrupcoes[0];
-  const motivo =
-    interrupcao === undefined
-      ? ''
-      : interrupcao.justificativa
-        ? ` Motivo informado: ${resumirTexto(interrupcao.justificativa, 220)}`
-        : ' A fonte não informa o motivo.';
-  const desde = interrupcao ? ` Parou em ${dia(interrupcao.em.slice(0, 10))}.` : '';
   return (
     <Chamada
       tamanho="secundaria"
-      chapeu="Obras · paga com emendas"
+      chapeu="Obra · paga com emendas"
       titulo={`Obra de ${reaisResumidos(obra.investimentoPrevistoCentavos)} em ${lugarDaObra(obra)} está paralisada`}
       href={`/obras/${obra.obraId}`}
-      linhaFina={`${obra.nome}. ${situacaoEMedicao(obra)}.${desde}${motivo}`}
+      linhaFina={juntarFrases(
+        obra.nome,
+        situacaoEMedicao(obra),
+        fraseDaInterrupcao(detalhe?.interrupcoes ?? []),
+      )}
       fonte={<FonteEmLinha fonte={obra.fonte} />}
     />
   );
