@@ -1,9 +1,12 @@
+import { Explica } from '@prometeu/ui';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import { listarVotacoes } from '../_api/cliente';
-import { dia, nomeDaCasa, nomeDoResultado } from '../_componentes/formatacao';
+import { FonteDaSecao } from '../_componentes/fonte';
+import { dia, nomeDaCasa, nomeDoResultado, plural } from '../_componentes/formatacao';
+import { GLOSSARIO } from '../_componentes/glossario';
 import { Abas, PaginaDeLista } from '../_componentes/pagina-de-lista';
 
 export const metadata: Metadata = {
@@ -32,9 +35,10 @@ export default async function PaginaDeVotacoes({ searchParams }: Props): Promise
 
   return (
     <PaginaDeLista
-      campo="aco"
+      chapeu="Congresso"
       titulo="Votações nominais"
-      descricao="Votações do plenário em que cada parlamentar registra o voto, nos últimos 90 dias. As simbólicas, sem voto por parlamentar, não aparecem."
+      descricao="Votações do plenário da Câmara e do Senado dos últimos 90 dias. As simbólicas, sem voto por parlamentar, não aparecem."
+      explica={<Explica termo="Votação nominal">{GLOSSARIO.votacaoNominal}</Explica>}
       filtros={
         <Abas
           rotulo="Casa"
@@ -45,10 +49,16 @@ export default async function PaginaDeVotacoes({ searchParams }: Props): Promise
           ]}
         />
       }
-      contagem={`${String(resultado.total)} ${resultado.total === 1 ? 'votação coletada' : 'votações coletadas'}`}
+      contagem={plural(resultado.total, 'votação coletada', 'votações coletadas')}
+      periodo="últimos 90 dias"
+      fonte={
+        resultado.itens[0] && (
+          <FonteDaSecao fonte={resultado.itens[0].fonte} publicador="Câmara e Senado" />
+        )
+      }
       paginacao={{ pagina, ultima: ultimaPagina, endereco: (outra) => endereco(outra) }}
     >
-      <ul className="lista">
+      <ul className="lista lista--fios">
         {resultado.itens.map((v) => (
           <li key={v.votacaoId}>
             <strong>{dia(v.dia)}</strong>:{' '}

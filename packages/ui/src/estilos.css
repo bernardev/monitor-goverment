@@ -1793,7 +1793,21 @@ figure.faixa {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px 24px;
+  justify-content: space-between;
+  gap: 8px 24px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--fio);
+  color: var(--tinta-2);
+  font-size: var(--t-nota);
+}
+
+.paginacao a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--t-texto);
+  font-weight: 600;
 }
 
 /* Muitos nomes curtos: em colunas de texto, sem uma ficha para cada. */
@@ -1972,73 +1986,155 @@ button.botao--texto {
   letter-spacing: -0.03em;
 }
 
-/* Filtros: rótulo em cima, campo embaixo, o botão alinhado aos campos. */
-form.filtros {
-  display: grid;
-  grid-auto-flow: column;
-  grid-template-rows: auto auto;
-  justify-content: start;
-  align-items: end;
-  gap: 6px 14px;
+/* ── Editoria: o topo e o corpo de uma página de lista ───────────────────────────────────────── */
+.editoria__topo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
 }
 
-form.filtros label {
-  font-size: var(--t-nota);
-  font-weight: 500;
+.editoria__descricao {
+  color: var(--tinta-2);
+  max-width: var(--largura-texto);
 }
 
-form.filtros select,
-form.filtros input {
-  min-height: 48px;
-  min-width: 140px;
-  padding: 0 16px;
-  border: 2px solid var(--tinta);
-  border-radius: var(--raio-botao);
-  background: var(--branco);
+.editoria__corpo {
+  margin-top: clamp(24px, 4vw, 40px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* A contagem e o período sobre o fio grosso, como o título de uma seção. */
+.editoria__cabeca {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+  padding-top: 8px;
+  border-top: 2px solid var(--fio-forte);
+}
+
+.editoria__contagem {
+  font-weight: 600;
+}
+
+/* Os itens de uma lista entre fios, em vez de uma ficha para cada. */
+.lista--fios {
+  display: block;
+}
+
+.lista--fios > li {
+  padding: 14px 0;
+  background: none;
+  border-top: 1px solid var(--fio);
+}
+
+.lista--fios > li:first-child {
+  border-top: 0;
+}
+
+.lista--fios > li > span {
+  margin-top: 2px;
+  color: var(--tinta-2);
+  font-size: 16px;
+}
+
+.lista--fios > li > span b {
   color: var(--tinta);
-  font: inherit;
 }
 
-form.filtros button {
-  grid-row: 2;
+@media (min-width: 700px) {
+  .lista--colunas {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 40px;
+  }
+
+  .lista--colunas > li:nth-child(2) {
+    border-top: 0;
+  }
+}
+
+@media (min-width: 1100px) {
+  .lista--colunas {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .lista--colunas > li:nth-child(3) {
+    border-top: 0;
+  }
+}
+
+/* Filtros em linha, discretos: rótulo e campo lado a lado. */
+form.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+form.filtros select {
+  min-width: 140px;
+}
+
+form.filtros select + label {
+  margin-left: 8px;
 }
 
 .abas {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--vao);
+  gap: 0 20px;
 }
 
 .abas a {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-  padding: 0 20px;
-  border-radius: var(--raio-botao);
-  background: var(--superficie);
-  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  color: var(--tinta-2);
   text-decoration: none;
 }
 
-.abas a[aria-current='page'] {
-  background: var(--forte);
-  color: var(--fundo);
+.abas a:hover {
+  color: var(--tinta);
 }
 
-.paginacao .botao {
-  min-height: 44px;
+.abas a[aria-current='page'] {
+  border-bottom-color: var(--azul);
+  color: var(--tinta);
+  font-weight: 600;
+}
+
+/* Busca no topo de uma página de editoria: mais contida do que a da capa. */
+.editoria form.busca {
+  width: 100%;
+}
+
+.editoria form.busca input {
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid var(--tinta);
+  font-size: var(--t-texto);
+}
+
+.editoria form.busca .botao {
+  min-height: 48px;
+  padding: 0 24px;
+  font-size: var(--t-texto);
 }
 
 @media (max-width: 640px) {
-  form.filtros {
-    grid-auto-flow: row;
-    grid-template-rows: none;
-    justify-content: stretch;
+  form.filtros select,
+  form.filtros .botao {
+    flex: 1 1 100%;
   }
 
-  form.filtros button {
-    grid-row: auto;
-    margin-top: 8px;
+  form.filtros select + label {
+    margin-left: 0;
   }
 }
 

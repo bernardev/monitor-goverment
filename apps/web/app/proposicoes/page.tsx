@@ -1,10 +1,20 @@
 import type { TipoDeProposicao } from '@prometeu/contracts';
+import { Explica } from '@prometeu/ui';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import { listarProposicoes } from '../_api/cliente';
-import { data, dataEHora, identificacao, nomeDaCasa, nomeDoTipo } from '../_componentes/formatacao';
+import { FonteDaSecao } from '../_componentes/fonte';
+import {
+  data,
+  dataEHora,
+  identificacao,
+  nomeDaCasa,
+  nomeDoTipo,
+  plural,
+} from '../_componentes/formatacao';
+import { GLOSSARIO } from '../_componentes/glossario';
 import { PaginaDeLista } from '../_componentes/pagina-de-lista';
 
 export const metadata: Metadata = {
@@ -36,9 +46,10 @@ export default async function PaginaDeProposicoes({ searchParams }: Props): Prom
 
   return (
     <PaginaDeLista
-      campo="aco"
+      chapeu="Congresso"
       titulo="Proposições"
-      descricao="Propostas que podem virar norma, da que se moveu por último à mais parada. Requerimentos, pareceres e outros documentos de trâmite não aparecem."
+      descricao="Propostas que podem virar lei ou outra norma, da que se moveu por último à mais parada. Requerimentos, pareceres e outros documentos de trâmite não aparecem."
+      explica={<Explica termo="Tramitação">{GLOSSARIO.tramitacao}</Explica>}
       filtros={
         <form method="get" action="/proposicoes" className="filtros">
           <label htmlFor="casa">Casa</label>
@@ -61,10 +72,15 @@ export default async function PaginaDeProposicoes({ searchParams }: Props): Prom
           </button>
         </form>
       }
-      contagem={`${String(resultado.total)} ${resultado.total === 1 ? 'proposição coletada' : 'proposições coletadas'}`}
+      contagem={plural(resultado.total, 'proposição coletada', 'proposições coletadas')}
+      fonte={
+        resultado.itens[0] && (
+          <FonteDaSecao fonte={resultado.itens[0].fonte} publicador="Câmara e Senado" />
+        )
+      }
       paginacao={{ pagina, ultima: ultimaPagina, endereco }}
     >
-      <ul className="lista">
+      <ul className="lista lista--fios">
         {resultado.itens.map((p) => (
           <li key={p.proposicaoId}>
             <Link href={`/proposicoes/${p.proposicaoId}`}>{identificacao(p)}</Link>

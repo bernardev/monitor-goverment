@@ -3,6 +3,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import { buscarMunicipios } from '../_api/cliente';
+import { plural } from '../_componentes/formatacao';
 import { PaginaDeLista } from '../_componentes/pagina-de-lista';
 
 export const metadata: Metadata = {
@@ -21,6 +22,7 @@ export default async function Municipios({ searchParams }: Props): Promise<React
 
   return (
     <PaginaDeLista
+      chapeu="Cidades"
       titulo="Meu governo"
       descricao="Procure sua cidade: quem a representa no Congresso, quanto dinheiro de emenda chegou e em que obras ele virou."
       filtros={
@@ -47,21 +49,20 @@ export default async function Municipios({ searchParams }: Props): Promise<React
             contagem:
               encontrados.length === 0
                 ? `Nenhuma cidade com “${nome}” entre as que já receberam emenda ou têm obra coletada.`
-                : `${String(encontrados.length)} ${encontrados.length === 1 ? 'cidade' : 'cidades'} com “${nome}”`,
+                : `${plural(encontrados.length, 'cidade', 'cidades')} com “${nome}”`,
           }
         : {})}
     >
       {encontrados.length > 0 && (
-        <ul className="lista">
+        <ul className="lista lista--fios lista--colunas">
           {encontrados.map((m) => (
             <li key={m.codigoIbge}>
-              <Link href={`/municipios/${m.codigoIbge}`}>{m.nome}</Link>
-              <span>{m.uf}</span>
+              <Link href={`/municipios/${m.codigoIbge}`}>{m.nome}</Link> · {m.uf}
             </li>
           ))}
         </ul>
       )}
-      <p className="nota">
+      <p>
         A lista tem as cidades que aparecem como destino de emenda ou local de obra; a lista oficial
         de municípios do IBGE ainda não foi carregada.
       </p>

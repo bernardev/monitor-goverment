@@ -3,7 +3,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import { listarParlamentares } from '../_api/cliente';
-import { nomeDoCargo, UFS } from '../_componentes/formatacao';
+import { nomeDoCargo, plural, UFS } from '../_componentes/formatacao';
 import { PaginaDeLista } from '../_componentes/pagina-de-lista';
 
 export const metadata: Metadata = {
@@ -27,9 +27,9 @@ export default async function PaginaDeParlamentares({ searchParams }: Props): Pr
 
   return (
     <PaginaDeLista
-      campo="aco"
+      chapeu="Congresso"
       titulo="Parlamentares"
-      descricao="Os deputados federais e senadores em exercício, com partido e estado. Cada um tem a presença, os votos, as proposições e as emendas."
+      descricao="Os deputados federais e senadores em exercício, com partido e estado. Abra um nome para ver a presença, os votos, as proposições e as emendas. Escolha um estado para ver só os de lá."
       filtros={
         <form method="get" action="/parlamentares" className="filtros">
           <label htmlFor="uf">Estado</label>
@@ -46,10 +46,11 @@ export default async function PaginaDeParlamentares({ searchParams }: Props): Pr
           </button>
         </form>
       }
-      contagem={`${String(resultado.total)} ${resultado.total === 1 ? 'parlamentar' : 'parlamentares'}${uf ? ` em ${uf}` : ''}`}
+      contagem={`${plural(resultado.total, 'parlamentar', 'parlamentares')}${uf ? ` em ${uf}` : ' em exercício'}`}
+      fonte={<p className="fonte">Fonte: Câmara dos Deputados e Senado Federal.</p>}
       paginacao={{ pagina, ultima: ultimaPagina, endereco }}
     >
-      <ul className="lista">
+      <ul className="lista lista--fios lista--colunas">
         {resultado.itens.map((p) => (
           <li key={p.pessoaId}>
             <Link href={`/parlamentares/${p.pessoaId}`}>{p.nome}</Link>{' '}

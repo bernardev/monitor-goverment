@@ -1,9 +1,12 @@
 import type { SituacaoDaObra } from '@prometeu/contracts';
+import { Explica } from '@prometeu/ui';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
 import { listarObras } from '../_api/cliente';
-import { nomeDaSituacaoDaObra, UFS } from '../_componentes/formatacao';
+import { FonteDaSecao } from '../_componentes/fonte';
+import { nomeDaSituacaoDaObra, periodoDasEmendas, plural, UFS } from '../_componentes/formatacao';
+import { GLOSSARIO } from '../_componentes/glossario';
 import { ItemDeObra } from '../_componentes/obras';
 import { PaginaDeLista } from '../_componentes/pagina-de-lista';
 
@@ -42,8 +45,10 @@ export default async function PaginaDeObras({ searchParams }: Props): Promise<Re
 
   return (
     <PaginaDeLista
+      chapeu="Dinheiro público"
       titulo="Obras pagas com emendas"
-      descricao="Obras do cadastro federal (Obrasgov.br) com empenho de emenda parlamentar de 2023 em diante, da de maior investimento previsto para a de menor."
+      descricao="Obras do cadastro federal (Obrasgov.br) que receberam dinheiro de emenda parlamentar de 2023 em diante, da de maior investimento previsto para a de menor."
+      explica={<Explica termo="Situação da obra">{GLOSSARIO.situacaoDaObra}</Explica>}
       filtros={
         <form method="get" action="/obras" className="filtros">
           <label htmlFor="situacao">Situação</label>
@@ -69,10 +74,16 @@ export default async function PaginaDeObras({ searchParams }: Props): Promise<Re
           </button>
         </form>
       }
-      contagem={`${String(resultado.total)} ${resultado.total === 1 ? 'obra' : 'obras'}`}
+      contagem={plural(resultado.total, 'obra', 'obras')}
+      periodo={resultado.itens[0] && periodoDasEmendas(resultado.itens[0].fonte.coletadaEm)}
+      fonte={
+        resultado.itens[0] && (
+          <FonteDaSecao fonte={resultado.itens[0].fonte} publicador="Obrasgov.br" />
+        )
+      }
       paginacao={{ pagina, ultima: ultimaPagina, endereco }}
     >
-      <ul className="lista">
+      <ul className="lista lista--fios">
         {resultado.itens.map((o) => (
           <ItemDeObra key={o.obraId} obra={o} />
         ))}

@@ -30,7 +30,7 @@ export default async function MinhaConta({ searchParams }: Props): Promise<React
 
   if (sessao === null) {
     return (
-      <PaginaDeLista titulo="Minha conta">
+      <PaginaDeLista chapeu="Conta" titulo="Minha conta">
         <p>
           Você entrou com uma conta da equipe, sem o papel de cidadão, e por isso ela não acompanha
           políticos nem cidades no site. Saia e entre com uma conta de cidadão, ou peça à
@@ -47,7 +47,7 @@ export default async function MinhaConta({ searchParams }: Props): Promise<React
 
   if (!sessao) {
     return (
-      <PaginaDeLista titulo="Minha conta">
+      <PaginaDeLista chapeu="Conta" titulo="Minha conta">
         <p>
           Com uma conta gratuita, você acompanha os políticos e as cidades que quiser e encontra
           todos em um lugar só. A conta guarda só o que você acompanha: nada de nome, CPF ou
@@ -67,7 +67,7 @@ export default async function MinhaConta({ searchParams }: Props): Promise<React
   const cidades = itens.filter((a) => a.tipo === 'municipio');
 
   return (
-    <PaginaDeLista titulo="Minha conta">
+    <PaginaDeLista chapeu="Conta" titulo="Minha conta">
       <p>Você entrou como {sessao.nome}.</p>
       {apagado && <p role="status">Pronto: apagamos tudo o que você acompanhava.</p>}
 

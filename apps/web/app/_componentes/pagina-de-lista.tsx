@@ -1,41 +1,57 @@
-import type { Campo } from '@prometeu/ui';
+import { Chapeu } from '@prometeu/ui';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 /**
- * Uma página de lista: o topo na cor do assunto, com o título, o que a lista é e os filtros; abaixo,
- * quantos itens há, os itens e a paginação.
+ * Uma página de lista, como a editoria de um jornal: o chapéu, o título, o que a lista é em palavras
+ * simples e os filtros em linha; abaixo, quantos itens há, de que período, os itens entre fios, a
+ * fonte e a paginação.
  */
 export function PaginaDeLista({
-  campo = 'papel',
+  chapeu = 'Prometeu',
   titulo,
   descricao,
+  explica,
   filtros,
   contagem,
+  periodo,
+  fonte,
   paginacao,
   children,
 }: {
-  campo?: Campo;
+  chapeu?: string;
   titulo: string;
   descricao?: ReactNode;
+  /** Um `<Explica>` com o termo técnico que a lista usa. */
+  explica?: ReactNode;
   /** Um `<form className="filtros">`, ou as abas de uma escolha só. */
   filtros?: ReactNode;
   contagem?: ReactNode;
+  /** O período a que a lista se refere, à direita da contagem. */
+  periodo?: string | undefined;
+  /** O fim da lista: de onde vieram os dados. */
+  fonte?: ReactNode;
   paginacao?: DadosDaPaginacao;
   children: ReactNode;
 }): ReactNode {
   return (
-    <main className="capitulos">
-      <header className="topo-da-lista" data-campo={campo}>
-        <div className="topo-da-lista__miolo">
-          <h1 className="retrato__titulo">{titulo}</h1>
-          {descricao !== undefined && <p className="destaque">{descricao}</p>}
-          {filtros}
-        </div>
+    <main className="reportagem editoria">
+      <header className="editoria__topo">
+        <Chapeu>{chapeu}</Chapeu>
+        <h1>{titulo}</h1>
+        {descricao !== undefined && <p className="editoria__descricao">{descricao}</p>}
+        {explica}
+        {filtros}
       </header>
-      <div className="corpo-da-lista">
-        {contagem !== undefined && <p className="contagem">{contagem}</p>}
+      <div className="editoria__corpo">
+        {contagem !== undefined && (
+          <div className="editoria__cabeca">
+            <p className="editoria__contagem">{contagem}</p>
+            {periodo !== undefined && <span className="secao__periodo">{periodo}</span>}
+          </div>
+        )}
         {children}
+        {fonte !== undefined && <div className="secao__fonte">{fonte}</div>}
         {paginacao !== undefined && <Paginacao {...paginacao} />}
       </div>
     </main>
@@ -53,18 +69,22 @@ export function Paginacao({ pagina, ultima, endereco }: DadosDaPaginacao): React
   if (ultima <= 1) return null;
   return (
     <nav aria-label="Paginação" className="paginacao">
-      {pagina > 1 && (
-        <Link href={endereco(pagina - 1)} className="botao botao--secundario" rel="prev">
+      {pagina > 1 ? (
+        <Link href={endereco(pagina - 1)} rel="prev">
           ← Anterior
         </Link>
+      ) : (
+        <span />
       )}
       <span>
         Página {pagina} de {ultima}
       </span>
-      {pagina < ultima && (
-        <Link href={endereco(pagina + 1)} className="botao botao--secundario" rel="next">
+      {pagina < ultima ? (
+        <Link href={endereco(pagina + 1)} rel="next">
           Próxima →
         </Link>
+      ) : (
+        <span />
       )}
     </nav>
   );

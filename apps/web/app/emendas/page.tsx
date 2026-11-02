@@ -1,10 +1,13 @@
 import type { TipoDeEmenda } from '@prometeu/contracts';
+import { Explica } from '@prometeu/ui';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
 import { listarEmendas } from '../_api/cliente';
 import { ItemDeEmenda } from '../_componentes/emendas';
-import { nomeDoTipoDeEmenda, UFS } from '../_componentes/formatacao';
+import { FonteDaSecao } from '../_componentes/fonte';
+import { nomeDoTipoDeEmenda, periodoDasEmendas, plural, UFS } from '../_componentes/formatacao';
+import { GLOSSARIO } from '../_componentes/glossario';
 import { PaginaDeLista } from '../_componentes/pagina-de-lista';
 
 export const metadata: Metadata = {
@@ -44,9 +47,10 @@ export default async function PaginaDeEmendas({ searchParams }: Props): Promise<
 
   return (
     <PaginaDeLista
-      campo="areia"
+      chapeu="Dinheiro público"
       titulo="Emendas parlamentares"
-      descricao="O dinheiro do orçamento federal que deputados, senadores, bancadas e comissões indicam para onde vai. Do orçamento mais recente para o mais antigo; no mesmo ano, a de maior empenho primeiro."
+      descricao="Quem indicou para onde vai o dinheiro do orçamento federal: deputados, senadores, bancadas e comissões. Do orçamento mais recente para o mais antigo; no mesmo ano, a de maior valor empenhado primeiro."
+      explica={<Explica termo="Emenda">{GLOSSARIO.emenda}</Explica>}
       filtros={
         <form method="get" action="/emendas" className="filtros">
           <label htmlFor="ano">Orçamento</label>
@@ -81,10 +85,21 @@ export default async function PaginaDeEmendas({ searchParams }: Props): Promise<
           </button>
         </form>
       }
-      contagem={`${String(resultado.total)} ${resultado.total === 1 ? 'emenda coletada' : 'emendas coletadas'}`}
+      contagem={plural(resultado.total, 'emenda coletada', 'emendas coletadas')}
+      periodo={
+        resultado.itens[0] &&
+        (ano
+          ? `orçamento de ${String(ano)}`
+          : periodoDasEmendas(resultado.itens[0].fonte.coletadaEm))
+      }
+      fonte={
+        resultado.itens[0] && (
+          <FonteDaSecao fonte={resultado.itens[0].fonte} publicador="Portal da Transparência" />
+        )
+      }
       paginacao={{ pagina, ultima: ultimaPagina, endereco }}
     >
-      <ul className="lista">
+      <ul className="lista lista--fios">
         {resultado.itens.map((e) => (
           <ItemDeEmenda key={e.emendaId} emenda={e} />
         ))}
