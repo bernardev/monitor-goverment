@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Sistema visual do Prometeu: tokens, folha de estilo e componentes (ADR-0017).",
+  "description": "Sistema visual do Prometeu, o jornal de referência: tokens, folha de estilo e componentes (ADR-0018).",
   "sideEffects": [
     "*.css"
   ],

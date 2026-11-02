@@ -1,6 +1,6 @@
 # ADR-0017: Identidade visual: Prometeu no pretérito
 
-- **Status:** Aceito
+- **Status:** Substituído por [ADR-0018](0018-identidade-visual-jornal.md)
 - **Data:** 2026-10-31
 
 ## Contexto
