@@ -66,6 +66,11 @@ export function nomeDaCasa(casa: string): string {
   return CASAS[casa] ?? casa;
 }
 
+/** `a` Câmara dos Deputados, `o` Senado Federal: para escrever "da Câmara" e "do Senado". */
+export function artigoDaCasa(casa: string): 'a' | 'o' {
+  return casa === 'camara_dos_deputados' ? 'a' : 'o';
+}
+
 const TIPOS: Readonly<Record<string, string>> = {
   PEC: 'Proposta de emenda à Constituição',
   PLP: 'Projeto de lei complementar',

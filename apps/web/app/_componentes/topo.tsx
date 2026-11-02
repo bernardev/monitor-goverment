@@ -1,45 +1,35 @@
+import { Chapeu } from '@prometeu/ui';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
-/** Título mais longo que isto usa o tamanho menor, para caber em duas linhas. */
-const LONGO = 48;
-
 /**
- * O topo de uma página de detalhe: o título, o que ele é em uma frase, o que prova (a fonte) e, ao
- * lado, o número ou a foto que resume. O caminho de volta fica no pé do topo, depois do número, nunca acima de um título.
+ * O cabeçalho de uma página de detalhe, como o de uma reportagem: o chapéu, o título e a linha fina
+ * que diz do que se trata. O caminho de volta fica no fim, nunca acima do título.
  */
 export function Topo({
+  chapeu,
   titulo,
-  aoLado,
+  linhaFina,
   voltar,
   children,
 }: {
-  titulo: ReactNode;
-  aoLado?: ReactNode;
+  chapeu: string;
+  titulo: string;
+  linhaFina?: ReactNode;
   voltar: { readonly href: string; readonly texto: string };
-  children: ReactNode;
+  children?: ReactNode;
 }): ReactNode {
   return (
-    <section className="retrato" data-campo="papel" aria-labelledby="titulo">
-      <div className="retrato__miolo">
-        <div className="retrato__texto">
-          <h1
-            id="titulo"
-            className={
-              typeof titulo === 'string' && titulo.length > LONGO
-                ? 'retrato__titulo retrato__titulo--longo'
-                : 'retrato__titulo'
-            }
-          >
-            {titulo}
-          </h1>
-          {children}
-        </div>
-        {aoLado !== undefined && <div className="retrato__lado">{aoLado}</div>}
-        <p className="nota retrato__voltar">
+    <header className="reportagem__cabeca">
+      <div className="reportagem__texto">
+        <Chapeu>{chapeu}</Chapeu>
+        <h1>{titulo}</h1>
+        {linhaFina !== undefined && <p className="reportagem__fina">{linhaFina}</p>}
+        {children}
+        <p className="nota">
           <Link href={voltar.href}>← {voltar.texto}</Link>
         </p>
       </div>
-    </section>
+    </header>
   );
 }

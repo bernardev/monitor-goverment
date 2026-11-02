@@ -30,7 +30,7 @@ function lugar(f: FavorecidoDaEmenda): string {
   return f.municipio ?? f.uf ?? 'local não informado';
 }
 
-/** Para quem foi o dinheiro: do favorecido que mais recebeu para o que menos recebeu. */
+/** Para quem foi o dinheiro, do que mais recebeu para o que menos recebeu. A fonte fica com a seção. */
 export function Favorecidos({ favorecidos }: { favorecidos: FavorecidosDaEmenda }): ReactNode {
   const mostrados = favorecidos.itens.slice(0, MOSTRADOS);
   const outros = favorecidos.itens.slice(MOSTRADOS);
@@ -44,9 +44,15 @@ export function Favorecidos({ favorecidos }: { favorecidos: FavorecidosDaEmenda 
             // O identificado é o documento; o somado, o tipo e o lugar.
             chave: [f.tipo, f.documento ?? '', f.uf ?? '', f.municipio ?? ''].join('|'),
             rotulo: nomeDoFavorecido(f),
+            // Cada dado em seu trecho: é uma lista de fatos, não um parágrafo.
             detalhe: [documento, f.naturezaJuridica, lugar(f), periodo(f)]
               .filter((parte) => parte !== null)
-              .join(' · '),
+              .map((parte, i) => (
+                <span key={parte}>
+                  {i > 0 ? ' · ' : ''}
+                  {parte}
+                </span>
+              )),
             valor: Number(BigInt(f.recebidoCentavos) / 100n),
             texto: reaisResumidos(f.recebidoCentavos),
           };
@@ -54,7 +60,8 @@ export function Favorecidos({ favorecidos }: { favorecidos: FavorecidosDaEmenda 
       />
       {outros.length > 0 && (
         <p className="nota">
-          E mais {String(outros.length)} favorecidos, que receberam{' '}
+          E mais {String(outros.length)}{' '}
+          {outros.length === 1 ? 'favorecido, que recebeu' : 'favorecidos, que receberam'}{' '}
           {reais(outros.reduce((soma, f) => soma + BigInt(f.recebidoCentavos), 0n))}.
         </p>
       )}
@@ -64,7 +71,6 @@ export function Favorecidos({ favorecidos }: { favorecidos: FavorecidosDaEmenda 
           dinheiro, não o cidadão que o recebe.
         </p>
       )}
-      <Fonte fonte={favorecidos.fonte} />
     </div>
   );
 }

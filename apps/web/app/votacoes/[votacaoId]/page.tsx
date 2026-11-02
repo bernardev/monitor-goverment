@@ -1,12 +1,12 @@
 import type { OpcaoDeVoto, ParlamentarSemVoto, SituacaoSemVoto } from '@prometeu/contracts';
-import { Capitulo, Proporcao } from '@prometeu/ui';
+import { Explica, FaixaDeNumeros, Proporcao, Secao } from '@prometeu/ui';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 
 import { buscarVotacao } from '../../_api/cliente';
-import { Fonte } from '../../_componentes/fonte';
+import { FonteDaSecao } from '../../_componentes/fonte';
 import {
   dia,
   identificacao,
@@ -14,9 +14,12 @@ import {
   nomeDaOpcao,
   nomeDaSituacaoSemVoto,
   nomeDoMotivo,
+  nomeDoResultado,
 } from '../../_componentes/formatacao';
-import { partesDoPlacar, placarEmFrase } from '../../_componentes/placar';
+import { GLOSSARIO } from '../../_componentes/glossario';
+import { ORDEM_DAS_OPCOES, partesDoPlacar, placarEmFrase } from '../../_componentes/placar';
 import { Topo } from '../../_componentes/topo';
+import { numerosDaVotacao } from './numeros';
 
 interface Props {
   readonly params: Promise<{ votacaoId: string }>;
@@ -31,30 +34,40 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-/** O resultado como verbo do capítulo: a casa aprovou, rejeitou ou só decidiu. */
-const VERBO_DO_RESULTADO: Readonly<Record<string, string>> = {
-  aprovada: 'Aprovou.',
-  rejeitada: 'Rejeitou.',
-};
+const NUMERO = new Intl.NumberFormat('pt-BR');
+
+/** `1 parlamentar` ou `2 parlamentares`. */
+function plural(n: number, um: string, varios: string): string {
+  return `${NUMERO.format(n)} ${n === 1 ? um : varios}`;
+}
 
 export default async function PaginaDaVotacao({ params }: Props): Promise<ReactNode> {
   const votacao = await buscarVotacao((await params).votacaoId);
   if (!votacao) notFound();
   const casa = nomeDaCasa(votacao.casa);
-  const aCasa = `${votacao.casa === 'camara_dos_deputados' ? 'A' : 'O'} ${casa}`;
-  const verbo = VERBO_DO_RESULTADO[votacao.resultado] ?? 'Decidiu.';
-  const verbo3 = verbo.toLowerCase().replace('.', '');
+  const periodo = dia(votacao.dia);
+  const numeros = numerosDaVotacao(votacao);
+  const resultado =
+    votacao.resultado === 'nao_informado'
+      ? 'A casa não informou o resultado.'
+      : `Resultado declarado pela casa: ${nomeDoResultado(votacao.resultado).toLowerCase()}.`;
+  const secoes = [
+    ['placar', 'Placar'],
+    ['votos', 'Como votou cada um'],
+    ['sem-voto', 'Quem não votou'],
+  ] as const;
 
   return (
-    <main className="capitulos">
+    <main className="reportagem">
       <Topo
-        titulo={`Votação de ${dia(votacao.dia)}`}
+        chapeu={`Votações · ${casa}`}
+        titulo={`Votação de ${periodo}`}
+        linhaFina={votacao.descricao}
         voltar={{ href: '/votacoes', texto: 'Todas as votações nominais' }}
       >
-        <p className="destaque">{votacao.descricao}</p>
         {votacao.proposicoes.length > 0 && (
           <p>
-            {casa}, plenário. Sobre{' '}
+            Sobre{' '}
             {votacao.proposicoes.map((p, i) => (
               <span key={p.codigoNaFonte}>
                 {i > 0 ? ', ' : ''}
@@ -68,69 +81,92 @@ export default async function PaginaDaVotacao({ params }: Props): Promise<ReactN
             .
           </p>
         )}
-        <Fonte fonte={votacao.fonte} />
       </Topo>
 
-      <Capitulo
-        id="resultado"
-        campo="areia"
-        verbo={verbo}
-        frase={
-          votacao.secreta
-            ? `${aCasa} ${verbo3} em votação secreta: a casa registra quem votou, não como.`
-            : `${aCasa} ${verbo3}, com ${placarEmFrase(votacao)}.`
-        }
-        aoLado={<Proporcao partes={partesDoPlacar(votacao)} />}
-        nota={
-          <p>
-            O resultado é o declarado pela casa: algumas matérias precisam de maioria absoluta ou
-            qualificada, e não só de mais votos sim do que não. Contam só os votos registrados.
-          </p>
-        }
-      />
+      {numeros.length > 0 && <FaixaDeNumeros itens={numeros} />}
 
-      <Capitulo
-        id="votaram"
-        campo="aco"
-        verbo="Votaram."
-        frase={`${String(votacao.votos.length)} parlamentares com voto registrado, com o partido do dia da votação.`}
-        nota={
+      <div className="reportagem__explicacoes">
+        <Explica termo="Votação nominal">{GLOSSARIO.votacaoNominal}</Explica>
+      </div>
+
+      <nav aria-label="Nesta página">
+        <ul className="indice">
+          {secoes.map(([id, titulo]) => (
+            <li key={id}>
+              <a href={`#${id}`}>{titulo}</a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <Secao
+        id="placar"
+        titulo="Placar"
+        periodo={periodo}
+        fonte={<FonteDaSecao fonte={votacao.fonte} publicador={casa} />}
+      >
+        <p>
+          {votacao.secreta
+            ? 'Votação secreta: a casa registra quem votou, não como. '
+            : `${plural(votacao.votos.length, 'voto registrado', 'votos registrados')}: ${placarEmFrase(votacao)}. `}
+          {resultado}
+        </p>
+        <Proporcao partes={partesDoPlacar(votacao)} />
+        <p>
+          O resultado é o declarado pela casa: algumas matérias precisam de maioria absoluta ou
+          qualificada, e não só de mais votos sim do que não. Contam só os votos registrados.
+        </p>
+      </Secao>
+
+      <Secao
+        id="votos"
+        titulo="Como votou cada um"
+        periodo={periodo}
+        fonte={<FonteDaSecao fonte={votacao.fonteDosVotos} publicador={casa} />}
+      >
+        <p>
+          {`${plural(votacao.votos.length, 'parlamentar com voto registrado', 'parlamentares com voto registrado')}, com o partido do dia da votação.`}
+        </p>
+        <div className="pilha">
+          {agrupar(votacao.votos, (v) => v.opcao)
+            .sort(([a], [b]) => ORDEM_DAS_OPCOES.indexOf(a) - ORDEM_DAS_OPCOES.indexOf(b))
+            .map(([opcao, votos]) => (
+              <Grupo key={opcao} titulo={nomeDaOpcao(opcao)} pessoas={votos} />
+            ))}
+        </div>
+      </Secao>
+
+      <Secao
+        id="sem-voto"
+        titulo="Quem não votou"
+        periodo={periodo}
+        fonte={<FonteDaSecao fonte={votacao.fonteDosVotos} publicador={casa} />}
+      >
+        {!votacao.relacaoCompleta ? (
+          <p>
+            A Câmara lista só quem votou: não informa quem não votou. Quem não aparece na lista
+            acima não é, por isso, ausente.
+          </p>
+        ) : votacao.semVoto.length === 0 ? (
+          <p>Todos os senadores em exercício têm voto registrado.</p>
+        ) : (
           <>
             <p>
-              {votacao.relacaoCompleta
-                ? 'O Senado lista todos os senadores em exercício; quem não votou aparece no capítulo seguinte, com o motivo informado pela casa.'
-                : 'A Câmara não lista quem não votou: quem não aparece aqui não é, por isso, ausente.'}
+              {`${plural(votacao.semVoto.length, 'senador em exercício sem voto registrado', 'senadores em exercício sem voto registrado')}, com a situação que o Senado informou.`}
             </p>
-            <Fonte fonte={votacao.fonteDosVotos} />
+            <div className="pilha">
+              {agrupar(votacao.semVoto, (s) => s.situacao).map(([situacao, pessoas]) => (
+                <Grupo
+                  key={situacao}
+                  titulo={nomeDaSituacaoSemVoto(situacao)}
+                  pessoas={pessoas}
+                  detalhe={detalheSemVoto}
+                />
+              ))}
+            </div>
           </>
-        }
-      >
-        <div className="pilha">
-          {agrupar(votacao.votos, (v) => v.opcao).map(([opcao, votos]) => (
-            <Grupo key={opcao} titulo={nomeDaOpcao(opcao)} pessoas={votos} />
-          ))}
-        </div>
-      </Capitulo>
-
-      {votacao.semVoto.length > 0 && (
-        <Capitulo
-          id="nao-votaram"
-          campo="papel"
-          verbo="Não votaram."
-          frase={`${String(votacao.semVoto.length)} senadores em exercício sem voto registrado, com a situação que a casa informou.`}
-        >
-          <div className="pilha">
-            {agrupar(votacao.semVoto, (s) => s.situacao).map(([situacao, pessoas]) => (
-              <Grupo
-                key={situacao}
-                titulo={nomeDaSituacaoSemVoto(situacao)}
-                pessoas={pessoas}
-                detalhe={detalheSemVoto}
-              />
-            ))}
-          </div>
-        </Capitulo>
-      )}
+        )}
+      </Secao>
     </main>
   );
 }
@@ -158,7 +194,7 @@ function Grupo<P extends Pessoa>({
   return (
     <section className="pilha" aria-label={titulo}>
       <h3 className="titulo-de-lista">
-        {titulo} ({pessoas.length})
+        {titulo}: {pessoas.length}
       </h3>
       <ul className="nomes">
         {pessoas.map((p) => (

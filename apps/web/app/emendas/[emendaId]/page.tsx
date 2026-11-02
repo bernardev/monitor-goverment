@@ -1,5 +1,5 @@
-import type { ClassificacaoOrcamentaria, ExecucaoDaEmenda } from '@prometeu/contracts';
-import { Capitulo, Cifra, type ItemDoRanking, Ranking } from '@prometeu/ui';
+import type { ClassificacaoOrcamentaria } from '@prometeu/contracts';
+import { Explica, FaixaDeNumeros, Proporcao, Ranking, Secao } from '@prometeu/ui';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -8,16 +8,19 @@ import type { ReactNode } from 'react';
 import { buscarEmenda } from '../../_api/cliente';
 import { identificacaoDaEmenda, tipoEModalidade } from '../../_componentes/emendas';
 import { Convenios, Favorecidos } from '../../_componentes/favorecidos';
-import { Fonte } from '../../_componentes/fonte';
+import { FonteDaSecao } from '../../_componentes/fonte';
 import {
   nomeDaModalidade,
+  nomeDoTipoDeEmenda,
   pagoAteAgora,
-  percentual,
+  partesPagoEAPagar,
   reais,
   reaisResumidos,
 } from '../../_componentes/formatacao';
+import { GLOSSARIO } from '../../_componentes/glossario';
 import { ItemDeObra } from '../../_componentes/obras';
 import { Topo } from '../../_componentes/topo';
+import { fasesDaEmenda, numerosDaEmenda, periodoDaEmenda, periodoDosFavorecidos } from './numeros';
 
 interface Props {
   readonly params: Promise<{ emendaId: string }>;
@@ -34,24 +37,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 const classificacao = (c: ClassificacaoOrcamentaria) => `${c.codigo} · ${c.nome}`;
 
-/** As fases da despesa, na ordem em que o dinheiro anda, cada uma contra o empenhado. */
-function fases(execucao: ExecucaoDaEmenda): ItemDoRanking[] {
-  const fase = (chave: string, rotulo: string, centavos: string | bigint, detalhe?: string) => ({
-    chave,
-    rotulo,
-    ...(detalhe === undefined ? {} : { detalhe }),
-    valor: Number(BigInt(centavos) / 100n),
-    texto: reais(centavos),
-  });
-  return [
-    fase('empenhado', 'Empenhado', execucao.empenhadoCentavos, 'O dinheiro reservado'),
-    fase('liquidado', 'Liquidado', execucao.liquidadoCentavos, 'A entrega verificada'),
-    fase('pago', 'Pago no ano do orçamento', execucao.pagoCentavos),
-    fase('restos', 'Restos a pagar inscritos', execucao.restosInscritosCentavos),
-    fase('cancelados', 'Restos cancelados', execucao.restosCanceladosCentavos),
-    fase('restos-pagos', 'Restos pagos depois', execucao.restosPagosCentavos),
-    fase('total', 'Pago até agora', pagoAteAgora(execucao), 'No ano e depois'),
-  ];
+const NUMERO = new Intl.NumberFormat('pt-BR');
+
+/** `1 destino` ou `2 destinos`. */
+function plural(n: number, um: string, varios: string): string {
+  return `${NUMERO.format(n)} ${n === 1 ? um : varios}`;
 }
 
 export default async function PaginaDaEmenda({ params }: Props): Promise<ReactNode> {
@@ -59,61 +49,95 @@ export default async function PaginaDaEmenda({ params }: Props): Promise<ReactNo
   if (!emenda) notFound();
   const empenhado = BigInt(emenda.execucao.empenhadoCentavos);
   const pago = pagoAteAgora(emenda.execucao);
-  const centesimos = empenhado > 0n ? Number((pago * 10000n) / empenhado) : 0;
   const { autor, favorecidos, convenios, obras } = emenda;
+  const periodo = periodoDaEmenda(emenda.ano, emenda.fonte.coletadaEm);
+  const secoes = [
+    ['reservado-e-pago', 'Quanto foi reservado e pago'],
+    ['destino', 'Para onde foi'],
+    ['quem-recebeu', 'Quem recebeu'],
+    ['virou-obra', 'Virou obra'],
+  ] as const;
 
   return (
-    <main className="capitulos">
+    <main className="reportagem">
       <Topo
+        chapeu={`Emendas · ${nomeDoTipoDeEmenda(emenda.tipo)}`}
         titulo={identificacaoDaEmenda(emenda)}
-        voltar={{ href: '/emendas', texto: 'Todas as emendas' }}
-        aoLado={
-          <Cifra
-            valor={percentual(centesimos)}
-            legenda={`do valor empenhado já foi pago: ${reaisResumidos(pago)} de ${reaisResumidos(empenhado)}.`}
-          />
+        linhaFina={
+          <>
+            De{' '}
+            {autor.pessoaId ? (
+              <Link href={`/parlamentares/${autor.pessoaId}`}>{autor.nome}</Link>
+            ) : (
+              autor.nome
+            )}
+            , {tipoEModalidade(emenda).toLowerCase()} ao orçamento de {emenda.ano}.
+          </>
         }
+        voltar={{ href: '/emendas', texto: 'Todas as emendas' }}
       >
-        <p className="destaque">
-          De{' '}
-          {autor.pessoaId ? (
-            <Link href={`/parlamentares/${autor.pessoaId}`}>{autor.nome}</Link>
-          ) : (
-            autor.nome
-          )}
-          , {tipoEModalidade(emenda).toLowerCase()} ao orçamento de {emenda.ano}.
-        </p>
-        <p className="nota">
+        <p>
           Código {emenda.codigoNaFonte} no Portal da Transparência.
           {autor.pessoaId
             ? ' Autor identificado pelo nome: o Portal não traz outro identificador do parlamentar.'
             : ''}
         </p>
-        <Fonte fonte={emenda.fonte} />
       </Topo>
 
-      <Capitulo
-        id="pagou"
-        campo="areia"
-        verbo="Pagou."
-        frase={`${reaisResumidos(pago)} dos ${reaisResumidos(empenhado)} empenhados, somado o que ficou para os anos seguintes.`}
-        nota={
-          <p>
-            Valores acumulados até a coleta. Empenho é a reserva do dinheiro; liquidação, a
-            verificação de que a entrega aconteceu; pagamento, a saída do caixa. O que não é pago no
-            ano vira restos a pagar.
-          </p>
-        }
-      >
-        <Ranking itens={fases(emenda.execucao)} />
-      </Capitulo>
+      <FaixaDeNumeros
+        itens={numerosDaEmenda({
+          ano: emenda.ano,
+          execucao: emenda.execucao,
+          coletadaEm: emenda.fonte.coletadaEm,
+        })}
+      />
 
-      <Capitulo
-        id="destinou"
-        campo="papel"
-        verbo="Destinou."
-        frase={`${String(emenda.destinacoes.length)} ${emenda.destinacoes.length === 1 ? 'destino' : 'destinos'}, cada um com a ação do orçamento que paga.`}
+      <div className="reportagem__explicacoes">
+        <p>Os valores são os acumulados até a coleta, somando todos os destinos da emenda.</p>
+        <Explica termo="Emenda">{GLOSSARIO.emenda}</Explica>
+        <Explica termo="Empenhado">{GLOSSARIO.empenhado}</Explica>
+        <Explica termo="Pago">{GLOSSARIO.pago}</Explica>
+      </div>
+
+      <nav aria-label="Nesta página">
+        <ul className="indice">
+          {secoes.map(([id, titulo]) => (
+            <li key={id}>
+              <a href={`#${id}`}>{titulo}</a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <Secao
+        id="reservado-e-pago"
+        titulo="Quanto foi reservado e pago"
+        periodo={periodo}
+        fonte={<FonteDaSecao fonte={emenda.fonte} publicador="Portal da Transparência" />}
       >
+        <p>
+          {empenhado > 0n
+            ? `${reaisResumidos(pago)} já foram pagos, de ${reaisResumidos(empenhado)} reservados no orçamento. Pago soma o que saiu no ano do orçamento e nos anos seguintes.`
+            : 'Nenhum valor reservado no orçamento para esta emenda até a coleta.'}
+        </p>
+        {empenhado > 0n && <Proporcao partes={partesPagoEAPagar(pago, empenhado)} />}
+        <Ranking itens={fasesDaEmenda(emenda.execucao)} />
+        <p>
+          O dinheiro anda em etapas: é reservado (empenhado), a entrega é conferida (liquidada) e só
+          então sai do caixa (pago). O que não é pago no ano do orçamento passa para os anos
+          seguintes.
+        </p>
+      </Secao>
+
+      <Secao
+        id="destino"
+        titulo="Para onde foi"
+        periodo={periodo}
+        fonte={<FonteDaSecao fonte={emenda.fonte} publicador="Portal da Transparência" />}
+      >
+        <p>
+          {`${plural(emenda.destinacoes.length, 'destino', 'destinos')}, cada um com a ação do orçamento que paga.`}
+        </p>
         <ul className="linhas">
           {emenda.destinacoes.map((d) => (
             // A fonte não repete localidade com a mesma classificação: é a chave da destinação.
@@ -148,44 +172,61 @@ export default async function PaginaDaEmenda({ params }: Props): Promise<ReactNo
             </li>
           ))}
         </ul>
-      </Capitulo>
+      </Secao>
 
-      <Capitulo
-        id="chegou-a"
-        campo="areia"
-        verbo="Chegou a."
-        frase={
-          favorecidos === null
-            ? 'O Portal da Transparência ainda não registrou pagamentos desta emenda.'
-            : `${reaisResumidos(favorecidos.recebidoCentavos)} recebidos por ${favorecidos.itens.length === 1 ? 'um favorecido' : `${String(favorecidos.itens.length)} favorecidos`}, de quem mais recebeu para quem menos.`
-        }
+      <Secao
+        id="quem-recebeu"
+        titulo="Quem recebeu"
+        periodo={periodoDosFavorecidos(favorecidos?.itens ?? [])}
+        fonte={<FonteDaSecao fonte={favorecidos?.fonte} publicador="Portal da Transparência" />}
       >
-        {favorecidos !== null && <Favorecidos favorecidos={favorecidos} />}
-      </Capitulo>
-
-      <Capitulo
-        id="virou-obra"
-        campo="papel"
-        verbo="Virou obra."
-        frase={
-          obras.length === 0 && convenios.length === 0
-            ? 'Nenhuma obra do Obrasgov nem convênio do Portal da Transparência ligado a esta emenda.'
-            : `${String(obras.length)} ${obras.length === 1 ? 'obra' : 'obras'} com empenho desta emenda e ${String(convenios.length)} ${convenios.length === 1 ? 'convênio' : 'convênios'} que ela ajuda a pagar.`
-        }
-      >
-        {(obras.length > 0 || convenios.length > 0) && (
-          <div className="pilha">
-            {obras.length > 0 && (
-              <ul className="lista">
-                {obras.map((o) => (
-                  <ItemDeObra key={o.obraId} obra={o} />
-                ))}
-              </ul>
-            )}
-            {convenios.length > 0 && <Convenios convenios={convenios} />}
-          </div>
+        {favorecidos === null ? (
+          <p>O Portal da Transparência ainda não registrou pagamentos desta emenda.</p>
+        ) : (
+          <>
+            <Explica termo="Favorecido">{GLOSSARIO.favorecido}</Explica>
+            <p>
+              {`${reaisResumidos(favorecidos.recebidoCentavos)} recebidos por ${favorecidos.itens.length === 1 ? 'um favorecido' : `${NUMERO.format(favorecidos.itens.length)} favorecidos`}, de quem mais recebeu para quem menos.`}
+            </p>
+            <Favorecidos favorecidos={favorecidos} />
+          </>
         )}
-      </Capitulo>
+      </Secao>
+
+      <Secao
+        id="virou-obra"
+        titulo="Virou obra"
+        periodo={periodo}
+        fonte={
+          <FonteDaSecao
+            fonte={obras[0]?.fonte ?? convenios[0]?.fonte}
+            publicador="Obrasgov.br e Portal da Transparência"
+          />
+        }
+      >
+        {obras.length === 0 && convenios.length === 0 ? (
+          <p>
+            Nenhuma obra do Obrasgov.br nem convênio do Portal da Transparência ligado a esta
+            emenda.
+          </p>
+        ) : (
+          <>
+            <p>
+              {`${plural(obras.length, 'obra', 'obras')} com empenho desta emenda e ${plural(convenios.length, 'convênio', 'convênios')} que ela ajuda a pagar.`}
+            </p>
+            <div className="pilha">
+              {obras.length > 0 && (
+                <ul className="lista">
+                  {obras.map((o) => (
+                    <ItemDeObra key={o.obraId} obra={o} />
+                  ))}
+                </ul>
+              )}
+              {convenios.length > 0 && <Convenios convenios={convenios} />}
+            </div>
+          </>
+        )}
+      </Secao>
     </main>
   );
 }

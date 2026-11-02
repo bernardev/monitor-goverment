@@ -8,7 +8,8 @@ export const GLOSSARIO: Readonly<
     | 'faltaJustificada'
     | 'votacaoNominal'
     | 'favorecido'
-    | 'situacaoDaObra',
+    | 'situacaoDaObra'
+    | 'tramitacao',
     string
   >
 > = {
@@ -20,4 +21,6 @@ export const GLOSSARIO: Readonly<
   votacaoNominal: 'votação em que fica registrado o voto de cada parlamentar.',
   favorecido: 'empresa ou órgão que recebeu o dinheiro.',
   situacaoDaObra: 'a que o Obrasgov.br informa (planejada, em execução, paralisada, concluída).',
+  tramitacao:
+    'o caminho do projeto dentro da Câmara ou do Senado; cada passo, como o envio a uma comissão ou uma votação, é um ato.',
 };

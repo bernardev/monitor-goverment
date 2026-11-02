@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  artigoDaCasa,
   cnpj,
   documentoDoFavorecido,
   mes,
@@ -101,5 +102,12 @@ describe('periodoEmMeses', () => {
     ['2025-11-04', '2026-02-01', 'nov. de 2025 a fev. de 2026'],
   ])('%s a %s → %s', (de, ate, esperado) => {
     expect(periodoEmMeses(de, ate)).toBe(esperado);
+  });
+});
+
+describe('artigoDaCasa', () => {
+  it('a Câmara é feminina e o Senado, masculino', () => {
+    expect(artigoDaCasa('camara_dos_deputados')).toBe('a');
+    expect(artigoDaCasa('senado_federal')).toBe('o');
   });
 });

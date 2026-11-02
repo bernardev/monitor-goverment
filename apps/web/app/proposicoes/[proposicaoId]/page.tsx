@@ -1,23 +1,26 @@
 import type { TramitacaoDaProposicao } from '@prometeu/contracts';
-import { Capitulo, Cifra } from '@prometeu/ui';
+import { Explica, FaixaDeNumeros, Secao } from '@prometeu/ui';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 
 import { buscarProposicao } from '../../_api/cliente';
-import { Fonte } from '../../_componentes/fonte';
+import { FonteDaSecao } from '../../_componentes/fonte';
 import {
   data,
   dataEHora,
   dia,
   identificacao,
+  artigoDaCasa,
   nomeDaCasa,
   nomeDoResultado,
   nomeDoTipo,
 } from '../../_componentes/formatacao';
+import { GLOSSARIO } from '../../_componentes/glossario';
 import { placarEmFrase } from '../../_componentes/placar';
 import { Topo } from '../../_componentes/topo';
+import { numerosDaProposicao, periodoDasVotacoes, periodoDosAtos } from './numeros';
 
 interface Props {
   readonly params: Promise<{ proposicaoId: string }>;
@@ -35,6 +38,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+const NUMERO = new Intl.NumberFormat('pt-BR');
+
+/** `1 autor` ou `2 autores`. */
+function plural(n: number, um: string, varios: string): string {
+  return `${NUMERO.format(n)} ${n === 1 ? um : varios}`;
+}
+
 export default async function PaginaDaProposicao({ params }: Props): Promise<ReactNode> {
   const proposicao = await buscarProposicao((await params).proposicaoId);
   if (!proposicao) notFound();
@@ -43,27 +53,25 @@ export default async function PaginaDaProposicao({ params }: Props): Promise<Rea
   const { tramitacoes, autores, votacoes, situacao } = proposicao;
   const recentes = tramitacoes.slice(0, ATOS_A_VISTA);
   const anteriores = tramitacoes.slice(ATOS_A_VISTA);
+  const casa = nomeDaCasa(proposicao.casa);
+  const artigo = artigoDaCasa(proposicao.casa);
+  const fonte = <FonteDaSecao fonte={proposicao.fonte} publicador={casa} />;
+  // O sumário só lista o que a página mostra.
+  const secoes = [
+    ['situacao', 'Situação'],
+    ['autoria', 'Quem apresentou'],
+    ['tramitacao', 'Tramitação'],
+    ...(votacoes.length > 0 ? [['votacoes', 'Votações nominais']] : []),
+  ] as const;
 
   return (
-    <main className="capitulos">
+    <main className="reportagem">
       <Topo
+        chapeu={`${nomeDoTipo(proposicao.sigla)} · ${casa}`}
         titulo={identificacao(proposicao)}
+        linhaFina={proposicao.ementa ?? undefined}
         voltar={{ href: '/proposicoes', texto: 'Todas as proposições' }}
-        aoLado={
-          <Cifra
-            valor={String(tramitacoes.length)}
-            legenda={`${tramitacoes.length === 1 ? 'ato' : 'atos'} de tramitação coletados${proposicao.apresentadaEm ? ` desde a apresentação, em ${data(proposicao.apresentadaEm)}` : ''}.`}
-          />
-        }
       >
-        {proposicao.ementa && <p className="destaque">{proposicao.ementa}</p>}
-        <p>
-          {nomeDoTipo(proposicao.sigla)} na {nomeDaCasa(proposicao.casa)}.
-          {situacao
-            ? ` Situação: ${situacao.descricao}${situacao.orgao ? ` (${situacao.orgao})` : ''}, desde ${data(situacao.desde)}.`
-            : ''}
-          {proposicao.normaGerada ? ` Virou norma: ${proposicao.normaGerada}.` : ''}
-        </p>
         {proposicao.urlDoTexto && (
           <p>
             <a href={proposicao.urlDoTexto} rel="noopener noreferrer external">
@@ -71,64 +79,127 @@ export default async function PaginaDaProposicao({ params }: Props): Promise<Rea
             </a>
           </p>
         )}
-        <Fonte fonte={proposicao.fonte} />
       </Topo>
 
-      <Capitulo
-        id="propuseram"
-        campo="aco"
-        verbo="Propuseram."
-        frase={
-          autores.length === 0
-            ? 'A casa não informa a autoria.'
-            : `${String(autores.length)} ${autores.length === 1 ? 'autor' : 'autores'}, com quem assina à frente primeiro.`
-        }
-      >
-        {autores.length > 0 && (
-          <ul className="nomes">
-            {autores.map((a, i) => (
-              <li key={`${a.nome}-${String(i)}`}>
-                {a.pessoaId ? <Link href={`/parlamentares/${a.pessoaId}`}>{a.nome}</Link> : a.nome}{' '}
-                <span className="nota">
-                  {a.tipoNaFonte}
-                  {a.proponente ? '' : ', assina junto'}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Capitulo>
+      <FaixaDeNumeros itens={numerosDaProposicao({ tramitacoes, votacoes })} />
 
-      <Capitulo
-        id="tramitou"
-        campo="papel"
-        verbo="Tramitou."
-        frase={
-          tramitacoes.length === 0
-            ? 'Nenhum ato de tramitação coletado.'
-            : `${String(tramitacoes.length)} ${tramitacoes.length === 1 ? 'ato' : 'atos'}, do mais recente para o mais antigo.`
-        }
-      >
-        {tramitacoes.length > 0 && (
-          <div className="pilha">
-            <Atos atos={recentes} quando={quando} />
-            {anteriores.length > 0 && (
-              <details className="recolhido">
-                <summary>Ver os {anteriores.length} atos anteriores</summary>
-                <Atos atos={anteriores} quando={quando} />
-              </details>
-            )}
-          </div>
+      <div className="reportagem__explicacoes">
+        <p>
+          Os números contam só o que já foi coletado d{artigo} {casa}.
+        </p>
+        <Explica termo="Tramitação">{GLOSSARIO.tramitacao}</Explica>
+        {votacoes.length > 0 && (
+          <Explica termo="Votação nominal">{GLOSSARIO.votacaoNominal}</Explica>
         )}
-      </Capitulo>
+      </div>
+
+      <nav aria-label="Nesta página">
+        <ul className="indice">
+          {secoes.map(([id, titulo]) => (
+            <li key={id}>
+              <a href={`#${id}`}>{titulo}</a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <Secao
+        id="situacao"
+        titulo="Situação"
+        periodo={situacao ? `desde ${data(situacao.desde)}` : 'sem situação informada'}
+        fonte={fonte}
+      >
+        {situacao ? (
+          <p>
+            {situacao.descricao}
+            {situacao.orgao ? ` (${situacao.orgao})` : ''}, segundo {artigo} {casa}.
+          </p>
+        ) : (
+          <p>
+            {artigo.toUpperCase()} {casa} não informa a situação atual desta proposição.
+          </p>
+        )}
+        {proposicao.normaGerada && <p>Virou norma: {proposicao.normaGerada}.</p>}
+      </Secao>
+
+      <Secao
+        id="autoria"
+        titulo="Quem apresentou"
+        periodo={
+          proposicao.apresentadaEm
+            ? `apresentada em ${data(proposicao.apresentadaEm)}`
+            : 'data de apresentação não informada'
+        }
+        fonte={fonte}
+      >
+        {autores.length === 0 ? (
+          <p>
+            {artigo.toUpperCase()} {casa} não informa a autoria.
+          </p>
+        ) : (
+          <>
+            <p>
+              {`${plural(autores.length, 'autor', 'autores')}, com quem assina à frente primeiro.`}
+            </p>
+            <ul className="nomes">
+              {autores.map((a, i) => (
+                <li key={`${a.nome}-${String(i)}`}>
+                  {a.pessoaId ? (
+                    <Link href={`/parlamentares/${a.pessoaId}`}>{a.nome}</Link>
+                  ) : (
+                    a.nome
+                  )}{' '}
+                  <span className="nota">
+                    {a.tipoNaFonte}
+                    {a.proponente ? '' : ', assina junto'}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+      </Secao>
+
+      <Secao
+        id="tramitacao"
+        titulo="Tramitação"
+        periodo={periodoDosAtos(tramitacoes)}
+        fonte={fonte}
+      >
+        {tramitacoes.length === 0 ? (
+          <p>Nenhum ato de tramitação coletado.</p>
+        ) : (
+          <>
+            <p>
+              {`${plural(tramitacoes.length, 'ato', 'atos')}, do mais recente para o mais antigo.`}
+            </p>
+            <div className="pilha">
+              <Atos atos={recentes} quando={quando} />
+              {anteriores.length > 0 && (
+                <details className="recolhido">
+                  <summary>
+                    {anteriores.length === 1
+                      ? 'Ver o ato anterior'
+                      : `Ver os ${NUMERO.format(anteriores.length)} atos anteriores`}
+                  </summary>
+                  <Atos atos={anteriores} quando={quando} />
+                </details>
+              )}
+            </div>
+          </>
+        )}
+      </Secao>
 
       {votacoes.length > 0 && (
-        <Capitulo
-          id="foi-votada"
-          campo="aco"
-          verbo="Foi votada."
-          frase={`${String(votacoes.length)} ${votacoes.length === 1 ? 'votação nominal coletada' : 'votações nominais coletadas'} sobre ela, da mais recente para a mais antiga.`}
+        <Secao
+          id="votacoes"
+          titulo="Votações nominais"
+          periodo={periodoDasVotacoes(votacoes)}
+          fonte={<FonteDaSecao fonte={votacoes[0]?.fonte} publicador={casa} />}
         >
+          <p>
+            {`${plural(votacoes.length, 'votação nominal coletada', 'votações nominais coletadas')} sobre ela, da mais recente para a mais antiga.`}
+          </p>
           <ul className="linhas">
             {votacoes.map((v) => (
               <li key={v.votacaoId} className="linha">
@@ -143,7 +214,7 @@ export default async function PaginaDaProposicao({ params }: Props): Promise<Rea
               </li>
             ))}
           </ul>
-        </Capitulo>
+        </Secao>
       )}
     </main>
   );
@@ -163,13 +234,8 @@ function Atos({
           <p className="linha__chave">{quando(t.em)}</p>
           <div className="linha__corpo">
             <p>{t.descricao}</p>
-            {(t.orgao ?? (t.despacho && t.despacho !== t.descricao)) && (
-              <p className="nota">
-                {[t.orgao, t.despacho !== t.descricao ? t.despacho : null]
-                  .filter(Boolean)
-                  .join(' · ')}
-              </p>
-            )}
+            {t.despacho && t.despacho !== t.descricao && <p>{t.despacho}</p>}
+            {t.orgao && <p className="nota">{t.orgao}</p>}
           </div>
         </li>
       ))}
