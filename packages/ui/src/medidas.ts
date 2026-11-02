@@ -47,3 +47,33 @@ export function porMes<T>(dias: readonly DiaMarcado<T>[]): Mes<T>[] {
     return { nome: `${MESES[Number(mes) - 1] ?? '?'} ${ano ?? ''}`, dias: doMes };
   });
 }
+
+/** Um número que conta de zero até o alvo ao entrar na tela. */
+export interface Contagem {
+  readonly alvo: number;
+  /** Casas decimais; zero por padrão. */
+  readonly casas?: number;
+  readonly prefixo?: string;
+  readonly sufixo?: string;
+}
+
+/** O texto da contagem quando ela já andou `fracao` (0 a 1) do caminho: com `1`, o valor final. */
+export function textoDaContagem(c: Contagem, fracao: number): string {
+  const casas = c.casas ?? 0;
+  const numero = new Intl.NumberFormat('pt-BR', {
+    minimumFractionDigits: casas,
+    maximumFractionDigits: casas,
+  }).format(c.alvo * fracao);
+  return `${c.prefixo ?? ''}${numero}${c.sufixo ?? ''}`;
+}
+
+/** Os atributos que o `Movimento` lê para contar; sem contagem, nada é marcado. */
+export function atributosDaContagem(c?: Contagem): Record<string, string> {
+  if (!c) return {};
+  return {
+    'data-conta': String(c.alvo),
+    'data-casas': String(c.casas ?? 0),
+    'data-prefixo': c.prefixo ?? '',
+    'data-sufixo': c.sufixo ?? '',
+  };
+}

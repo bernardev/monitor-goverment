@@ -1,6 +1,6 @@
 import '@prometeu/ui/estilos.css';
 
-import { Cabecalho } from '@prometeu/ui';
+import { Cabecalho, Movimento } from '@prometeu/ui';
 import type { Metadata } from 'next';
 import { Inter, Source_Serif_4 } from 'next/font/google';
 import Link from 'next/link';
@@ -36,40 +36,47 @@ export default function LayoutRaiz({ children }: { children: ReactNode }): React
         <a href="#conteudo" className="oculto">
           Ir para o conteúdo
         </a>
-        <Cabecalho>
-          <Link href="/" className="marca">
-            Prometeu
-          </Link>
-          <nav aria-label="Principal" className="navegacao">
-            <Link href="/municipios" data-tour="meu-governo">
-              Meu governo
+        <Cabecalho
+          marca={
+            <Link href="/" className="marca">
+              Prometeu
             </Link>
-            <Link href="/parlamentares" data-tour="parlamentares">
-              Parlamentares
+          }
+          navegacao={
+            <nav aria-label="Principal" className="navegacao">
+              <Link href="/municipios" data-tour="meu-governo">
+                Meu governo
+              </Link>
+              <Link href="/parlamentares" data-tour="parlamentares">
+                Parlamentares
+              </Link>
+              <Link href="/votacoes" data-tour="votacoes">
+                Votações
+              </Link>
+              <Link href="/emendas" data-tour="emendas">
+                Emendas
+              </Link>
+              <Link href="/obras" data-tour="obras">
+                Obras
+              </Link>
+              <Link href="/conta" data-tour="conta">
+                Minha conta
+              </Link>
+            </nav>
+          }
+          acoes={
+            <Link href="/busca" className="botao" data-tour="busca">
+              Buscar político ou cidade
             </Link>
-            <Link href="/votacoes" data-tour="votacoes">
-              Votações
-            </Link>
-            <Link href="/emendas" data-tour="emendas">
-              Emendas
-            </Link>
-            <Link href="/obras" data-tour="obras">
-              Obras
-            </Link>
-            <Link href="/conta" data-tour="conta">
-              Minha conta
-            </Link>
-          </nav>
-          <Link href="/busca" className="botao" data-tour="busca">
-            Buscar político ou cidade
-          </Link>
-        </Cabecalho>
+          }
+        />
         <div id="conteudo">{children}</div>
         <Tour />
-        <footer className="rodape" data-campo="grafite">
+        <Movimento />
+        <footer className="rodape">
           <div className="rodape__miolo">
             <p className="rodape__marca" aria-hidden="true">
-              Prometeu.
+              Prometeu
             </p>
             <div className="rodape__colunas">
               <ul>
@@ -101,8 +108,8 @@ export default function LayoutRaiz({ children }: { children: ReactNode }): React
                 </li>
               </ul>
               <p className="nota rodape__texto">
-                O nome é o verbo. Cada número aqui vem de um registro oficial capturado e guardado;
-                nenhum veredito sai sem a revisão de uma segunda pessoa.
+                Cada número aqui vem de um registro oficial capturado e guardado; nenhum veredito
+                sai sem a revisão de uma segunda pessoa.
               </p>
             </div>
           </div>

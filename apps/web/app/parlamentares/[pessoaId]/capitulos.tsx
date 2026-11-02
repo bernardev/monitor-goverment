@@ -120,7 +120,7 @@ export function Presenca({ frequencia }: { frequencia: FrequenciaDoParlamentar }
             dia: d.dia,
             valor: TOM_DO_DIA[d.situacao] ?? { tom: 'vazio', descricao: d.registroNaFonte },
           }))}
-          legenda="Cada quadrado é um dia com sessão. Escuro: presente. Claro: ausência justificada. Branco: ausência sem justificativa."
+          legenda={Object.values(TOM_DO_DIA)}
         />
       }
       nota={

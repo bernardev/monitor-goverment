@@ -1,7 +1,7 @@
 import '@prometeu/ui/estilos.css';
 import './globais.css';
 
-import { Cabecalho } from '@prometeu/ui';
+import { Cabecalho, Movimento } from '@prometeu/ui';
 import type { Metadata } from 'next';
 import { Inter, Source_Serif_4 } from 'next/font/google';
 import Link from 'next/link';
@@ -34,21 +34,28 @@ export default function LayoutRaiz({ children }: { children: ReactNode }): React
         <a href="#conteudo" className="oculto">
           Ir para o conteúdo
         </a>
-        <Cabecalho>
-          <Link href="/" className="marca">
-            Prometeu <span className="marca__painel">curadoria</span>
-          </Link>
-          <nav aria-label="Painel" className="navegacao">
-            <Link href="/">Promessas</Link>
-            <Link href="/promessas/nova">Registrar promessa</Link>
-          </nav>
-          <form method="post" action="/sair">
-            <button type="submit" className="botao">
-              Sair
-            </button>
-          </form>
-        </Cabecalho>
+        <Cabecalho
+          marca={
+            <Link href="/" className="marca">
+              Prometeu <span className="marca__painel">curadoria</span>
+            </Link>
+          }
+          navegacao={
+            <nav aria-label="Painel" className="navegacao">
+              <Link href="/">Promessas</Link>
+              <Link href="/promessas/nova">Registrar promessa</Link>
+            </nav>
+          }
+          acoes={
+            <form method="post" action="/sair">
+              <button type="submit" className="botao">
+                Sair
+              </button>
+            </form>
+          }
+        />
         <div id="conteudo">{children}</div>
+        <Movimento />
       </body>
     </html>
   );

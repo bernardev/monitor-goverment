@@ -69,7 +69,7 @@
 
 html {
   -webkit-text-size-adjust: 100%;
-  scroll-padding-top: 88px;
+  scroll-padding-top: 24px;
 }
 
 body {
@@ -246,38 +246,60 @@ form.busca .botao {
 
 /* ── Cabeçalho e rodapé ─────────────────────────────────────────────────────────────────────── */
 .cabecalho {
-  position: sticky;
-  top: 0;
-  z-index: 10;
   background: var(--branco);
-  border-bottom: 1px solid var(--fio);
 }
 
 .cabecalho__miolo {
   max-width: var(--largura);
   margin: 0 auto;
-  padding: 16px var(--margem);
+  padding: 14px var(--margem) 0;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px 32px;
+  gap: 10px 24px;
+}
+
+.cabecalho__marca {
+  flex: 1 1 auto;
 }
 
 .marca {
-  font-weight: 900;
-  font-size: var(--t-destaque);
-  letter-spacing: -0.04em;
+  color: var(--tinta);
+  font-family: var(--fonte-titulo-pilha);
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1.1;
   text-decoration: none;
+}
+
+.cabecalho .botao {
+  min-height: 36px;
+  padding: 0 14px;
+  font-size: var(--t-nota);
+}
+
+/* A navegação fica entre um fio fino e um fio duplo, como a faixa de seções de um jornal. */
+.cabecalho__menu {
+  flex: 1 0 100%;
+  border-top: 1px solid var(--fio-forte);
+  border-bottom: 3px double var(--fio-forte);
+}
+
+.cabecalho__menu summary {
+  display: none;
 }
 
 .navegacao {
   display: flex;
   flex-wrap: wrap;
   gap: 4px 22px;
-  flex: 1;
+  padding: 8px 0;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .navegacao a {
+  color: var(--tinta);
   text-decoration-color: transparent;
 }
 
@@ -286,23 +308,33 @@ form.busca .botao {
   text-decoration-color: currentColor;
 }
 
+/* No desktop a navegação é sempre visível; o <details> só fecha no telefone. */
+@media (min-width: 641px) {
+  .cabecalho__menu::details-content {
+    content-visibility: visible;
+  }
+}
+
 .rodape {
-  padding: clamp(56px, 7vw, 96px) var(--margem) 40px;
+  margin-top: clamp(48px, 7vw, 96px);
+  padding: 0 var(--margem) 40px;
 }
 
 .rodape__miolo {
   max-width: var(--largura);
   margin: 0 auto;
+  padding-top: 24px;
+  border-top: 3px solid var(--fio-forte);
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 24px;
 }
 
 .rodape__marca {
-  font-size: var(--t-verbo);
-  font-weight: 900;
-  line-height: 0.82;
-  letter-spacing: -0.05em;
+  font-family: var(--fonte-titulo-pilha);
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .rodape__colunas {
@@ -392,8 +424,9 @@ form.busca .botao {
 
 .proporcao__barra {
   display: flex;
-  height: 56px;
-  background: var(--vazio);
+  height: 10px;
+  background: var(--superficie);
+  transform-origin: 0 50%;
 }
 
 .proporcao__parte {
@@ -401,20 +434,23 @@ form.busca .botao {
   flex-shrink: 0;
 }
 
+/* Neutro de propósito: nada de vermelho e verde nem de cor de partido; o rótulo escrito sempre vai junto. */
 [data-tom='forte'] {
-  background: var(--forte);
+  background: var(--azul);
 }
 
 [data-tom='medio'] {
-  background: var(--medio);
+  background: var(--azul-claro);
 }
 
 [data-tom='fraco'] {
-  background: var(--fraco);
+  background: var(--cinza-claro);
 }
 
 [data-tom='vazio'] {
-  background: var(--vazio);
+  background: var(--branco);
+  outline: 1px solid var(--contorno);
+  outline-offset: -1px;
 }
 
 .proporcao__legenda {
@@ -431,8 +467,8 @@ form.busca .botao {
 }
 
 .proporcao__amostra {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   display: inline-block;
 }
 
@@ -468,29 +504,53 @@ form.busca .botao {
 }
 
 .calendario__dia {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
+}
+
+.calendario__legenda {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  font-size: 13px;
+}
+
+.calendario__legenda li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.calendario__amostra {
+  width: 12px;
+  height: 12px;
+  display: inline-block;
 }
 
 .cadeia {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--vao);
-  font-size: var(--t-destaque);
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  font-size: var(--t-nota);
   font-weight: 500;
 }
 
 .cadeia__estagio {
-  padding: 16px 24px;
-  background: var(--superficie);
+  padding-top: 8px;
+  border-top: 4px solid var(--cinza-claro);
+  color: var(--nota);
 }
 
 .cadeia__estagio[data-aceso='true'] {
-  background: var(--forte);
-  color: var(--fundo);
+  border-top-color: var(--azul);
+  color: var(--tinta);
+  font-weight: 700;
 }
 
 /* ── Listas de fatos ────────────────────────────────────────────────────────────────────────── */
@@ -1062,6 +1122,178 @@ main:not(.capitulos) button {
   overflow-x: auto;
 }
 
+/* ── Peças de jornal ────────────────────────────────────────────────────────────────────────── */
+.chapeu {
+  color: var(--azul);
+  font-size: var(--t-chapeu);
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.secao {
+  margin-top: clamp(32px, 5vw, 48px);
+}
+
+.secao__cabeca {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+  margin-bottom: 12px;
+  padding-top: 8px;
+  border-top: 2px solid var(--fio-forte);
+}
+
+.secao__periodo {
+  color: var(--tinta-2);
+  font-size: var(--t-nota);
+  font-weight: 500;
+}
+
+.secao__fonte {
+  margin-top: 12px;
+  color: var(--nota);
+  font-size: var(--t-nota);
+}
+
+/* Números-chave entre fios: o valor em azul, o que mede e o período. */
+.faixa {
+  --colunas: 4;
+  display: grid;
+  grid-template-columns: repeat(var(--colunas), minmax(0, 1fr));
+  border-top: 1px solid var(--fio-forte);
+  border-bottom: 1px solid var(--fio);
+}
+
+.faixa__item {
+  padding: 10px 10px 10px 14px;
+}
+
+.faixa__item:first-child {
+  padding-left: 0;
+}
+
+.faixa__item + .faixa__item {
+  border-left: 1px solid var(--fio);
+}
+
+.faixa__valor {
+  color: var(--azul);
+  font-family: var(--fonte-titulo-pilha);
+  font-size: var(--t-numero);
+  font-weight: 700;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.faixa__rotulo {
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.faixa__periodo {
+  margin-top: 2px;
+  color: var(--nota);
+  font-size: var(--t-nota);
+}
+
+.chamada {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.chamada__titulo {
+  font-size: 20px;
+}
+
+.chamada--manchete .chamada__titulo {
+  font-size: var(--t-manchete);
+}
+
+.chamada--lista {
+  padding: 10px 0;
+  border-top: 1px solid var(--fio);
+}
+
+.chamada--lista .chamada__titulo {
+  font-size: 17px;
+}
+
+.chamada__titulo a {
+  color: var(--tinta);
+  text-decoration: none;
+}
+
+.chamada__titulo a:hover {
+  color: var(--azul);
+  text-decoration: underline;
+}
+
+.chamada__fina {
+  color: var(--tinta-2);
+}
+
+.chamada__fonte {
+  color: var(--nota);
+  font-size: var(--t-nota);
+}
+
+.explica {
+  padding: 8px 0 8px 12px;
+  border-left: 3px solid var(--azul-claro);
+  color: var(--tinta-2);
+  font-size: 14px;
+}
+
+.explica strong {
+  color: var(--tinta);
+}
+
+/* ── Movimento ──────────────────────────────────────────────────────────────────────────────── */
+/* O <Movimento /> põe `movimento` no <html>. Sem ele (sem JavaScript, movimento reduzido), nada se esconde. */
+html.movimento [data-surge] {
+  transition:
+    opacity 0.5s ease-out,
+    transform 0.5s ease-out;
+}
+
+html.movimento [data-surge]:not([data-visivel]) {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+html.movimento [data-surge='barra'] {
+  transition: transform 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+html.movimento [data-surge='barra']:not([data-visivel]) {
+  opacity: 1;
+  transform: scaleX(0);
+}
+
+html.movimento .ranking__item:nth-child(2) [data-surge='barra'] {
+  transition-delay: 0.1s;
+}
+
+html.movimento .ranking__item:nth-child(3) [data-surge='barra'] {
+  transition-delay: 0.2s;
+}
+
+html.movimento .ranking__item:nth-child(n + 4) [data-surge='barra'] {
+  transition-delay: 0.3s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.movimento [data-surge] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
 /* Ranking: quem tem mais, com a barra do tamanho do valor em relação ao maior. */
 .ranking {
   list-style: none;
@@ -1074,11 +1306,12 @@ main:not(.capitulos) button {
 
 .ranking__item {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr) minmax(130px, auto);
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr) minmax(110px, auto);
   align-items: center;
   gap: 8px 24px;
-  padding: 14px 20px;
-  background: var(--superficie);
+  padding: 10px 0;
+  border-top: 1px solid var(--fio);
+  font-size: 14px;
 }
 
 .ranking__quem {
@@ -1088,7 +1321,7 @@ main:not(.capitulos) button {
 }
 
 .ranking__rotulo {
-  font-weight: 700;
+  font-weight: 600;
   overflow-wrap: anywhere;
 }
 
@@ -1098,19 +1331,21 @@ main:not(.capitulos) button {
 
 .ranking__barra {
   display: block;
-  height: 20px;
-  background: var(--vazio);
+  height: 10px;
+  background: var(--superficie);
 }
 
 .ranking__medida {
   display: block;
   height: 100%;
-  background: var(--forte);
+  background: var(--azul);
+  transform-origin: 0 50%;
 }
 
 .ranking__valor {
   text-align: right;
-  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -1191,26 +1426,52 @@ main:not(.capitulos) button {
 
 /* ── Telefone ───────────────────────────────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
-  .cabecalho__miolo {
-    padding-top: 10px;
-    padding-bottom: 10px;
-    flex-wrap: nowrap;
-    justify-content: space-between;
-  }
-
-  /* A navegação inteira está no rodapé; no telefone a barra leva só a marca e a busca. */
-  .cabecalho .navegacao {
-    display: none;
+  .marca {
+    font-size: 24px;
   }
 
   .cabecalho .botao {
     min-height: 44px;
-    padding: 0 18px;
-    font-size: var(--t-nota);
+  }
+
+  /* O menu abre sem JavaScript: o <summary> é o botão e a navegação desce em coluna. */
+  .cabecalho__menu summary {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .navegacao {
+    flex-direction: column;
+    gap: 0;
+    padding: 0 0 8px;
+  }
+
+  .navegacao a {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    border-top: 1px solid var(--fio);
   }
 
   html {
-    scroll-padding-top: 72px;
+    scroll-padding-top: 16px;
+  }
+
+  .faixa {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .faixa__item:nth-child(odd) {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .faixa__item:nth-child(n + 3) {
+    border-top: 1px solid var(--fio);
   }
 
   /* Tabela vira uma ficha por linha: a primeira célula como título, as outras com o rótulo. */

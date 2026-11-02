@@ -14,4 +14,13 @@ export {
   Ranking,
   type Tom,
 } from './graficos';
-export { type DiaMarcado, porcentagens, porMes } from './medidas';
+export { Chapeu, Chamada, Explica, FaixaDeNumeros, type NumeroChave, Secao } from './jornal';
+export {
+  atributosDaContagem,
+  type Contagem,
+  type DiaMarcado,
+  porcentagens,
+  porMes,
+  textoDaContagem,
+} from './medidas';
+export { Movimento } from './movimento';

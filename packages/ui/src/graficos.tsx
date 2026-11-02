@@ -37,7 +37,7 @@ export function Proporcao({ partes }: { partes: readonly Parte[] }): ReactNode {
   const descricao = visiveis.map(legendaDa).join(', ');
   return (
     <figure className="proporcao">
-      <div className="proporcao__barra" role="img" aria-label={descricao}>
+      <div className="proporcao__barra" role="img" aria-label={descricao} data-surge="barra">
         {visiveis.map((p, i) => (
           <span
             key={p.rotulo}
@@ -65,7 +65,7 @@ export interface Marca {
   readonly descricao: string;
 }
 
-/** Os dias com registro, um quadrado por dia, agrupados por mês. */
+/** Os dias com registro, um quadrado por dia, agrupados por mês, com a legenda sempre escrita. */
 export function Calendario({
   dias,
   rotulo,
@@ -73,7 +73,7 @@ export function Calendario({
 }: {
   dias: readonly DiaMarcado<Marca>[];
   rotulo: string;
-  legenda: ReactNode;
+  legenda: readonly Marca[];
 }): ReactNode {
   return (
     <figure className="calendario">
@@ -94,7 +94,16 @@ export function Calendario({
           </div>
         ))}
       </div>
-      <figcaption className="nota">{legenda}</figcaption>
+      <figcaption>
+        <ul className="calendario__legenda">
+          {legenda.map((m) => (
+            <li key={m.descricao}>
+              <span className="calendario__amostra" data-tom={m.tom} aria-hidden="true" />
+              {m.descricao}
+            </li>
+          ))}
+        </ul>
+      </figcaption>
     </figure>
   );
 }
@@ -104,7 +113,7 @@ export const ESTAGIOS = ['Prometida', 'Ato', 'Orçamento', 'Execução', 'Entreg
 /** A cadeia de entrega de uma promessa, acesa até o estágio que tem evidência confirmada. */
 export function CadeiaDeEntrega({ alcancados }: { alcancados: number }): ReactNode {
   return (
-    <ol className="cadeia" aria-label="Cadeia de entrega">
+    <ol className="cadeia" aria-label="Cadeia de entrega" data-surge="entra">
       {ESTAGIOS.map((estagio, i) => (
         <li key={estagio} className="cadeia__estagio" data-aceso={i < alcancados}>
           {estagio}
@@ -142,6 +151,7 @@ export function Ranking({ itens }: { itens: readonly ItemDoRanking[] }): ReactNo
           <span className="ranking__barra" aria-hidden="true">
             <span
               className="ranking__medida"
+              data-surge="barra"
               style={{
                 // Valor positivo pequeno ainda aparece; zero não ganha barra nenhuma.
                 width: `${String(item.valor > 0 && maior > 0 ? Math.max(0.5, (item.valor / maior) * 100) : 0)}%`,
