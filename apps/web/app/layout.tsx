@@ -6,6 +6,7 @@ import { Inter, Source_Serif_4 } from 'next/font/google';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
+import { Navegacao } from './_componentes/navegacao';
 import { Tour } from './_componentes/tour';
 
 // Servidas pelo próprio site: nada é pedido ao Google no navegador. Serifa nos títulos, sans no texto.
@@ -42,28 +43,7 @@ export default function LayoutRaiz({ children }: { children: ReactNode }): React
               Prometeu
             </Link>
           }
-          navegacao={
-            <nav aria-label="Principal" className="navegacao">
-              <Link href="/municipios" data-tour="meu-governo">
-                Meu governo
-              </Link>
-              <Link href="/parlamentares" data-tour="parlamentares">
-                Parlamentares
-              </Link>
-              <Link href="/votacoes" data-tour="votacoes">
-                Votações
-              </Link>
-              <Link href="/emendas" data-tour="emendas">
-                Emendas
-              </Link>
-              <Link href="/obras" data-tour="obras">
-                Obras
-              </Link>
-              <Link href="/conta" data-tour="conta">
-                Minha conta
-              </Link>
-            </nav>
-          }
+          navegacao={<Navegacao />}
           acoes={
             <Link href="/busca" className="botao" data-tour="busca">
               Buscar político ou cidade

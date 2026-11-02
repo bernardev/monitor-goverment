@@ -7,6 +7,8 @@ import { Inter, Source_Serif_4 } from 'next/font/google';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
+import { Navegacao } from './_componentes/navegacao';
+
 // Servidas pelo próprio site: nada é pedido ao Google no navegador. Serifa nos títulos, sans no texto.
 const fonteTitulo = Source_Serif_4({
   subsets: ['latin'],
@@ -40,12 +42,7 @@ export default function LayoutRaiz({ children }: { children: ReactNode }): React
               Prometeu <span className="marca__painel">curadoria</span>
             </Link>
           }
-          navegacao={
-            <nav aria-label="Painel" className="navegacao">
-              <Link href="/">Promessas</Link>
-              <Link href="/promessas/nova">Registrar promessa</Link>
-            </nav>
-          }
+          navegacao={<Navegacao />}
           acoes={
             <form method="post" action="/sair">
               <button type="submit" className="botao">
