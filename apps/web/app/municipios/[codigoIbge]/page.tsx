@@ -1,5 +1,5 @@
 import type { AutorNoMunicipio, ParlamentarResumo } from '@prometeu/contracts';
-import { Capitulo, Cifra, Proporcao, Ranking } from '@prometeu/ui';
+import { Chapeu, Explica, FaixaDeNumeros, Proporcao, Ranking, Secao } from '@prometeu/ui';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -14,15 +14,18 @@ import {
 } from '../../_api/cliente';
 import { Acompanhar } from '../../_componentes/acompanhar';
 import { ItemDeEmenda } from '../../_componentes/emendas';
+import { FonteDaSecao } from '../../_componentes/fonte';
 import {
-  nomeDaSituacaoDaObra,
   nomeDoCargo,
-  percentual,
-  reaisEmEscala,
   partesPagoEAPagar,
+  periodoDasEmendas,
+  reais,
   reaisResumidos,
 } from '../../_componentes/formatacao';
-import { ItemDeObra } from '../../_componentes/obras';
+import { GLOSSARIO } from '../../_componentes/glossario';
+import { ItemDeObra, situacaoEMedicao } from '../../_componentes/obras';
+import { fonteMaisRecente } from '../../parlamentares/[pessoaId]/numeros';
+import { numerosDaCidade } from './numeros';
 
 interface Props {
   readonly params: Promise<{ codigoIbge: string }>;
@@ -44,7 +47,7 @@ function soma(autores: readonly AutorNoMunicipio[], campo: 'empenhadoCentavos' |
   return autores.reduce((total, a) => total + BigInt(a[campo]), 0n);
 }
 
-/** `deputados federais` ou `deputado federal`, conforme a contagem. */
+/** `12 emendas` ou `1 emenda`, conforme a contagem. */
 function plural(n: number, um: string, varios: string): string {
   return `${NUMERO.format(n)} ${n === 1 ? um : varios}`;
 }
@@ -76,105 +79,121 @@ export default async function MeuGoverno({ params, searchParams }: Props): Promi
   const ultimaPagina = Math.max(1, Math.ceil(emendas.total / emendas.itensPorPagina));
   const endereco = (outra: number) => `/municipios/${codigoIbge}?pagina=${String(outra)}#emendas`;
 
+  const fonteDasEmendas = fonteMaisRecente(emendas);
+  const fonteDasObras = fonteMaisRecente(obras);
+  const periodoDasEmendasDaCidade = periodoDasEmendas(fonteDasEmendas?.coletadaEm ?? null);
+  const periodoDasObras = periodoDasEmendas(fonteDasObras?.coletadaEm ?? null);
+  const numeros = numerosDaCidade({
+    pagoCentavos: pago,
+    empenhadoCentavos: empenhado,
+    emendas: quantasEmendas,
+    obras: obras.total,
+    emendasColetadasEm: fonteDasEmendas?.coletadaEm ?? null,
+    obrasColetadasEm: fonteDasObras?.coletadaEm ?? null,
+  });
+
+  // O sumário só lista o que a página mostra.
+  const secoes = [
+    ['dinheiro', 'Quem mandou o dinheiro'],
+    ['obras', 'Obras pagas com emendas'],
+    ['bancada', 'Quem representa a cidade no Congresso'],
+    ...(obras.total > 8 ? [['todas-as-obras', 'Todas as obras']] : []),
+    ['emendas', 'Todas as emendas'],
+  ] as const;
+
   return (
-    <main className="capitulos">
-      <section className="retrato" data-campo="papel" aria-labelledby="nome">
-        <div className="retrato__miolo">
-          <div className="retrato__texto">
-            <h1 id="nome" className="retrato__nome">
-              {nome}
-            </h1>
-            <p className="destaque">
-              {uf}. Quem representa a cidade no Congresso, o dinheiro de emenda que chegou aqui e as
-              obras que ele pagou.
+    <main className="reportagem">
+      <header className="reportagem__cabeca">
+        <div className="reportagem__texto">
+          <Chapeu>Cidade · {uf}</Chapeu>
+          <h1>{nome}</h1>
+          <div className="reportagem__acoes">
+            <p className="reportagem__fina">
+              O dinheiro federal que deputados e senadores indicaram para a cidade, as obras que ele
+              pagou e quem a representa no Congresso.
             </p>
             <Acompanhar tipo="municipio" id={codigoIbge} volta={`/municipios/${codigoIbge}`} />
-            <nav aria-label="Nesta página">
-              <ul className="sumario">
-                <li>
-                  <a href="#recebeu">Recebeu</a>
-                </li>
-                <li>
-                  <a href="#virou-obra">Virou obra</a>
-                </li>
-                <li>
-                  <a href="#representam">Representam</a>
-                </li>
-              </ul>
-            </nav>
-          </div>
-          <div className="retrato__lado">
-            <Cifra
-              valor={`R$ ${reaisEmEscala(pago).numero}`}
-              legenda={
-                autores.length === 0
-                  ? 'Nenhuma emenda com destino à cidade coletada ainda.'
-                  : `${reaisEmEscala(pago).escala || 'reais'} pagos em emendas com destino a ${nome} desde 2023.`
-              }
-            />
           </div>
         </div>
-      </section>
+      </header>
 
-      {autores.length === 0 ? (
-        <Capitulo
-          id="recebeu"
-          campo="areia"
-          verbo="Recebeu."
-          frase={`Nenhuma emenda com destino a ${nome} coletada desde o orçamento de 2023.`}
-        />
-      ) : (
-        <Capitulo
-          id="recebeu"
-          campo="areia"
-          verbo="Recebeu."
-          frase={`${reaisResumidos(pago)} pagos de ${reaisResumidos(empenhado)} empenhados, em ${plural(quantasEmendas, 'emenda', 'emendas')} com destino a ${nome}.`}
-          aoLado={<Proporcao partes={partesPagoEAPagar(pago, empenhado)} />}
-          nota={
+      <FaixaDeNumeros itens={numeros} />
+      <p className="reportagem__nota">
+        Os números somam só a parte de cada emenda destinada a {nome}. As obras são as do
+        Obrasgov.br pagas por ao menos uma emenda.
+      </p>
+
+      <div className="reportagem__explicacoes">
+        <Explica termo="Emenda">{GLOSSARIO.emenda}</Explica>
+        <Explica termo="Empenhado">{GLOSSARIO.empenhado}</Explica>
+        <Explica termo="Pago">{GLOSSARIO.pago}</Explica>
+      </div>
+
+      <nav aria-label="Nesta página">
+        <ul className="indice">
+          {secoes.map(([id, titulo]) => (
+            <li key={id}>
+              <a href={`#${id}`}>{titulo}</a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <Secao
+        id="dinheiro"
+        titulo="Quem mandou o dinheiro"
+        periodo={periodoDasEmendasDaCidade}
+        fonte={<FonteDaSecao fonte={fonteDasEmendas} publicador="Portal da Transparência" />}
+      >
+        {autores.length === 0 ? (
+          <p>Nenhuma emenda com destino a {nome} coletada.</p>
+        ) : (
+          <>
             <p>
-              Conta só a parte de cada emenda destinada a {nome}; a que foi para a UF inteira ou
-              para vários municípios de uma vez não entra. Pago soma o pago no ano do orçamento e os
-              restos a pagar pagos depois. O partido é o atual do parlamentar, não o da época da
-              emenda.
+              {`${reaisResumidos(pago)} já foram pagos, de ${reaisResumidos(empenhado)} reservados no orçamento, em ${plural(quantasEmendas, 'emenda', 'emendas')} com destino a ${nome}.`}
             </p>
-          }
-        >
-          <h3 className="titulo-de-lista">Quem mandou o dinheiro</h3>
-          <Ranking
-            itens={autores.map((a) => ({
-              chave: a.pessoaId ?? a.nome,
-              rotulo: a.pessoaId ? (
-                <Link href={`/parlamentares/${a.pessoaId}`}>{a.nome}</Link>
-              ) : (
-                a.nome
-              ),
-              detalhe: [
-                a.pessoaId
-                  ? [a.siglaPartido, nomeDoCargo(a.cargo)].filter(Boolean).join(' · ')
-                  : 'Emenda coletiva',
-                `${plural(a.emendas, 'emenda', 'emendas')}, ${reaisResumidos(a.empenhadoCentavos)} empenhados`,
-              ].join(' · '),
-              valor: Number(BigInt(a.pagoCentavos) / 100n),
-              texto: `${reaisResumidos(a.pagoCentavos)} pagos`,
-            }))}
-          />
-        </Capitulo>
-      )}
+            <Proporcao partes={partesPagoEAPagar(pago, empenhado)} />
+            <Ranking
+              itens={autores.map((a) => ({
+                chave: a.pessoaId ?? a.nome,
+                rotulo: a.pessoaId ? (
+                  <Link href={`/parlamentares/${a.pessoaId}`}>{a.nome}</Link>
+                ) : (
+                  a.nome
+                ),
+                detalhe: [
+                  a.pessoaId
+                    ? [a.siglaPartido, nomeDoCargo(a.cargo)].filter(Boolean).join(' · ')
+                    : 'Emenda coletiva',
+                  `${plural(a.emendas, 'emenda', 'emendas')}, ${reaisResumidos(a.empenhadoCentavos)} reservados`,
+                ].join(' · '),
+                valor: Number(BigInt(a.pagoCentavos) / 100n),
+                texto: `${reaisResumidos(a.pagoCentavos)} pagos`,
+              }))}
+            />
+            <p>
+              Conta só a parte de cada emenda destinada a {nome}; a que foi para o estado inteiro ou
+              para várias cidades de uma vez não entra. Pago soma o que saiu no ano do orçamento e
+              nos anos seguintes. O partido é o atual do parlamentar, não o da época da emenda.
+            </p>
+          </>
+        )}
+      </Secao>
 
-      {obras.total === 0 ? (
-        <Capitulo
-          id="virou-obra"
-          campo="papel"
-          verbo="Virou obra."
-          frase={`Nenhuma obra paga com emenda coletada em ${nome}.`}
-        />
-      ) : (
-        <Capitulo
-          id="virou-obra"
-          campo="papel"
-          verbo="Virou obra."
-          frase={`${plural(obras.total, 'obra paga', 'obras pagas')} com emendas em ${nome}: ${NUMERO.format(concluidas)} concluídas, ${NUMERO.format(emExecucao)} em execução, ${NUMERO.format(paralisadas)} paralisadas.`}
-          aoLado={
+      <Secao
+        id="obras"
+        titulo="Obras pagas com emendas"
+        periodo={periodoDasObras}
+        fonte={<FonteDaSecao fonte={fonteDasObras} publicador="Obrasgov.br" />}
+      >
+        {obras.total === 0 ? (
+          <p>Nenhuma obra paga com emenda coletada em {nome}.</p>
+        ) : (
+          <>
+            <p>
+              {`${plural(obras.total, 'obra paga', 'obras pagas')} com emendas em ${nome}: ${plural(concluidas, 'concluída', 'concluídas')}, ${NUMERO.format(emExecucao)} em execução e ${plural(paralisadas, 'paralisada', 'paralisadas')}.`}
+            </p>
+            <Explica termo="Situação da obra">{GLOSSARIO.situacaoDaObra}</Explica>
             <Proporcao
               partes={[
                 { rotulo: 'concluídas', valor: concluidas, tom: 'forte' },
@@ -187,85 +206,92 @@ export default async function MeuGoverno({ params, searchParams }: Props): Promi
                 },
               ]}
             />
-          }
-          nota={
-            <p>Obras do Obrasgov pagas por ao menos uma emenda. Situação e medição da fonte.</p>
-          }
-        >
-          <ul className="linhas">
-            {obras.itens.slice(0, 8).map((o) => (
-              <li key={o.obraId} className="linha">
-                <p className="linha__chave">{nomeDaSituacaoDaObra(o.situacao)}</p>
-                <div className="linha__corpo">
-                  <Link href={`/obras/${o.obraId}`}>{o.nome}</Link>
-                  <p className="nota">
-                    {reaisResumidos(o.investimentoPrevistoCentavos)} previstos
-                    {o.medicao ? ` · ${percentual(o.medicao.percentualCentesimos)} executado` : ''}
+            <ul className="fichas">
+              {obras.itens.slice(0, 8).map((o) => (
+                <li key={o.obraId} className="ficha">
+                  <Link href={`/obras/${o.obraId}`} className="ficha__titulo">
+                    {o.nome}
+                  </Link>
+                  <p className="ficha__nota">
+                    {situacaoEMedicao(o)} · {reais(o.investimentoPrevistoCentavos)} previstos
                   </p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </Capitulo>
-      )}
-
-      <Capitulo
-        id="representam"
-        campo="aco"
-        verbo="Representam."
-        frase={`${plural(senadores.length, 'senador', 'senadores')} e ${plural(deputados.length, 'deputado federal', 'deputados federais')} eleitos por ${uf} estão em exercício.`}
-        nota={
-          <p>
-            A cidade vota para deputado federal e senador junto com o estado inteiro: quem a
-            representa no Congresso é a bancada de {uf}.
-          </p>
-        }
-      >
-        <div className="pilha">
-          <Bancada titulo="No Senado" pessoas={senadores} />
-          <Bancada titulo="Na Câmara" pessoas={deputados} />
-        </div>
-      </Capitulo>
-
-      <section className="apendice" data-campo="papel" aria-labelledby="tudo">
-        <h2 id="tudo" className="titulo">
-          Tudo o que chegou
-        </h2>
-        {obras.total > 8 && (
-          <section aria-labelledby="todas-as-obras" className="pilha">
-            <h3 id="todas-as-obras" className="titulo-de-lista">
-              As {NUMERO.format(obras.itens.length)} maiores obras
-            </h3>
-            <ul className="lista">
-              {obras.itens.map((o) => (
-                <ItemDeObra key={o.obraId} obra={o} />
+                </li>
               ))}
             </ul>
-          </section>
+          </>
         )}
-        <section id="emendas" aria-labelledby="todas-as-emendas" className="pilha">
-          <h3 id="todas-as-emendas" className="titulo-de-lista">
-            {plural(emendas.total, 'emenda', 'emendas')} com destino a {nome}
-          </h3>
-          <p className="nota">
-            Valores da emenda inteira, que pode ter ido também para outros lugares.
+      </Secao>
+
+      <Secao
+        id="bancada"
+        titulo="Quem representa a cidade no Congresso"
+        periodo="em exercício hoje"
+        fonte={
+          bancada.itens.length === 0 ? (
+            <FonteDaSecao publicador="Câmara dos Deputados e Senado Federal" />
+          ) : (
+            <p className="fonte">Fonte: Câmara dos Deputados e Senado Federal.</p>
+          )
+        }
+      >
+        <p>
+          {`${plural(senadores.length, 'senador', 'senadores')} e ${plural(deputados.length, 'deputado federal', 'deputados federais')} eleitos por ${uf} estão em exercício.`}
+        </p>
+        <p>
+          A cidade vota para deputado federal e senador junto com o estado inteiro: quem a
+          representa no Congresso é a bancada de {uf}.
+        </p>
+        <Bancada titulo="No Senado" pessoas={senadores} />
+        <Bancada titulo="Na Câmara" pessoas={deputados} />
+      </Secao>
+
+      {obras.total > 8 && (
+        <Secao
+          id="todas-as-obras"
+          titulo="Todas as obras"
+          periodo={periodoDasObras}
+          fonte={<FonteDaSecao fonte={fonteDasObras} publicador="Obrasgov.br" />}
+        >
+          <p>
+            {obras.itens.length === obras.total
+              ? `As ${NUMERO.format(obras.total)} obras pagas com emendas em ${nome}.`
+              : `As ${NUMERO.format(obras.itens.length)} maiores obras, de ${NUMERO.format(obras.total)} pagas com emendas.`}
           </p>
           <ul className="lista">
-            {emendas.itens.map((e) => (
-              <ItemDeEmenda key={e.emendaId} emenda={e} />
+            {obras.itens.map((o) => (
+              <ItemDeObra key={o.obraId} obra={o} />
             ))}
           </ul>
-          {ultimaPagina > 1 && (
-            <nav aria-label="Paginação" className="paginacao">
-              {pagina > 1 && <Link href={endereco(pagina - 1)}>Anterior</Link>}
-              <span>
-                Página {pagina} de {ultimaPagina}
-              </span>
-              {pagina < ultimaPagina && <Link href={endereco(pagina + 1)}>Próxima</Link>}
-            </nav>
-          )}
-        </section>
-      </section>
+        </Secao>
+      )}
+
+      <Secao
+        id="emendas"
+        titulo="Todas as emendas"
+        periodo={periodoDasEmendasDaCidade}
+        fonte={<FonteDaSecao fonte={fonteDasEmendas} publicador="Portal da Transparência" />}
+      >
+        <p>
+          {`${plural(emendas.total, 'emenda', 'emendas')} com destino a ${nome}.`}{' '}
+          <span className="nota">
+            Valores da emenda inteira, que pode ter ido também para outros lugares.
+          </span>
+        </p>
+        <ul className="lista">
+          {emendas.itens.map((e) => (
+            <ItemDeEmenda key={e.emendaId} emenda={e} />
+          ))}
+        </ul>
+        {ultimaPagina > 1 && (
+          <nav aria-label="Paginação" className="paginacao">
+            {pagina > 1 && <Link href={endereco(pagina - 1)}>Anterior</Link>}
+            <span>
+              Página {pagina} de {ultimaPagina}
+            </span>
+            {pagina < ultimaPagina && <Link href={endereco(pagina + 1)}>Próxima</Link>}
+          </nav>
+        )}
+      </Secao>
     </main>
   );
 }
@@ -279,7 +305,7 @@ function Bancada({
 }): ReactNode {
   if (pessoas.length === 0) return null;
   return (
-    <section className="pilha" aria-label={titulo}>
+    <div className="pilha" role="group" aria-label={titulo}>
       <h3 className="titulo-de-lista">{titulo}</h3>
       <ul className="nomes">
         {pessoas.map((p) => (
@@ -289,6 +315,6 @@ function Bancada({
           </li>
         ))}
       </ul>
-    </section>
+    </div>
   );
 }

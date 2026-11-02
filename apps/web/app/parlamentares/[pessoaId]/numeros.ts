@@ -21,9 +21,9 @@ function comContagem(alvo: number, sufixo = ''): Pick<NumeroChave, 'valor' | 'co
   return { valor: textoDaContagem(contagem, 1), contagem };
 }
 
-/** A fonte coletada por último entre as emendas listadas; `undefined` se não há emenda. */
+/** A fonte coletada por último entre os itens listados (emendas ou obras); `undefined` se não há item. */
 export function fonteMaisRecente(
-  emendas: EmendasDoParlamentar | undefined,
+  emendas: { readonly itens: readonly { readonly fonte: FonteDoDado }[] } | undefined,
 ): FonteDoDado | undefined {
   return (emendas?.itens ?? [])
     .map((e) => e.fonte)

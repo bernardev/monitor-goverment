@@ -18,3 +18,21 @@ export function Fonte({ fonte }: { fonte: FonteDoDado }): ReactNode {
     </p>
   );
 }
+
+/**
+ * O fim de toda seção de dado: a captura quando há uma; sem dado ainda, o nome de quem publica, para
+ * a seção vazia também dizer de onde o dado viria.
+ */
+export function FonteDaSecao({
+  fonte,
+  publicador,
+}: {
+  fonte?: FonteDoDado | undefined;
+  publicador: string;
+}): ReactNode {
+  return fonte ? (
+    <Fonte fonte={fonte} />
+  ) : (
+    <p className="fonte">Fonte: {publicador}. Ainda sem registro coletado.</p>
+  );
+}

@@ -1,7 +1,6 @@
 import type {
   AutoriaDoParlamentar,
   EmendasDoParlamentar,
-  FonteDoDado,
   FrequenciaDoParlamentar,
   ObraResumo,
   Pagina,
@@ -23,7 +22,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import { destinos, identificacaoDaEmenda } from '../../_componentes/emendas';
-import { Fonte } from '../../_componentes/fonte';
+import { FonteDaSecao } from '../../_componentes/fonte';
 import {
   dia,
   identificacao,
@@ -54,18 +53,6 @@ export const SECOES = {
   emendas: 'Emendas',
   obras: 'Obras pagas com as emendas',
 } as const;
-
-/**
- * O fim de toda seção de dado: a captura quando há uma; sem dado ainda, o nome de quem publica, para
- * a seção vazia também dizer de onde o dado viria.
- */
-function rodape(fonte: FonteDoDado | undefined, publicador: string): ReactNode {
-  return fonte ? (
-    <Fonte fonte={fonte} />
-  ) : (
-    <p className="fonte">Fonte: {publicador}. Ainda sem registro coletado.</p>
-  );
-}
 
 export function Promessas(): ReactNode {
   return (
@@ -99,7 +86,9 @@ export function Presenca({ frequencia }: { frequencia: FrequenciaDoParlamentar }
       não aparecem aqui.
     </p>
   );
-  const fonte = rodape(frequencia.dias[0]?.fonte, 'Câmara dos Deputados');
+  const fonte = (
+    <FonteDaSecao fonte={frequencia.dias[0]?.fonte} publicador="Câmara dos Deputados" />
+  );
   if (resumo.diasComSessao === 0) {
     return (
       <Secao id="presenca" titulo={SECOES.presenca} periodo={periodo} fonte={fonte}>
@@ -160,9 +149,11 @@ export function Votos({ votos }: { votos: VotosDoParlamentar }): ReactNode {
       casa apurou a frequência. Só as votações já coletadas da fonte oficial aparecem aqui.
     </p>
   );
-  const fonte = rodape(
-    votos.participacoes[0]?.votacao.fonte,
-    'Câmara dos Deputados e Senado Federal',
+  const fonte = (
+    <FonteDaSecao
+      fonte={votos.participacoes[0]?.votacao.fonte}
+      publicador="Câmara dos Deputados e Senado Federal"
+    />
   );
   if (resumo.votacoes === 0) {
     return (
@@ -231,9 +222,11 @@ export function Autorias({ autorias }: { autorias: Pagina<AutoriaDoParlamentar> 
     </p>
   );
   const periodo = 'desde o início da coleta';
-  const fonte = rodape(
-    autorias.itens[0]?.proposicao.fonte,
-    'Câmara dos Deputados e Senado Federal',
+  const fonte = (
+    <FonteDaSecao
+      fonte={autorias.itens[0]?.proposicao.fonte}
+      publicador="Câmara dos Deputados e Senado Federal"
+    />
   );
   if (autorias.total === 0) {
     return (
@@ -271,7 +264,7 @@ export function Autorias({ autorias }: { autorias: Pagina<AutoriaDoParlamentar> 
 export function Emendas({ emendas }: { emendas: EmendasDoParlamentar }): ReactNode {
   const fonteDaColeta = fonteMaisRecente(emendas);
   const periodo = periodoDasEmendas(fonteDaColeta?.coletadaEm ?? null);
-  const fonte = rodape(fonteDaColeta, 'Portal da Transparência');
+  const fonte = <FonteDaSecao fonte={fonteDaColeta} publicador="Portal da Transparência" />;
   const nota = (
     <p className="nota">
       Emendas individuais, do Portal da Transparência, ligadas ao parlamentar quando o nome do autor
@@ -323,7 +316,7 @@ export interface ObrasDoParlamentar {
 export function Obras({ obras }: { obras: ObrasDoParlamentar }): ReactNode {
   const { maiores, concluidas, emExecucao, paralisadas } = obras;
   const periodo = periodoDasEmendas(maiores.itens[0]?.fonte.coletadaEm ?? null);
-  const fonte = rodape(maiores.itens[0]?.fonte, 'Obrasgov.br');
+  const fonte = <FonteDaSecao fonte={maiores.itens[0]?.fonte} publicador="Obrasgov.br" />;
   const nota = (
     <p className="nota">
       Obras do Obrasgov pagas por ao menos uma emenda deste parlamentar. A situação e a medição são
