@@ -2,16 +2,6 @@ import type { ReactNode } from 'react';
 
 import { type DiaMarcado, porcentagens, porMes } from './medidas';
 
-/** Um número que fala sozinho, com a legenda do que foi medido logo abaixo. */
-export function Cifra({ valor, legenda }: { valor: string; legenda: ReactNode }): ReactNode {
-  return (
-    <div className="cifra">
-      <p className="cifra__valor">{valor}</p>
-      <p className="cifra__legenda">{legenda}</p>
-    </div>
-  );
-}
-
 /** Tom de uma parte da barra, do mais forte ao mais fraco dentro do campo. */
 export type Tom = 'forte' | 'medio' | 'fraco' | 'vazio';
 

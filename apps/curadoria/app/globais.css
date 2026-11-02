@@ -1,5 +1,5 @@
 /*
- * O painel usa o sistema visual do site (@prometeu/ui, ADR-0017). Aqui ficam só as peças de
+ * O painel usa o sistema visual do site (@prometeu/ui, ADR-0018). Aqui ficam só as peças de
  * ferramenta: formulários, mensagens de erro e o bloco de revisão. Os campos de texto e o botão
  * principal vêm do sistema; aqui só a textarea, os rótulos maiores e os grupos.
  */
@@ -43,6 +43,17 @@
   gap: 6px;
   font-size: 16px;
   font-weight: 600;
+}
+
+/* O valor digitado não herda o peso do rótulo que o envolve. */
+:is(.formulario, .revisao, .em-linha) label :is(input, select, textarea) {
+  font-weight: 400;
+}
+
+/* O detalhe de um item da lista: o <small> do navegador dá 14 px, abaixo do tamanho de leitura. */
+.lista small {
+  font-size: 15px;
+  color: var(--tinta-2);
 }
 
 /* Caixa de marcar com o texto ao lado, no tamanho nativo. */
