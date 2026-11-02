@@ -139,7 +139,7 @@ export default async function Promessa({ params }: Props): Promise<ReactNode> {
       {curador && (
         <Secao id="candidatos" titulo="Fatos do autor que podem comprovar a promessa">
           <p className="painel__ajuda">
-            Proposições de autoria, emendas que indicou e obras pagas por elas, das que têm mais
+            Proposições de autoria, emendas que indicou e obras com dinheiro delas, das que têm mais
             palavras em comum com a promessa para as que têm menos. Quem decide é a curadoria.
           </p>
           {candidatos.filter((c) => !c.vinculado).length === 0 && (

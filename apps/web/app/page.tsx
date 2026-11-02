@@ -24,9 +24,10 @@ import {
 } from './_componentes/capa';
 import { DataDoDia } from './_componentes/data-do-dia';
 import { Fonte, FonteEmLinha } from './_componentes/fonte';
+import { fonteMaisRecente } from './_componentes/fonte-mais-recente';
 import {
+  comContagem,
   dia,
-  NUMERO,
   nomeDoResultado,
   periodoDasEmendas,
   reaisResumidos,
@@ -34,7 +35,6 @@ import {
 import { GLOSSARIO } from './_componentes/glossario';
 import { lugarDaObra, situacaoEMedicao } from './_componentes/obras';
 import { partesDoPlacar } from './_componentes/placar';
-import { fonteMaisRecente } from './parlamentares/[pessoaId]/numeros';
 
 /** A cidade de exemplo da coluna: Porto Alegre (RS). */
 const CIDADE_DE_EXEMPLO = { codigoIbge: '4314902', nome: 'Porto Alegre', uf: 'RS' } as const;
@@ -67,14 +67,14 @@ export default async function PaginaInicial(): Promise<ReactNode> {
   const numeros: NumeroChave[] = [];
   if (emendas && emendas.total > 0) {
     numeros.push({
-      valor: NUMERO.format(emendas.total),
+      ...comContagem(emendas.total),
       rotulo: rotuloDeEmendas(emendas.total),
       periodo: periodoDasEmendasNoSite,
     });
   }
   if (concluidas && obras) {
     numeros.push({
-      valor: NUMERO.format(concluidas.total),
+      ...comContagem(concluidas.total),
       rotulo: rotuloDeObras(concluidas.total, obras.total),
       periodo: periodoDasEmendas(fonteDasObras?.coletadaEm ?? null),
     });
@@ -209,7 +209,7 @@ export default async function PaginaInicial(): Promise<ReactNode> {
           <Chamada
             tamanho="lista"
             chapeu="Obras"
-            titulo="Obras pagas com emendas"
+            titulo="Obras com dinheiro de emenda"
             href="/obras"
             linhaFina="A situação e a medição de cada uma, da maior para a menor."
           />
@@ -262,7 +262,7 @@ function Manchete({ votacao }: { votacao: VotacaoNominalResumo }): ReactNode {
   );
 }
 
-/** A maior obra paralisada entre as pagas com emendas, com o motivo que a fonte informa. */
+/** A maior obra paralisada entre as com dinheiro de emenda, com o motivo que a fonte informa. */
 function ChamadaDaObra({
   obra,
   detalhe,
@@ -273,7 +273,7 @@ function ChamadaDaObra({
   return (
     <Chamada
       tamanho="secundaria"
-      chapeu="Obra · paga com emendas"
+      chapeu="Obra · com dinheiro de emenda"
       titulo={`Obra de ${reaisResumidos(obra.investimentoPrevistoCentavos)} em ${lugarDaObra(obra)} está paralisada`}
       href={`/obras/${obra.obraId}`}
       linhaFina={juntarFrases(

@@ -15,6 +15,7 @@ import {
 import { Acompanhar } from '../../_componentes/acompanhar';
 import { ItemDeEmenda } from '../../_componentes/emendas';
 import { FonteDaSecao } from '../../_componentes/fonte';
+import { fonteMaisRecente } from '../../_componentes/fonte-mais-recente';
 import {
   nomeDoCargo,
   partesPagoEAPagar,
@@ -26,7 +27,6 @@ import {
 } from '../../_componentes/formatacao';
 import { GLOSSARIO } from '../../_componentes/glossario';
 import { ItemDeObra, situacaoEMedicao } from '../../_componentes/obras';
-import { fonteMaisRecente } from '../../parlamentares/[pessoaId]/numeros';
 import { numerosDaCidade } from './numeros';
 
 interface Props {
@@ -90,7 +90,7 @@ export default async function MeuGoverno({ params, searchParams }: Props): Promi
   // O sumário só lista o que a página mostra.
   const secoes = [
     ['dinheiro', 'Quem mandou o dinheiro'],
-    ['obras', 'Obras pagas com emendas'],
+    ['obras', 'Obras com dinheiro de emenda'],
     ['bancada', 'Quem representa a cidade no Congresso'],
     ...(obras.total > 8 ? [['todas-as-obras', 'Todas as obras']] : []),
     ['emendas', 'Todas as emendas'],
@@ -115,7 +115,7 @@ export default async function MeuGoverno({ params, searchParams }: Props): Promi
       <FaixaDeNumeros itens={numeros} />
       <p className="reportagem__nota">
         Os números somam só a parte de cada emenda destinada a {nome}. As obras são as do
-        Obrasgov.br pagas por ao menos uma emenda.
+        Obrasgov.br com dinheiro de ao menos uma emenda.
       </p>
 
       <div className="reportagem__explicacoes">
@@ -177,16 +177,16 @@ export default async function MeuGoverno({ params, searchParams }: Props): Promi
 
       <Secao
         id="obras"
-        titulo="Obras pagas com emendas"
+        titulo="Obras com dinheiro de emenda"
         periodo={periodoDasObras}
         fonte={<FonteDaSecao fonte={fonteDasObras} publicador="Obrasgov.br" />}
       >
         {obras.total === 0 ? (
-          <p>Nenhuma obra paga com emenda coletada em {nome}.</p>
+          <p>Nenhuma obra com dinheiro de emenda coletada em {nome}.</p>
         ) : (
           <>
             <p>
-              {`${plural(obras.total, 'obra paga', 'obras pagas')} com emendas em ${nome}: ${plural(concluidas, 'concluída', 'concluídas')}, ${NUMERO.format(emExecucao)} em execução e ${plural(paralisadas, 'paralisada', 'paralisadas')}.`}
+              {`${plural(obras.total, 'obra', 'obras')} com dinheiro de emenda em ${nome}: ${plural(concluidas, 'concluída', 'concluídas')}, ${NUMERO.format(emExecucao)} em execução e ${plural(paralisadas, 'paralisada', 'paralisadas')}.`}
             </p>
             <Explica termo="Situação da obra">{GLOSSARIO.situacaoDaObra}</Explica>
             <Proporcao
@@ -249,8 +249,8 @@ export default async function MeuGoverno({ params, searchParams }: Props): Promi
         >
           <p>
             {obras.itens.length === obras.total
-              ? `As ${NUMERO.format(obras.total)} obras pagas com emendas em ${nome}.`
-              : `As ${NUMERO.format(obras.itens.length)} maiores obras, de ${NUMERO.format(obras.total)} pagas com emendas.`}
+              ? `As ${NUMERO.format(obras.total)} obras com dinheiro de emenda em ${nome}.`
+              : `As ${NUMERO.format(obras.itens.length)} maiores obras, de ${NUMERO.format(obras.total)} com dinheiro de emenda.`}
           </p>
           <ul className="lista">
             {obras.itens.map((o) => (

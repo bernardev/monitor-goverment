@@ -43,8 +43,10 @@ describe('numerosDaCidade', () => {
     const [, , varias, muitas] = numerosDaCidade(COM_TUDO);
     expect(um?.rotulo).toBe('emenda com destino à cidade');
     expect(varias?.rotulo).toBe('emendas com destino à cidade');
-    expect(muitas?.rotulo).toBe('obras pagas com emendas');
-    expect(numerosDaCidade({ ...COM_TUDO, obras: 1 })[3]?.rotulo).toBe('obra paga com emendas');
+    expect(muitas?.rotulo).toBe('obras com dinheiro de emenda');
+    expect(numerosDaCidade({ ...COM_TUDO, obras: 1 })[3]?.rotulo).toBe(
+      'obra com dinheiro de emenda',
+    );
   });
 
   it('sem emendas e sem obras mostra "—", sem contagem, e mantém rótulo e período', () => {

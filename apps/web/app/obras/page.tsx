@@ -11,9 +11,9 @@ import { ItemDeObra } from '../_componentes/obras';
 import { PaginaDeLista } from '../_componentes/pagina-de-lista';
 
 export const metadata: Metadata = {
-  title: 'Obras pagas com emendas | Prometeu',
+  title: 'Obras com dinheiro de emenda | Prometeu',
   description:
-    'Obras federais pagas com emendas parlamentares: em que pé estão, quanto já foi executado e quais emendas as pagam.',
+    'Obras federais com dinheiro de emendas parlamentares: em que pé estão, quanto já foi executado e quais emendas as pagam.',
 };
 
 interface Props {
@@ -46,7 +46,7 @@ export default async function PaginaDeObras({ searchParams }: Props): Promise<Re
   return (
     <PaginaDeLista
       chapeu="Dinheiro público"
-      titulo="Obras pagas com emendas"
+      titulo="Obras com dinheiro de emenda"
       descricao="Obras do cadastro federal (Obrasgov.br) que tiveram dinheiro de emenda parlamentar reservado (empenhado) de 2023 em diante, da de maior investimento previsto para a de menor."
       explica={
         <>

@@ -98,7 +98,7 @@ export default function LayoutRaiz({ children }: { children: ReactNode }): React
                   <Link href="/emendas">Emendas parlamentares</Link>
                 </li>
                 <li>
-                  <Link href="/obras">Obras pagas com emendas</Link>
+                  <Link href="/obras">Obras com dinheiro de emenda</Link>
                 </li>
                 <li>
                   <Link href="/fontes">Situação das fontes</Link>

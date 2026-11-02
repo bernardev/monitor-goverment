@@ -50,7 +50,7 @@ const PASSOS: readonly { alvo?: string; titulo: string; texto: string }[] = [
   {
     alvo: 'obras',
     titulo: 'A obra ficou pronta?',
-    texto: 'Obras pagas com emendas: quanto já foi feito e, se pararam, o motivo informado.',
+    texto: 'Obras com dinheiro de emenda: quanto já foi feito e, se pararam, o motivo informado.',
   },
   {
     alvo: 'busca',

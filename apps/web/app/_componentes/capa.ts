@@ -73,7 +73,7 @@ export function rotuloDeEmendas(total: number): string {
 }
 
 export function rotuloDeObras(concluidas: number, total: number): string {
-  return `${concluidas === 1 ? 'obra concluída' : 'obras concluídas'}, de ${NUMERO.format(total)} ${total === 1 ? 'paga' : 'pagas'} com emendas`;
+  return `${concluidas === 1 ? 'obra concluída' : 'obras concluídas'}, de ${NUMERO.format(total)} com dinheiro de emenda`;
 }
 
 /**

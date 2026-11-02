@@ -40,7 +40,7 @@ export function numerosDaCidade(dados: {
     },
     {
       ...(obras > 0 ? comContagem(obras) : { valor: SEM_DADO }),
-      rotulo: obras === 1 ? 'obra paga com emendas' : 'obras pagas com emendas',
+      rotulo: obras === 1 ? 'obra com dinheiro de emenda' : 'obras com dinheiro de emenda',
       periodo: periodoDasEmendas(dados.obrasColetadasEm),
     },
   ];

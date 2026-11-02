@@ -129,9 +129,9 @@ describe('concordância dos totais', () => {
     expect(rotuloDeEmendas(25131)).toBe('emendas ao orçamento acompanhadas');
   });
   it('obras concluídas', () => {
-    expect(rotuloDeObras(1, 1)).toBe('obra concluída, de 1 paga com emendas');
-    expect(rotuloDeObras(878, 10121)).toBe('obras concluídas, de 10.121 pagas com emendas');
-    expect(rotuloDeObras(0, 1)).toBe('obras concluídas, de 1 paga com emendas');
+    expect(rotuloDeObras(1, 1)).toBe('obra concluída, de 1 com dinheiro de emenda');
+    expect(rotuloDeObras(878, 10121)).toBe('obras concluídas, de 10.121 com dinheiro de emenda');
+    expect(rotuloDeObras(0, 1)).toBe('obras concluídas, de 1 com dinheiro de emenda');
   });
 });
 

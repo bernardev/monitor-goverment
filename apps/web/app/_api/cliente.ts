@@ -157,13 +157,13 @@ export interface FiltroDeObras {
   readonly situacao?: SituacaoDaObra | undefined;
   readonly municipio?: string | undefined;
   readonly nome?: string | undefined;
-  /** Obras pagas por emendas desta pessoa. */
+  /** Obras com dinheiro de emendas desta pessoa. */
   readonly autor?: string | undefined;
   readonly pagina: number;
   readonly itens?: number;
 }
 
-/** Obras pagas com emendas, da de maior investimento previsto para a de menor. */
+/** Obras com dinheiro de emenda, da de maior investimento previsto para a de menor. */
 export async function listarObras(filtro: FiltroDeObras): Promise<Pagina<ObraResumo>> {
   const itens = filtro.itens ?? 50;
   const busca = new URLSearchParams({ pagina: String(filtro.pagina), itens: String(itens) });

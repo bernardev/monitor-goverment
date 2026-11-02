@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: perfil ? `${perfil.nome} | Prometeu` : 'Parlamentar não encontrado | Prometeu' };
 }
 
-/** As obras pagas pelas emendas da pessoa: as maiores e quantas há em cada situação. */
+/** As obras com dinheiro das emendas da pessoa: as maiores e quantas há em cada situação. */
 async function obrasDoParlamentar(pessoaId: string): Promise<ObrasDoParlamentar> {
   const total = (situacao: 'concluida' | 'em_execucao' | 'paralisada') =>
     listarObras({ autor: pessoaId, situacao, pagina: 1, itens: 1 }).then((p) => p.total);

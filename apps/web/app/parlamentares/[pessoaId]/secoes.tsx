@@ -23,6 +23,7 @@ import type { ReactNode } from 'react';
 
 import { destinos, identificacaoDaEmenda } from '../../_componentes/emendas';
 import { FonteDaSecao } from '../../_componentes/fonte';
+import { fonteMaisRecente } from '../../_componentes/fonte-mais-recente';
 import {
   dia,
   identificacao,
@@ -41,7 +42,6 @@ import {
 import { GLOSSARIO } from '../../_componentes/glossario';
 import { lugarDaObra, situacaoEMedicao } from '../../_componentes/obras';
 import { ROTULO_DA_OPCAO, TOM_DA_OPCAO } from '../../_componentes/placar';
-import { fonteMaisRecente } from './numeros';
 
 /** As seções da página, na ordem em que aparecem; o sumário do topo leva a cada uma. */
 export const SECOES = {
@@ -50,7 +50,7 @@ export const SECOES = {
   votacoes: 'Votações',
   projetos: 'Projetos apresentados',
   emendas: 'Emendas',
-  obras: 'Obras pagas com as emendas',
+  obras: 'Obras com dinheiro das emendas',
 } as const;
 
 export function Promessas(): ReactNode {
@@ -334,7 +334,7 @@ export function Obras({ obras }: { obras: ObrasDoParlamentar }): ReactNode {
   return (
     <Secao id="obras" titulo={SECOES.obras} periodo={periodo} fonte={fonte}>
       <p>
-        {`${NUMERO.format(maiores.total)} ${maiores.total === 1 ? 'obra paga' : 'obras pagas'} pelas emendas deste parlamentar. ${NUMERO.format(concluidas)} concluídas, ${NUMERO.format(emExecucao)} em execução.`}
+        {`${NUMERO.format(maiores.total)} ${maiores.total === 1 ? 'obra' : 'obras'} com dinheiro das emendas deste parlamentar. ${NUMERO.format(concluidas)} concluídas, ${NUMERO.format(emExecucao)} em execução.`}
       </p>
       <Explica termo="Situação da obra">{GLOSSARIO.situacaoDaObra}</Explica>
       <Proporcao
