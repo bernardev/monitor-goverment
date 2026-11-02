@@ -2,17 +2,24 @@ import '@prometeu/ui/estilos.css';
 
 import { Cabecalho } from '@prometeu/ui';
 import type { Metadata } from 'next';
-import { Schibsted_Grotesk } from 'next/font/google';
+import { Inter, Source_Serif_4 } from 'next/font/google';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import { Tour } from './_componentes/tour';
 
-// A única família do site (ADR-0017), servida pelo próprio site: nada é pedido ao Google no navegador.
-const fonte = Schibsted_Grotesk({
+// Servidas pelo próprio site: nada é pedido ao Google no navegador. Serifa nos títulos, sans no texto.
+const fonteTitulo = Source_Serif_4({
   subsets: ['latin'],
-  weight: ['400', '500', '700', '900'],
-  variable: '--fonte-prometeu',
+  weight: ['600', '700'],
+  variable: '--fonte-titulo',
+  display: 'swap',
+});
+
+const fonteTexto = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--fonte-texto',
   display: 'swap',
 });
 
@@ -24,8 +31,8 @@ export const metadata: Metadata = {
 
 export default function LayoutRaiz({ children }: { children: ReactNode }): ReactNode {
   return (
-    <html lang="pt-BR" className={fonte.variable}>
-      <body data-campo="papel">
+    <html lang="pt-BR" className={`${fonteTitulo.variable} ${fonteTexto.variable}`}>
+      <body>
         <a href="#conteudo" className="oculto">
           Ir para o conteúdo
         </a>

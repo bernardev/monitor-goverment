@@ -1,88 +1,63 @@
 /*
- * Sistema visual do Prometeu (ADR-0017): capítulos de cor plana, verbos no pretérito, uma família.
- * Sem gradiente, sem sombra em repouso, sem fio decorativo (só nas tabelas).
+ * Sistema visual do Prometeu: jornal de referência. Fundo branco, tinta preta, azul institucional,
+ * títulos em serifa e texto em sans, fios finos em vez de blocos de cor.
  */
 
 /* ── Tokens ─────────────────────────────────────────────────────────────────────────────────── */
 :root {
-  --papel: #e8e6e1;
-  --papel-2: #d9d6cf;
-  --grafite: #1b1b1b;
-  --grafite-2: #2e2e2e;
-  --grafite-3: #4a4a4a;
-  --aco: #cbd8de;
-  --aco-2: #dce6ea;
-  --aco-3: #a9bcc4;
-  --ardosia: #4f626b;
-  --areia: #e4d5b7;
-  --areia-2: #d6c39d;
-  --areia-3: #b39c6c;
   --branco: #ffffff;
+  --superficie: #f4f5f7;
+  --tinta: #111111;
+  --tinta-2: #555555;
+  --nota: #6b6b6b;
+  --fio: #e3e3e3;
+  --fio-forte: #111111;
+  --azul: #0b3d6b;
+  --azul-claro: #9fb3c8;
+  --cinza-claro: #cccccc;
+  --contorno: #999999;
 
-  --fonte:
-    var(--fonte-prometeu, 'Schibsted Grotesk'), system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --fonte-titulo-pilha: var(--fonte-titulo, 'Source Serif 4'), Georgia, 'Times New Roman', serif;
+  --fonte-texto-pilha:
+    var(--fonte-texto, 'Inter'), system-ui, -apple-system, 'Segoe UI', sans-serif;
 
-  /* Cinco tamanhos fazem todo o trabalho. */
-  --t-verbo: clamp(44px, 11.5vw, 184px);
-  --t-cifra: clamp(48px, 8.4vw, 132px);
-  --t-titulo: clamp(36px, 5vw, 72px);
-  --t-destaque: clamp(20px, 1.9vw, 26px);
-  --t-texto: 18px;
-  --t-nota: 16px;
+  --t-pagina: 40px;
+  --t-secao: 22px;
+  --t-manchete: 30px;
+  --t-numero: 30px;
+  --t-texto: 17px;
+  --t-nota: 13px;
+  --t-chapeu: 12px;
 
+  --largura: 1200px;
+  --largura-texto: 720px;
   --margem: clamp(16px, 2.4vw, 32px);
-  --largura: 1360px;
+  --raio: 4px;
+
+  /* Legado: as regras de componente ainda não trocadas (tarefas seguintes) leem estes nomes. */
+  --fundo: var(--branco);
+  --forte: var(--tinta);
+  --medio: var(--tinta-2);
+  --fraco: var(--fio);
+  --vazio: var(--superficie);
   --vao: 6px;
-  --entre-secoes: clamp(72px, 9vw, 140px);
-  --raio-botao: 999px;
+  --entre-secoes: clamp(40px, 6vw, 72px);
+  --raio-botao: var(--raio);
+  --t-verbo: clamp(40px, 8vw, 96px);
+  --t-cifra: clamp(32px, 5vw, 56px);
+  --t-titulo: var(--t-pagina);
+  --t-destaque: 20px;
 
   color-scheme: light;
 }
 
-/* Cada campo é uma cor com a sua tinta e os seus tons de apoio. */
-[data-campo='papel'] {
-  --fundo: var(--papel);
-  --tinta: var(--grafite);
-  --superficie: var(--papel-2);
-  --forte: var(--grafite);
-  --medio: var(--grafite-3);
-  --fraco: var(--areia-3);
-  --vazio: var(--branco);
-}
-
-[data-campo='grafite'] {
-  --fundo: var(--grafite);
-  --tinta: var(--papel);
-  --superficie: var(--grafite-2);
-  --forte: var(--papel);
-  --medio: var(--aco-3);
-  --fraco: var(--grafite-3);
-  --vazio: var(--grafite-2);
-}
-
-[data-campo='aco'] {
-  --fundo: var(--aco);
-  --tinta: var(--grafite);
-  --superficie: var(--aco-2);
-  --forte: var(--grafite);
-  --medio: var(--ardosia);
-  --fraco: var(--aco-3);
-  --vazio: var(--branco);
-}
-
-[data-campo='areia'] {
-  --fundo: var(--areia);
-  --tinta: var(--grafite);
-  --superficie: var(--areia-2);
-  --forte: var(--grafite);
-  --medio: var(--grafite-3);
-  --fraco: var(--areia-3);
-  --vazio: var(--branco);
-}
-
-[data-campo] {
-  background: var(--fundo);
-  color: var(--tinta);
+@media (max-width: 640px) {
+  :root {
+    --t-pagina: 30px;
+    --t-secao: 20px;
+    --t-manchete: 24px;
+    --t-numero: 26px;
+  }
 }
 
 /* ── Base ───────────────────────────────────────────────────────────────────────────────────── */
@@ -99,9 +74,9 @@ html {
 
 body {
   margin: 0;
-  background: var(--papel);
-  color: var(--grafite);
-  font-family: var(--fonte);
+  background: var(--branco);
+  color: var(--tinta);
+  font-family: var(--fonte-texto-pilha);
   font-size: var(--t-texto);
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
@@ -111,28 +86,38 @@ h1,
 h2,
 h3 {
   margin: 0;
-  line-height: 1;
-  letter-spacing: -0.03em;
+  font-family: var(--fonte-titulo-pilha);
+  font-weight: 700;
+  line-height: 1.15;
   text-wrap: balance;
+}
+
+h1 {
+  font-size: var(--t-pagina);
+}
+
+h2 {
+  font-size: var(--t-secao);
+  font-weight: 600;
 }
 
 p {
   margin: 0;
+  max-width: var(--largura-texto);
 }
 
 a {
-  color: inherit;
-  text-decoration-thickness: 2px;
+  color: var(--azul);
+  text-decoration: underline;
   text-underline-offset: 0.18em;
-  transition: text-decoration-color 160ms ease;
 }
 
 a:hover {
-  text-decoration-color: transparent;
+  text-decoration-thickness: 2px;
 }
 
 :focus-visible {
-  outline: 3px solid currentColor;
+  outline: 3px solid var(--azul);
   outline-offset: 3px;
 }
 
@@ -142,13 +127,14 @@ img {
 }
 
 ::selection {
-  background: var(--grafite);
-  color: var(--papel);
+  background: var(--azul);
+  color: var(--branco);
 }
 
 .nota {
   font-size: var(--t-nota);
   line-height: 1.5;
+  color: var(--nota);
 }
 
 .destaque {
@@ -158,17 +144,17 @@ img {
 }
 
 .verbo {
+  font-family: var(--fonte-titulo-pilha);
   font-size: var(--t-verbo);
-  font-weight: 900;
-  line-height: 0.86;
-  letter-spacing: -0.045em;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .titulo {
+  font-family: var(--fonte-titulo-pilha);
   font-size: var(--t-titulo);
-  font-weight: 900;
-  line-height: 0.92;
-  letter-spacing: -0.035em;
+  font-weight: 700;
+  line-height: 1.1;
 }
 
 .numeros {
@@ -184,34 +170,47 @@ img {
   white-space: nowrap;
 }
 
-/* ── Botões e busca ─────────────────────────────────────────────────────────────────────────── */
+/* ── Botões e formulários ───────────────────────────────────────────────────────────────────── */
 .botao {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 48px;
-  padding: 0 24px;
+  min-height: 44px;
+  padding: 0 20px;
   border: 0;
-  border-radius: var(--raio-botao);
-  background: var(--forte, var(--grafite));
-  color: var(--fundo, var(--papel));
+  border-radius: var(--raio);
+  background: var(--azul);
+  color: var(--branco);
   font: inherit;
-  font-weight: 500;
+  font-weight: 600;
   font-size: var(--t-texto);
   text-decoration: none;
   cursor: pointer;
-  transition:
-    transform 140ms ease,
-    background-color 300ms ease,
-    color 300ms ease;
 }
 
 .botao:hover {
-  transform: translateY(-1px);
+  background: var(--tinta);
 }
 
-.botao:active {
-  transform: translateY(1px) scale(0.98);
+input,
+select,
+textarea {
+  font: inherit;
+  color: var(--tinta);
+}
+
+input,
+select {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--contorno);
+  border-radius: var(--raio);
+  background: var(--branco);
+}
+
+label {
+  font-size: var(--t-nota);
+  font-weight: 600;
 }
 
 .busca {
@@ -225,10 +224,10 @@ form.busca input {
   flex: 1 1 280px;
   min-height: 64px;
   padding: 0 24px;
-  border: 3px solid var(--grafite);
+  border: 3px solid var(--tinta);
   border-radius: var(--raio-botao);
   background: var(--branco);
-  color: var(--grafite);
+  color: var(--tinta);
   font: inherit;
   font-size: 20px;
 }
@@ -244,9 +243,8 @@ form.busca .botao {
   position: sticky;
   top: 0;
   z-index: 10;
-  transition:
-    background-color 300ms ease,
-    color 300ms ease;
+  background: var(--branco);
+  border-bottom: 1px solid var(--fio);
 }
 
 .cabecalho__miolo {
@@ -694,10 +692,10 @@ main:not(.capitulos) input[type='search'],
 main:not(.capitulos) input[type='text'] {
   min-height: 48px;
   padding: 0 18px;
-  border: 2px solid var(--grafite);
+  border: 2px solid var(--tinta);
   border-radius: var(--raio-botao);
   background: var(--branco);
-  color: var(--grafite);
+  color: var(--tinta);
   font: inherit;
 }
 
@@ -706,8 +704,8 @@ main:not(.capitulos) button {
   padding: 0 22px;
   border: 0;
   border-radius: var(--raio-botao);
-  background: var(--grafite);
-  color: var(--papel);
+  background: var(--tinta);
+  color: var(--branco);
   font: inherit;
   font-weight: 500;
   cursor: pointer;
@@ -781,7 +779,7 @@ main:not(.capitulos) button {
 }
 
 .abertura__clara {
-  color: var(--aco);
+  color: var(--azul-claro);
 }
 
 .abertura__pe {
@@ -1135,7 +1133,7 @@ main:not(.capitulos) button {
 
 .tour__foco {
   position: absolute;
-  outline: 3px solid var(--papel);
+  outline: 3px solid var(--branco);
 }
 
 .tour__cartao {
@@ -1145,8 +1143,8 @@ main:not(.capitulos) button {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background: var(--papel);
-  color: var(--grafite);
+  background: var(--branco);
+  color: var(--tinta);
 }
 
 .tour__cartao h2 {
@@ -1394,8 +1392,13 @@ main:not(.capitulos) button {
 
 /* Ação que já foi feita (acompanhando) ou que pesa menos: mesma forma, sem a cor cheia. */
 .botao--secundario {
-  background: var(--superficie, var(--papel-2));
-  color: var(--tinta, var(--grafite));
+  background: var(--superficie);
+  color: var(--tinta);
+  border: 1px solid var(--contorno);
+}
+
+.botao--secundario:hover {
+  background: var(--fio);
 }
 
 main:not(.capitulos) button.botao--texto,
@@ -1404,7 +1407,7 @@ button.botao--texto {
   padding: 0;
   border: 0;
   background: none;
-  color: inherit;
+  color: var(--azul);
   font: inherit;
   font-size: var(--t-nota);
   text-decoration: underline;
@@ -1495,7 +1498,7 @@ form.filtros input {
   border: 2px solid var(--tinta);
   border-radius: var(--raio-botao);
   background: var(--branco);
-  color: var(--grafite);
+  color: var(--tinta);
   font: inherit;
 }
 
