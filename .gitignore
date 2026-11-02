@@ -22,3 +22,6 @@ __pycache__/
 Thumbs.db
 next-env.d.ts
 .taste-skill/
+
+# Esboços do brainstorming (visual companion)
+.superpowers/
