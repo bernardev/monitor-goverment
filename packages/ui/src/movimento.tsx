@@ -29,6 +29,8 @@ function contar(el: HTMLElement): void {
       mostrar(el, 1 - (1 - t) ** 3);
       requestAnimationFrame(passo);
     } else {
+      // Senão o último quadro fica visível junto com o valor real.
+      el.querySelector('.conta__anima')?.replaceChildren();
       delete el.dataset['contando'];
     }
   };

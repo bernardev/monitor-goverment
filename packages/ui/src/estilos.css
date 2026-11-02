@@ -136,6 +136,10 @@ html.movimento [data-contando] .conta__real {
   white-space: nowrap;
 }
 
+[data-conta]:not([data-contando]) .conta__anima {
+  display: none;
+}
+
 /* O link "Ir para o conteúdo" aparece quando recebe o foco do teclado. */
 .oculto:focus-visible {
   position: static;
