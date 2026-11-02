@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { Chapeu, FaixaDeNumeros } from '@prometeu/ui';
+import { Chapeu, Explica, FaixaDeNumeros } from '@prometeu/ui';
 import type { ReactNode } from 'react';
 
 import {
@@ -14,6 +14,7 @@ import {
 import { Acompanhar } from '../../_componentes/acompanhar';
 import { Fonte } from '../../_componentes/fonte';
 import { data, nomeDoCargo } from '../../_componentes/formatacao';
+import { GLOSSARIO } from '../../_componentes/glossario';
 import { numerosDoParlamentar } from './numeros';
 import {
   Autorias,
@@ -64,7 +65,16 @@ export default async function PerfilDoParlamentar({ params }: Props): Promise<Re
   // votação. Sem presença, a faixa fica só com os números de emendas.
   const comPresenca = frequencia !== undefined && perfil.cargo !== 'senador';
   const numeros = numerosDoParlamentar({ frequencia, emendas });
-  const secoes = Object.entries(SECOES).filter(([id]) => id !== 'presenca' || comPresenca);
+  // O sumário só lista o que a página mostra.
+  const aparece: Readonly<Record<keyof typeof SECOES, boolean>> = {
+    promessas: true,
+    presenca: comPresenca,
+    votacoes: votos !== undefined,
+    projetos: autorias !== undefined,
+    emendas: emendas !== undefined,
+    obras: true,
+  };
+  const secoes = Object.entries(SECOES).filter(([id]) => aparece[id as keyof typeof SECOES]);
   const partidoEUf = [perfil.siglaPartido ?? 'sem partido', perfil.uf].filter(Boolean).join('-');
 
   return (
@@ -101,6 +111,17 @@ export default async function PerfilDoParlamentar({ params }: Props): Promise<Re
           : ''}
         Os de emendas somam as emendas individuais ligadas a este parlamentar.
       </p>
+
+      <div className="reportagem__explicacoes">
+        {comPresenca && (
+          <>
+            <Explica termo="Sessão">{GLOSSARIO.sessao}</Explica>
+            <Explica termo="Falta justificada">{GLOSSARIO.faltaJustificada}</Explica>
+          </>
+        )}
+        <Explica termo="Emenda">{GLOSSARIO.emenda}</Explica>
+        <Explica termo="Empenhado">{GLOSSARIO.empenhado}</Explica>
+      </div>
 
       <nav aria-label="Nesta página">
         <ul className="indice">

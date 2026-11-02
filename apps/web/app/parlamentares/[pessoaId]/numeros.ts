@@ -3,7 +3,7 @@ import type {
   FonteDoDado,
   FrequenciaDoParlamentar,
 } from '@prometeu/contracts';
-import type { NumeroChave } from '@prometeu/ui';
+import { type NumeroChave, textoDaContagem } from '@prometeu/ui';
 
 import {
   pagoAteAgora,
@@ -15,9 +15,10 @@ import {
 const NUMERO = new Intl.NumberFormat('pt-BR');
 const SEM_DADO = '—';
 
-/** O número com a contagem que termina no mesmo texto que o servidor entrega (sem JavaScript). */
+/** O número com a contagem; o valor é o texto final dela, o mesmo que o servidor entrega sem JavaScript. */
 function comContagem(alvo: number, sufixo = ''): Pick<NumeroChave, 'valor' | 'contagem'> {
-  return { valor: `${NUMERO.format(alvo)}${sufixo}`, contagem: { alvo, sufixo } };
+  const contagem = { alvo, sufixo };
+  return { valor: textoDaContagem(contagem, 1), contagem };
 }
 
 /** A fonte coletada por último entre as emendas listadas; `undefined` se não há emenda. */
@@ -64,7 +65,7 @@ export function numerosDoParlamentar(dados: {
     {
       ...(resumo ? comContagem(resumo.ausenciasJustificadas) : { valor: SEM_DADO }),
       rotulo: resumo
-        ? `faltas justificadas (e ${semJustificativa === 0 ? 'nenhuma' : NUMERO.format(semJustificativa)} sem justificativa)`
+        ? `${resumo.ausenciasJustificadas === 1 ? 'falta justificada' : 'faltas justificadas'} (e ${semJustificativa === 0 ? 'nenhuma' : NUMERO.format(semJustificativa)} sem justificativa)`
         : 'faltas justificadas',
       periodo: periodoDaPresenca,
     },

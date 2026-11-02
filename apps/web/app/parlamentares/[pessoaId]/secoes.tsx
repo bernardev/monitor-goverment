@@ -55,8 +55,16 @@ export const SECOES = {
   obras: 'Obras pagas com as emendas',
 } as const;
 
-function rodape(fonte: FonteDoDado | undefined): ReactNode {
-  return fonte && <Fonte fonte={fonte} />;
+/**
+ * O fim de toda seção de dado: a captura quando há uma; sem dado ainda, o nome de quem publica, para
+ * a seção vazia também dizer de onde o dado viria.
+ */
+function rodape(fonte: FonteDoDado | undefined, publicador: string): ReactNode {
+  return fonte ? (
+    <Fonte fonte={fonte} />
+  ) : (
+    <p className="fonte">Fonte: {publicador}. Ainda sem registro coletado.</p>
+  );
 }
 
 export function Promessas(): ReactNode {
@@ -91,7 +99,7 @@ export function Presenca({ frequencia }: { frequencia: FrequenciaDoParlamentar }
       não aparecem aqui.
     </p>
   );
-  const fonte = rodape(frequencia.dias[0]?.fonte);
+  const fonte = rodape(frequencia.dias[0]?.fonte, 'Câmara dos Deputados');
   if (resumo.diasComSessao === 0) {
     return (
       <Secao id="presenca" titulo={SECOES.presenca} periodo={periodo} fonte={fonte}>
@@ -115,8 +123,6 @@ export function Presenca({ frequencia }: { frequencia: FrequenciaDoParlamentar }
         com sessão.
         {faltas.length > 0 ? ` Ausências: ${faltas.join(' e ')}.` : ' Nenhuma ausência.'}
       </p>
-      <Explica termo="Sessão">{GLOSSARIO.sessao}</Explica>
-      <Explica termo="Falta justificada">{GLOSSARIO.faltaJustificada}</Explica>
       <Calendario
         rotulo={`${String(resumo.presencas)} presenças em ${String(resumo.diasComSessao)} dias com sessão`}
         dias={frequencia.dias.map((d) => ({
@@ -154,7 +160,10 @@ export function Votos({ votos }: { votos: VotosDoParlamentar }): ReactNode {
       casa apurou a frequência. Só as votações já coletadas da fonte oficial aparecem aqui.
     </p>
   );
-  const fonte = rodape(votos.participacoes[0]?.votacao.fonte);
+  const fonte = rodape(
+    votos.participacoes[0]?.votacao.fonte,
+    'Câmara dos Deputados e Senado Federal',
+  );
   if (resumo.votacoes === 0) {
     return (
       <Secao id="votacoes" titulo={SECOES.votacoes} periodo={periodo} fonte={fonte}>
@@ -217,16 +226,19 @@ function ParticipacaoNaVotacao({
 export function Autorias({ autorias }: { autorias: Pagina<AutoriaDoParlamentar> }): ReactNode {
   const nota = (
     <p className="nota">
-      Só entram as proposições normativas (PEC, PLP, PL, MPV e PDL) que se moveram desde o início da
-      coleta.
+      Só entram os projetos que podem virar lei (propostas de emenda à Constituição, projetos de lei
+      e medidas provisórias) que andaram desde o início da coleta.
     </p>
   );
   const periodo = 'desde o início da coleta';
-  const fonte = rodape(autorias.itens[0]?.proposicao.fonte);
+  const fonte = rodape(
+    autorias.itens[0]?.proposicao.fonte,
+    'Câmara dos Deputados e Senado Federal',
+  );
   if (autorias.total === 0) {
     return (
       <Secao id="projetos" titulo={SECOES.projetos} periodo={periodo} fonte={fonte}>
-        <p>Nenhuma proposição coletada com este parlamentar entre os autores.</p>
+        <p>Nenhum projeto coletado em que este parlamentar seja autor.</p>
         {nota}
       </Secao>
     );
@@ -234,7 +246,7 @@ export function Autorias({ autorias }: { autorias: Pagina<AutoriaDoParlamentar> 
   return (
     <Secao id="projetos" titulo={SECOES.projetos} periodo={periodo} fonte={fonte}>
       <p>
-        {`${NUMERO.format(autorias.total)} ${autorias.total === 1 ? 'proposição coletada' : 'proposições coletadas'} com este parlamentar entre os autores${autorias.total > 6 ? '. Aqui, as movimentadas por último' : ''}.`}
+        {`${NUMERO.format(autorias.total)} ${autorias.total === 1 ? 'projeto coletado' : 'projetos coletados'} em que este parlamentar é autor ou assina junto${autorias.total > 6 ? '. Aqui, os que andaram por último' : ''}.`}
       </p>
       <ul className="fichas">
         {autorias.itens.slice(0, 6).map(({ proposicao: p, proponente: assina }) => (
@@ -242,7 +254,7 @@ export function Autorias({ autorias }: { autorias: Pagina<AutoriaDoParlamentar> 
             <Link href={`/proposicoes/${p.proposicaoId}`} className="ficha__titulo">
               {identificacao(p)}
             </Link>
-            <p className="ficha__texto">{p.ementa ?? 'Ementa não informada pela casa.'}</p>
+            <p className="ficha__texto">{p.ementa ?? 'Resumo não informado pela casa.'}</p>
             <p className="ficha__nota">
               {nomeDaCasa(p.casa)}
               {p.situacao ? ` · ${p.situacao.descricao}` : ''}
@@ -259,19 +271,18 @@ export function Autorias({ autorias }: { autorias: Pagina<AutoriaDoParlamentar> 
 export function Emendas({ emendas }: { emendas: EmendasDoParlamentar }): ReactNode {
   const fonteDaColeta = fonteMaisRecente(emendas);
   const periodo = periodoDasEmendas(fonteDaColeta?.coletadaEm ?? null);
-  const fonte = rodape(fonteDaColeta);
+  const fonte = rodape(fonteDaColeta, 'Portal da Transparência');
   const nota = (
     <p className="nota">
       Emendas individuais, do Portal da Transparência, ligadas ao parlamentar quando o nome do autor
-      corresponde a uma só pessoa em exercício. Pago soma o pago no ano do orçamento e o pago
-      depois, como restos a pagar.
+      corresponde a uma só pessoa em exercício. Pago soma o que saiu no ano do orçamento e o que
+      saiu nos anos seguintes.
     </p>
   );
   if (emendas.total === 0) {
     return (
       <Secao id="emendas" titulo={SECOES.emendas} periodo={periodo} fonte={fonte}>
         <p>Nenhuma emenda ao orçamento coletada com este parlamentar como autor.</p>
-        <Explica termo="Emenda">{GLOSSARIO.emenda}</Explica>
         {nota}
       </Secao>
     );
@@ -290,8 +301,6 @@ export function Emendas({ emendas }: { emendas: EmendasDoParlamentar }): ReactNo
       <p>
         {`${NUMERO.format(emendas.total)} ${emendas.total === 1 ? 'emenda' : 'emendas'}, com ${reaisResumidos(empenhado)} reservados no orçamento. Já foram pagos ${reaisResumidos(pago)}.`}
       </p>
-      <Explica termo="Emenda">{GLOSSARIO.emenda}</Explica>
-      <Explica termo="Empenhado">{GLOSSARIO.empenhado}</Explica>
       <Proporcao partes={partesPagoEAPagar(pago, empenhado)} />
       <Ranking itens={itens} />
       <p className="nota">
@@ -314,7 +323,7 @@ export interface ObrasDoParlamentar {
 export function Obras({ obras }: { obras: ObrasDoParlamentar }): ReactNode {
   const { maiores, concluidas, emExecucao, paralisadas } = obras;
   const periodo = periodoDasEmendas(maiores.itens[0]?.fonte.coletadaEm ?? null);
-  const fonte = rodape(maiores.itens[0]?.fonte);
+  const fonte = rodape(maiores.itens[0]?.fonte, 'Obrasgov.br');
   const nota = (
     <p className="nota">
       Obras do Obrasgov pagas por ao menos uma emenda deste parlamentar. A situação e a medição são

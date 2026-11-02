@@ -1,4 +1,5 @@
 import type { EmendasDoParlamentar, FrequenciaDoParlamentar } from '@prometeu/contracts';
+import { textoDaContagem } from '@prometeu/ui';
 import { describe, expect, it } from 'vitest';
 
 import { numerosDoParlamentar } from './numeros';
@@ -94,9 +95,16 @@ describe('numerosDoParlamentar', () => {
   });
 
   it('a contagem termina no mesmo texto que o servidor entrega', () => {
-    const [presenca, , , pago] = numerosDoParlamentar(dadosDeExemplo);
-    expect(presenca?.contagem).toEqual({ alvo: 5, sufixo: ' de 12' });
-    expect(pago?.contagem).toEqual({ alvo: 81, sufixo: '%' });
+    const itens = numerosDoParlamentar(dadosDeExemplo).filter((n) => n.contagem !== undefined);
+    expect(itens).toHaveLength(4);
+    for (const n of itens) expect(textoDaContagem(n.contagem!, 1)).toBe(n.valor);
+  });
+
+  it('uma só falta justificada fica no singular', () => {
+    const uma = { ...frequencia, resumo: { ...frequencia.resumo, ausenciasJustificadas: 1 } };
+    expect(numerosDoParlamentar({ frequencia: uma })[1]?.rotulo).toBe(
+      'falta justificada (e 1 sem justificativa)',
+    );
   });
 
   it('emenda sem empenho não inventa percentual', () => {

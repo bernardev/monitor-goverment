@@ -839,6 +839,13 @@ main:not(.capitulos, .reportagem) button {
   font-size: var(--t-nota);
 }
 
+.reportagem__explicacoes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+
 .indice {
   display: flex;
   flex-wrap: wrap;
