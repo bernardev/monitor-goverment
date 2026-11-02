@@ -10,7 +10,7 @@ export default function NaoEncontrado(): ReactNode {
   return (
     <main className="reportagem editoria">
       <header className="editoria__topo">
-        <Chapeu>Página não encontrada</Chapeu>
+        <Chapeu>Erro 404</Chapeu>
         <h1>Não achamos esta página</h1>
         <p className="editoria__descricao">
           O endereço pode estar errado, ou o registro saiu da fonte oficial depois que o link foi

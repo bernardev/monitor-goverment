@@ -47,8 +47,13 @@ export default async function PaginaDeObras({ searchParams }: Props): Promise<Re
     <PaginaDeLista
       chapeu="Dinheiro público"
       titulo="Obras pagas com emendas"
-      descricao="Obras do cadastro federal (Obrasgov.br) que receberam dinheiro de emenda parlamentar de 2023 em diante, da de maior investimento previsto para a de menor."
-      explica={<Explica termo="Situação da obra">{GLOSSARIO.situacaoDaObra}</Explica>}
+      descricao="Obras do cadastro federal (Obrasgov.br) que tiveram dinheiro de emenda parlamentar reservado (empenhado) de 2023 em diante, da de maior investimento previsto para a de menor."
+      explica={
+        <>
+          <Explica termo="Empenhado">{GLOSSARIO.empenhado}</Explica>
+          <Explica termo="Situação da obra">{GLOSSARIO.situacaoDaObra}</Explica>
+        </>
+      }
       filtros={
         <form method="get" action="/obras" className="filtros">
           <label htmlFor="situacao">Situação</label>

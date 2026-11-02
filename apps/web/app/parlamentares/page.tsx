@@ -29,7 +29,7 @@ export default async function PaginaDeParlamentares({ searchParams }: Props): Pr
     <PaginaDeLista
       chapeu="Congresso"
       titulo="Parlamentares"
-      descricao="Os deputados federais e senadores em exercício, com partido e estado. Abra um nome para ver a presença, os votos, as proposições e as emendas. Escolha um estado para ver só os de lá."
+      descricao="Os deputados federais e senadores em exercício, com partido e estado. Abra um nome para ver a presença, os votos, as proposições e as emendas."
       filtros={
         <form method="get" action="/parlamentares" className="filtros">
           <label htmlFor="uf">Estado</label>

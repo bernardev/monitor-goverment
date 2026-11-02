@@ -12,7 +12,7 @@ export default function Erro({ reset }: { error: Error; reset: () => void }): Re
   return (
     <main className="reportagem editoria">
       <header className="editoria__topo">
-        <Chapeu>Erro</Chapeu>
+        <Chapeu>Falha temporária</Chapeu>
         <h1>Não conseguimos carregar esta página</h1>
         <p className="editoria__descricao">
           Os dados continuam guardados; costuma ser uma falha passageira ao consultá-los. Tente de
