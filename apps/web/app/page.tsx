@@ -13,6 +13,7 @@ import {
   situacaoDasFontes,
 } from './_api/cliente';
 import {
+  dataPorExtenso,
   fraseDaInterrupcao,
   juntarFrases,
   periodoDaPresenca,
@@ -20,7 +21,6 @@ import {
   rotuloDeEmendas,
   rotuloDeObras,
   tituloDaManchete,
-  dataPorExtenso,
 } from './_componentes/capa';
 import { DataDoDia } from './_componentes/data-do-dia';
 import { Fonte, FonteEmLinha } from './_componentes/fonte';
@@ -245,8 +245,6 @@ function Manchete({ votacao }: { votacao: VotacaoNominalResumo }): ReactNode {
               `Nas palavras ${camara ? 'da Câmara' : 'do Senado'}: ${votacao.descricao}`,
               ementa ? `Sobre o projeto: ${resumirTexto(ementa, 200)}` : '',
             )}{' '}
-            {camara ? 'da Câmara' : 'do Senado'}: {votacao.descricao}
-            {ementa ? ` Sobre o projeto: ${resumirTexto(ementa, 200)}` : ''}{' '}
             <Link href={`/votacoes/${votacao.votacaoId}`}>
               Veja como votou cada {camara ? 'deputado' : 'senador'}.
             </Link>
