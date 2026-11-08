@@ -1,0 +1,22 @@
+# HTTPS automático. Ambiente de teste: nada aqui deve aparecer em buscadores.
+(privado) {
+	header X-Robots-Tag "noindex, nofollow"
+}
+
+{$DOMINIO_SITE} {
+	import privado
+	reverse_proxy site:3001
+}
+
+{$DOMINIO_PAINEL} {
+	import privado
+	reverse_proxy painel:3002
+}
+
+{$DOMINIO_LOGIN} {
+	import privado
+	# O console de administração não fica exposto na internet.
+	respond /admin* 403
+	respond /realms/master* 403
+	reverse_proxy identidade:8080
+}

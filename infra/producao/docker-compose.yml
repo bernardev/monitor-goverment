@@ -1,0 +1,151 @@
+# Uma VPS só, com todos os serviços. Só o Caddy publica portas; o resto fica na rede interna.
+# Uso: infra/producao/preparar.sh <ip> e depois docker compose -f infra/producao/docker-compose.yml up -d --build
+name: prometeu
+
+x-app: &app
+  image: prometeu-app
+  restart: unless-stopped
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+x-bancos: &bancos
+  ACERVO_DATABASE_URL: postgres://ctx_acervo:${SENHA_DOS_CONTEXTOS}@postgres:5432/prometeu
+  AGENTES_PUBLICOS_DATABASE_URL: postgres://ctx_agentes_publicos:${SENHA_DOS_CONTEXTOS}@postgres:5432/prometeu
+  ATIVIDADE_LEGISLATIVA_DATABASE_URL: postgres://ctx_atividade_legislativa:${SENHA_DOS_CONTEXTOS}@postgres:5432/prometeu
+  BARRAMENTO_DATABASE_URL: postgres://ctx_barramento:${SENHA_DOS_CONTEXTOS}@postgres:5432/prometeu
+  COMPROMISSOS_DATABASE_URL: postgres://ctx_compromissos:${SENHA_DOS_CONTEXTOS}@postgres:5432/prometeu
+  CONSULTA_DATABASE_URL: postgres://ctx_consulta:${SENHA_DOS_CONTEXTOS}@postgres:5432/prometeu
+  EDITORIAL_DATABASE_URL: postgres://ctx_editorial:${SENHA_DOS_CONTEXTOS}@postgres:5432/prometeu
+  ENGAJAMENTO_DATABASE_URL: postgres://ctx_engajamento:${SENHA_DOS_CONTEXTOS}@postgres:5432/prometeu
+  FINANCAS_PUBLICAS_DATABASE_URL: postgres://ctx_financas_publicas:${SENHA_DOS_CONTEXTOS}@postgres:5432/prometeu
+  INGESTAO_DATABASE_URL: postgres://ctx_ingestao:${SENHA_DOS_CONTEXTOS}@postgres:5432/prometeu
+  OBRAS_DATABASE_URL: postgres://ctx_obras:${SENHA_DOS_CONTEXTOS}@postgres:5432/prometeu
+  S3_ENDPOINT: http://objetos:9000
+  S3_ACCESS_KEY: prometeu
+  S3_SECRET_KEY: ${SENHA_DOS_OBJETOS}
+  IDENTIDADE_EMISSOR: https://${DOMINIO_LOGIN}/realms/prometeu
+  ALERTA_WEBHOOK_URL: ${ALERTA_WEBHOOK_URL:-}
+
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.7-pg18-trixie
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: prometeu
+      POSTGRES_USER: prometeu_admin
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      SENHA_DOS_CONTEXTOS: ${SENHA_DOS_CONTEXTOS}
+    volumes:
+      - postgres:/var/lib/postgresql
+      - ../docker/postgres/01-schemas-por-contexto.sql:/docker-entrypoint-initdb.d/01-schemas-por-contexto.sql:ro
+      - ./02-producao.sh:/docker-entrypoint-initdb.d/02-producao.sh:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U prometeu_admin -d prometeu']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  objetos:
+    image: rustfs/rustfs:1.0.3
+    restart: unless-stopped
+    environment:
+      RUSTFS_ACCESS_KEY: prometeu
+      RUSTFS_SECRET_KEY: ${SENHA_DOS_OBJETOS}
+    volumes:
+      - objetos:/data
+
+  identidade:
+    image: quay.io/keycloak/keycloak:26.8.1
+    restart: unless-stopped
+    command: ['start', '--import-realm']
+    mem_limit: 1g
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${SENHA_DO_ADMIN_DA_IDENTIDADE}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: prometeu_admin
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      KC_HOSTNAME: https://${DOMINIO_LOGIN}
+      KC_HTTP_ENABLED: 'true'
+      KC_PROXY_HEADERS: xforwarded
+    volumes:
+      - ./realm:/opt/keycloak/data/import:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    <<: *app
+    build:
+      context: ../..
+      dockerfile: infra/producao/Dockerfile
+    command: ['node', 'apps/api/dist/main.js']
+    environment:
+      <<: *bancos
+      PORT: '3000'
+
+  worker:
+    <<: *app
+    command: ['node', 'apps/worker/dist/main.js']
+    environment: *bancos
+
+  site:
+    <<: *app
+    command: ['pnpm', '--filter', '@prometeu/web', 'exec', 'next', 'start', '-p', '3001']
+    environment:
+      API_URL: http://api:3000
+      SITE_URL: https://${DOMINIO_SITE}
+      IDENTIDADE_EMISSOR: https://${DOMINIO_LOGIN}/realms/prometeu
+      SITE_CLIENTE_ID: site
+      SITE_CLIENTE_SEGREDO: ${SEGREDO_DO_CLIENTE_SITE}
+      SITE_SEGREDO_DA_SESSAO: ${SEGREDO_DA_SESSAO_SITE}
+
+  painel:
+    <<: *app
+    command: ['pnpm', '--filter', '@prometeu/curadoria', 'exec', 'next', 'start', '-p', '3002']
+    environment:
+      API_URL: http://api:3000
+      CURADORIA_URL: https://${DOMINIO_PAINEL}
+      IDENTIDADE_EMISSOR: https://${DOMINIO_LOGIN}/realms/prometeu
+      CURADORIA_CLIENTE_ID: curadoria
+      CURADORIA_CLIENTE_SEGREDO: ${SEGREDO_DO_CLIENTE_PAINEL}
+      CURADORIA_SEGREDO_DA_SESSAO: ${SEGREDO_DA_SESSAO_PAINEL}
+
+  # As coletas; perfil próprio, para subir depois que o site estiver de pé.
+  dados:
+    profiles: [dados]
+    build: ../../data-platform
+    restart: unless-stopped
+    environment:
+      INGESTAO_DATABASE_URL: postgresql://ctx_ingestao:${SENHA_DOS_CONTEXTOS}@postgres:5432/prometeu
+      S3_ENDPOINT: http://objetos:9000
+      S3_ACCESS_KEY: prometeu
+      S3_SECRET_KEY: ${SENHA_DOS_OBJETOS}
+      ALERTA_WEBHOOK_URL: ${ALERTA_WEBHOOK_URL:-}
+    volumes:
+      - dagster:/opt/dagster/historico
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  caddy:
+    image: caddy:2.11-alpine
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    environment:
+      DOMINIO_SITE: ${DOMINIO_SITE}
+      DOMINIO_PAINEL: ${DOMINIO_PAINEL}
+      DOMINIO_LOGIN: ${DOMINIO_LOGIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy:/data
+
+volumes:
+  postgres:
+  objetos:
+  dagster:
+  caddy:
