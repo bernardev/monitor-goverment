@@ -531,3 +531,40 @@ cookie curto quando o login dá certo; o navegador abre o tour uma vez e guarda 
 conta tem "Ver o tour de novo". No telefone, onde a navegação fica no rodapé, os passos ficam no meio
 da tela e dizem isso; Minha conta entrou no rodapé. O cartão é um diálogo: foco no botão principal,
 Tab preso nele, Esc fecha. Verificado no site com o Keycloak de verdade, no computador e no telefone.
+
+## Pendências depois do link de teste
+
+O ambiente de teste roda em uma VPS ([infra/producao](../infra/producao)), fora dos buscadores. Hoje a capa
+fala em promessas, mas o site não publica nenhuma. O que falta, na ordem:
+
+**1. Promessas reais**
+
+- [ ] Definir quem faz a curadoria e por quais políticos começar.
+- [ ] Cadastrar as promessas no painel, com fonte, e retirar a promessa fictícia de exemplo.
+- [ ] Criar a seção de promessas no site.
+- [ ] Permitir acompanhar promessa.
+
+**2. Pré-lançamento**
+
+- [ ] Páginas de metodologia, privacidade e correção.
+- [ ] Revisão jurídica: o site expõe nomes reais e faz afirmações sobre políticos.
+- [ ] Revisão de segurança.
+- [ ] Revisão de acessibilidade.
+
+**3. Operação**
+
+- [ ] Domínio próprio no lugar do `sslip.io`.
+- [ ] Backup fora da VPS: o backup diário fica no mesmo disco.
+- [ ] Monitoramento e aviso de falha.
+- [ ] Deploy automático: hoje a cópia para a VPS é manual.
+- [ ] Confirmar que as coletas agendadas rodam até o fim na VPS.
+
+**4. Servidor de e-mail**
+
+- [ ] Confirmação de conta, que fecha o cadastro aberto sem verificação.
+- [ ] Alertas por e-mail (fatia 6.3).
+
+**5. Expansão**
+
+- [ ] Prefeitos e vereadores, com dados do TSE e das câmaras municipais.
+- [ ] Estados e municípios.
